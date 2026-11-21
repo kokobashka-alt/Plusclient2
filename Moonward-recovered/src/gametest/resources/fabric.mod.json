@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "onetap-test",
+  "version": "1.0.0",
+  "name": "Onetap render module test",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-client-gametest": ["wtf.onetap.test.RenderModulesTest"]
+  },
+  "depends": { "onetap": "*" }
+}

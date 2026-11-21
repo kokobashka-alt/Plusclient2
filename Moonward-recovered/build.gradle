@@ -1,0 +1,68 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    mavenCentral()
+}
+
+// compile-only stand-ins for optional mods that are not available as dependencies (Sodium); never shipped
+sourceSets {
+    stubs
+}
+
+loom {
+    accessWidenerPath = file('src/main/resources/onetap.accesswidener')
+}
+
+fabricApi {
+    // dev-only client game test that toggles the Render modules one by one (./gradlew runClientGameTest)
+    configureTests {
+        createSourceSet = true
+        modId = 'onetap-test'
+        enableGameTests = false
+        enableClientGameTests = true
+        eula = true
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    // libraries and mods the mod bundles (shipped from libs/nested, see processResources) or integrates with
+    compileOnly fileTree('libs/compile') { include '*.jar' }
+    compileOnly 'org.jetbrains:annotations:26.0.2'
+    compileOnly sourceSets.stubs.output
+    // in a dev run the mod is not a jar, so its nested jars are not loaded from META-INF/jars: put them on the classpath
+    runtimeOnly fileTree('libs/nested') { include '*.jar' }
+    // the VoiceChat module links against Simple Voice Chat classes directly, so the mod must be present at runtime
+    runtimeOnly fileTree('libs/compile') { include 'voicechat-fabric-*.jar' }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    // the nested jars listed in fabric.mod.json, as shipped in the original build
+    from('libs/nested') {
+        into 'META-INF/jars'
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 25
+    options.compilerArgs += ['-nowarn', '-Xmaxerrs', '10000']
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
