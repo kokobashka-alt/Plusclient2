@@ -1,3 +1,4 @@
+
 plugins {
     id 'net.fabricmc.fabric-loom' version "${loom_version}"
 }
@@ -42,10 +43,9 @@ dependencies {
     compileOnly fileTree('libs/compile') { include '*.jar' }
     compileOnly 'org.jetbrains:annotations:26.0.2'
     compileOnly sourceSets.stubs.output
+
     // in a dev run the mod is not a jar, so its nested jars are not loaded from META-INF/jars: put them on the classpath
     runtimeOnly fileTree('libs/nested') { include '*.jar' }
-    // the VoiceChat module links against Simple Voice Chat classes directly, so the mod must be present at runtime
-    runtimeOnly fileTree('libs/compile') { include 'voicechat-fabric-*.jar' }
 }
 
 processResources {
