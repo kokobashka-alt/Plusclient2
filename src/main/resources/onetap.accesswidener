@@ -1,0 +1,14 @@
+accessWidener	v2	official
+
+accessible	field	net/minecraft/client/gui/render/GuiRenderer	guiProjection	Lnet/minecraft/client/renderer/Projection;
+accessible	field	net/minecraft/client/gui/render/GuiRenderer	guiProjectionMatrixBuffer	Lnet/minecraft/client/renderer/ProjectionMatrixBuffer;
+accessible	field	net/minecraft/client/KeyMapping	key	Lcom/mojang/blaze3d/platform/InputConstants$Key;
+accessible	class	net/minecraft/network/PacketProcessor$ListenerAndPacket
+accessible	class	net/minecraft/client/renderer/ItemInHandRenderer$HandRenderSelection
+accessible	field	net/minecraft/world/level/BaseSpawner	spawnDelay	I
+accessible	field	net/minecraft/world/item/ItemCooldowns	cooldowns	Ljava/util/Map;
+accessible	field	net/minecraft/world/item/ItemCooldowns	tickCount	I
+accessible	class	net/minecraft/world/item/ItemCooldowns$CooldownInstance
+accessible	method	net/minecraft/client/multiplayer/MultiPlayerGameMode	ensureHasSentCarriedItem	()V
+accessible	method	net/minecraft/client/renderer/ItemInHandRenderer	renderPlayerArm	(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;IFFLnet/minecraft/world/entity/HumanoidArm;)V
+accessible	method	net/minecraft/client/renderer/ItemInHandRenderer	renderMap	(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/world/item/ItemStack;)V

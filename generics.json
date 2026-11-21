@@ -1,0 +1,2466 @@
+[
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\api\\command\\datatypes\\ForBlockOptionalMeta.java",
+"line": 49,
+"end": 58,
+"var": "var14",
+"old": "               Set var14 = Stream.of(var6.split(\",\")).map(var0 -> var0.split(\"=\")[0]).collect(Collectors.toSet());",
+"new": "               var var14 = Stream.of(var6.split(\",\")).map(var0 -> var0.split(\"=\")[0]).collect(Collectors.toSet());"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\api\\pathing\\calc\\IPath.java",
+"line": 31,
+"end": 33,
+"var": "var1",
+"old": "      List var1 = this.positions();",
+"new": "      var var1 = this.positions();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\api\\pathing\\calc\\IPath.java",
+"line": 37,
+"end": 44,
+"var": "var4",
+"old": "      List var4 = this.movements();",
+"new": "      var var4 = this.movements();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\api\\pathing\\calc\\IPath.java",
+"line": 55,
+"end": 89,
+"var": "var1",
+"old": "      List var1 = this.positions();",
+"new": "      var var1 = this.positions();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\api\\pathing\\calc\\IPath.java",
+"line": 56,
+"end": 89,
+"var": "var2",
+"old": "      List var2 = this.movements();",
+"new": "      var var2 = this.movements();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\api\\schematic\\SubstituteSchematic.java",
+"line": 37,
+"end": 55,
+"var": "var8",
+"old": "      List var8 = this.substitutions.get(var7);",
+"new": "      var var8 = this.substitutions.get(var7);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\api\\schematic\\SubstituteSchematic.java",
+"line": 62,
+"end": 74,
+"var": "var3",
+"old": "      Collection var3 = var1.getProperties();",
+"new": "      var var3 = var1.getProperties();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\api\\utils\\BlockOptionalMeta.java",
+"line": 196,
+"end": 222,
+"var": "var2",
+"old": "            Optional var2 = var1.getLootTable();",
+"new": "            var var2 = var1.getLootTable();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\api\\utils\\BlockOptionalMeta.java",
+"line": 227,
+"end": 237,
+"var": "var2",
+"old": "      Optional var2 = var0.getLootTable();",
+"new": "      var var2 = var0.getLootTable();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\api\\utils\\BlockOptionalMeta.java",
+"line": 296,
+"end": 301,
+"var": "var3",
+"old": "         List var3 = TagLoader.buildUpdatedLookups(var1.getAccessForLoading(RegistryLayer.WORLDGEN), var2);",
+"new": "         var var3 = TagLoader.buildUpdatedLookups(var1.getAccessForLoading(RegistryLayer.WORLDGEN), var2);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\api\\utils\\SettingsUtil.java",
+"line": 149,
+"end": 157,
+"var": "var4",
+"old": "      Class var4 = var3.getValueClass();",
+"new": "      var var4 = var3.getValueClass();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\behavior\\InventoryBehavior.java",
+"line": 67,
+"end": 84,
+"var": "var2",
+"old": "      ArrayList var2 = new ArrayList();",
+"new": "      ArrayList<Integer> var2 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\behavior\\InventoryBehavior.java",
+"line": 105,
+"end": 114,
+"var": "var1",
+"old": "      NonNullList var1 = this.ctx.player().getInventory().getNonEquipmentItems();",
+"new": "      var var1 = this.ctx.player().getInventory().getNonEquipmentItems();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\behavior\\InventoryBehavior.java",
+"line": 117,
+"end": 139,
+"var": "var2",
+"old": "      NonNullList var2 = this.ctx.player().getInventory().getNonEquipmentItems();",
+"new": "      var var2 = this.ctx.player().getInventory().getNonEquipmentItems();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\behavior\\InventoryBehavior.java",
+"line": 201,
+"end": 241,
+"var": "var5",
+"old": "      NonNullList var5 = var4.getInventory().getNonEquipmentItems();",
+"new": "      var var5 = var4.getInventory().getNonEquipmentItems();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\behavior\\PathingBehavior.java",
+"line": 64,
+"end": 71,
+"var": "var1",
+"old": "      ArrayList var1 = new ArrayList();",
+"new": "      ArrayList<PathEvent> var1 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\behavior\\PathingBehavior.java",
+"line": 117,
+"end": 128,
+"var": "var4",
+"old": "                  Optional var4 = this.inProgress.bestPathSoFar();",
+"new": "                  var var4 = this.inProgress.bestPathSoFar();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\behavior\\PathingBehavior.java",
+"line": 403,
+"end": 424,
+"var": "var6",
+"old": "            ArrayList var6 = new ArrayList();",
+"new": "            ArrayList<BetterBlockPos> var6 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\behavior\\PathingBehavior.java",
+"line": 474,
+"end": 529,
+"var": "var11",
+"old": "                     Optional var11 = var9x.getPath().map(var1xx -> new PathExecutor(this, var1xx));",
+"new": "                     var var11 = var9x.getPath().map(var1xx -> new PathExecutor(this, var1xx));"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\behavior\\WaypointBehavior.java",
+"line": 36,
+"end": 41,
+"var": "var4",
+"old": "               Set var4 = this.baritone.getWorldProvider().getCurrentWorld().getWaypoints().getByTag(IWaypoint.Tag.BED);",
+"new": "               var var4 = this.baritone.getWorldProvider().getCurrentWorld().getWaypoints().getByTag(IWaypoint.Tag.BED);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\cache\\CachedRegion.java",
+"line": 62,
+"end": 66,
+"var": "var5",
+"old": "               ArrayList var5 = this.chunks[var3][var4].getAbsoluteBlocks(var1);",
+"new": "               var var5 = this.chunks[var3][var4].getAbsoluteBlocks(var1);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\cache\\CachedRegion.java",
+"line": 128,
+"end": 140,
+"var": "var28",
+"old": "                        Map var28 = this.chunks[var22][var25].getRelativeBlocks();",
+"new": "                        var var28 = this.chunks[var22][var25].getRelativeBlocks();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\command\\ExampleBaritoneControl.java",
+"line": 98,
+"end": 134,
+"var": "var2",
+"old": "         Tuple var2 = CommandManager.expand(var1);",
+"new": "         var var2 = CommandManager.expand(var1);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\command\\ExampleBaritoneControl.java",
+"line": 145,
+"end": 152,
+"var": "var5",
+"old": "               List var5 = CommandArguments.from(var4, true);",
+"new": "               var var5 = CommandArguments.from(var4, true);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\command\\ExampleBaritoneControl.java",
+"line": 163,
+"end": 188,
+"var": "var2",
+"old": "         List var2 = CommandArguments.from(var1, true);",
+"new": "         var var2 = CommandArguments.from(var1, true);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\command\\defaults\\FindCommand.java",
+"line": 48,
+"end": 51,
+"var": "var10000",
+"old": "         List var10000 = Arrays.asList(var5);",
+"new": "         var var10000 = Arrays.asList(var5);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\command\\defaults\\FollowCommand.java",
+"line": 35,
+"end": 69,
+"var": "var6",
+"old": "      ArrayList var6 = new ArrayList();",
+"new": "      ArrayList<net.minecraft.world.entity.EntityType> var6 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\command\\defaults\\SelCommand.java",
+"line": 145,
+"end": 171,
+"var": "var16",
+"old": "               UnaryOperator var16 = var3x -> {",
+"new": "               UnaryOperator<baritone.api.schematic.ISchematic> var16 = var3x -> {"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\command\\defaults\\WaypointsCommand.java",
+"line": 51,
+"end": 263,
+"var": "var4",
+"old": "      BiFunction var4 = (var1x, var2x) -> {",
+"new": "      BiFunction<baritone.api.cache.IWaypoint, baritone.command.defaults.WaypointsCommand.Action, net.minecraft.network.chat.Component> var4 = (var1x, var2x) -> {"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\command\\defaults\\WaypointsCommand.java",
+"line": 74,
+"end": 263,
+"var": "var5",
+"old": "      Function var5 = var2x -> (Component)var4.apply(var2x, var3 == WaypointsCommand.Action.LIST ? WaypointsCommand.Action.INFO : var3);",
+"new": "      Function<baritone.api.cache.IWaypoint, net.minecraft.network.chat.Component> var5 = var2x -> (Component)var4.apply(var2x, var3 == WaypointsCommand.Action.LIST ? WaypointsCommand.Action.INFO : var3);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\command\\defaults\\WaypointsCommand.java",
+"line": 144,
+"end": 168,
+"var": "var20",
+"old": "         List var20 = this.deletedWaypoints.getOrDefault(this.baritone.getWorldProvider().getCurrentWorld(), Collections.emptyList());",
+"new": "         var var20 = this.deletedWaypoints.getOrDefault(this.baritone.getWorldProvider().getCurrentWorld(), Collections.emptyList());"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\command\\manager\\CommandManager.java",
+"line": 87,
+"end": 91,
+"var": "var2",
+"old": "      Tuple var2 = expand(var1, true);",
+"new": "      var var2 = expand(var1, true);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\command\\manager\\CommandManager.java",
+"line": 102,
+"end": 104,
+"var": "var3",
+"old": "      List var3 = CommandArguments.from(var0.substring(var2.length()), var1);",
+"new": "      var var3 = CommandArguments.from(var0.substring(var2.length()), var1);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\launch\\mixins\\MixinCommandSuggestionHelper.java",
+"line": 62,
+"end": 66,
+"var": "var5",
+"old": "               List var5 = Stream.of(var3.completions).map(var1x -> new Suggestion(var4, var1x)).collect(Collectors.toList());",
+"new": "               var var5 = Stream.of(var3.completions).map(var1x -> new Suggestion(var4, var1x)).collect(Collectors.toList());"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\launch\\mixins\\MixinPalettedContainer.java",
+"line": 46,
+"end": 54,
+"var": "var5",
+"old": "         Class var5 = var4.getType();",
+"new": "         var var5 = var4.getType();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\pathing\\calc\\AStarPathFinder.java",
+"line": 184,
+"end": 190,
+"var": "var48",
+"old": "      Optional var48 = this.bestSoFar(true, var19);",
+"new": "      var var48 = this.bestSoFar(true, var19);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\pathing\\movement\\Movement.java",
+"line": 146,
+"end": 164,
+"var": "var7",
+"old": "            Optional var7 = RotationUtils.reachable(this.ctx, var6, this.ctx.playerController().getBlockReachDistance());",
+"new": "            var var7 = RotationUtils.reachable(this.ctx, var6, this.ctx.playerController().getBlockReachDistance());"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\pathing\\movement\\MovementHelper.java",
+"line": 671,
+"end": 743,
+"var": "var6",
+"old": "      Optional var6 = RotationUtils.reachable(var5, var2, var4);",
+"new": "      var var6 = RotationUtils.reachable(var5, var2, var4);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\pathing\\movement\\movements\\MovementTraverse.java",
+"line": 234,
+"end": 238,
+"var": "var28",
+"old": "               Optional var28 = RotationUtils.reachable(this.ctx, var25);",
+"new": "               var var28 = RotationUtils.reachable(this.ctx, var25);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\pathing\\path\\PathExecutor.java",
+"line": 104,
+"end": 237,
+"var": "var11",
+"old": "      Tuple var11 = this.closestPathPos(this.path);",
+"new": "      var var11 = this.closestPathPos(this.path);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\pathing\\path\\PathExecutor.java",
+"line": 128,
+"end": 143,
+"var": "var7",
+"old": "            List var7 = var6.toBreak(var12);",
+"new": "            var var7 = var6.toBreak(var12);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\pathing\\path\\PathExecutor.java",
+"line": 129,
+"end": 143,
+"var": "var8",
+"old": "            List var8 = var6.toPlace(var12);",
+"new": "            var var8 = var6.toPlace(var12);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\pathing\\path\\PathExecutor.java",
+"line": 130,
+"end": 143,
+"var": "var9",
+"old": "            List var9 = var6.toWalkInto(var12);",
+"new": "            var var9 = var6.toWalkInto(var12);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\pathing\\path\\PathExecutor.java",
+"line": 257,
+"end": 290,
+"var": "var1",
+"old": "      Optional var1 = this.behavior.getInProgress();",
+"new": "      var var1 = this.behavior.getInProgress();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\pathing\\path\\PathExecutor.java",
+"line": 421,
+"end": 443,
+"var": "var9",
+"old": "         Tuple var9 = this.overrideFall((MovementFall)var2);",
+"new": "         var var9 = this.overrideFall((MovementFall)var2);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\BuilderProcess.java",
+"line": 189,
+"end": 205,
+"var": "var4",
+"old": "      Optional var4 = SchematicSystem.INSTANCE.getByFile(var2);",
+"new": "      var var4 = SchematicSystem.INSTANCE.getByFile(var2);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\BuilderProcess.java",
+"line": 223,
+"end": 232,
+"var": "var1",
+"old": "         Optional var1 = SchematicaHelper.getOpenSchematic();",
+"new": "         var var1 = SchematicaHelper.getOpenSchematic();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\BuilderProcess.java",
+"line": 241,
+"end": 245,
+"var": "var2",
+"old": "            Tuple var2 = LitematicaHelper.getSchematic(var1);",
+"new": "            var var2 = LitematicaHelper.getSchematic(var1);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\BuilderProcess.java",
+"line": 305,
+"end": 309,
+"var": "var13",
+"old": "                        Optional var13 = RotationUtils.reachable(this.ctx, var12, this.ctx.playerController().getBlockReachDistance());",
+"new": "                        var var13 = RotationUtils.reachable(this.ctx, var12, this.ctx.playerController().getBlockReachDistance());"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\BuilderProcess.java",
+"line": 335,
+"end": 339,
+"var": "var12",
+"old": "                     Optional var12 = this.possibleToPlace(var10, var7, var8, var9, var1.bsi);",
+"new": "                     var var12 = this.possibleToPlace(var10, var7, var8, var9, var1.bsi);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\BuilderProcess.java",
+"line": 536,
+"end": 617,
+"var": "var14",
+"old": "         Optional var14 = this.toBreakNearPlayer(var13);",
+"new": "         var var14 = this.toBreakNearPlayer(var13);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\BuilderProcess.java",
+"line": 552,
+"end": 616,
+"var": "var16",
+"old": "            ArrayList var16 = new ArrayList();",
+"new": "            ArrayList<BlockState> var16 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\BuilderProcess.java",
+"line": 553,
+"end": 616,
+"var": "var7",
+"old": "            Optional var7 = this.searchForPlacables(var13, var16);",
+"new": "            var var7 = this.searchForPlacables(var13, var16);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\BuilderProcess.java",
+"line": 569,
+"end": 594,
+"var": "var9",
+"old": "                  ArrayList var9 = new ArrayList();",
+"new": "                  ArrayList<BlockState> var9 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\BuilderProcess.java",
+"line": 709,
+"end": 765,
+"var": "var4",
+"old": "      ArrayList var4 = new ArrayList();",
+"new": "      ArrayList<baritone.api.utils.BetterBlockPos> var4 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\BuilderProcess.java",
+"line": 710,
+"end": 765,
+"var": "var5",
+"old": "      ArrayList var5 = new ArrayList();",
+"new": "      ArrayList<baritone.api.utils.BetterBlockPos> var5 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\BuilderProcess.java",
+"line": 711,
+"end": 765,
+"var": "var6",
+"old": "      ArrayList var6 = new ArrayList();",
+"new": "      ArrayList<baritone.api.utils.BetterBlockPos> var6 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\BuilderProcess.java",
+"line": 712,
+"end": 765,
+"var": "var7",
+"old": "      ArrayList var7 = new ArrayList();",
+"new": "      ArrayList<baritone.api.utils.BetterBlockPos> var7 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\BuilderProcess.java",
+"line": 868,
+"end": 880,
+"var": "var3",
+"old": "      List var3 = Baritone.settings().buildIgnoreProperties.value;",
+"new": "      var var3 = Baritone.settings().buildIgnoreProperties.value;"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\ElytraProcess.java",
+"line": 461,
+"end": 471,
+"var": "var2",
+"old": "         NonNullList var2 = this.ctx.player().getInventory().getNonEquipmentItems();",
+"new": "         var var2 = this.ctx.player().getInventory().getNonEquipmentItems();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\ExploreProcess.java",
+"line": 97,
+"end": 155,
+"var": "var6",
+"old": "      ArrayList var6 = new ArrayList();",
+"new": "      ArrayList<net.minecraft.core.BlockPos> var6 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\FarmProcess.java",
+"line": 161,
+"end": 338,
+"var": "var20",
+"old": "      ArrayList var20 = new ArrayList();",
+"new": "      ArrayList<BlockPos> var20 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\FarmProcess.java",
+"line": 162,
+"end": 338,
+"var": "var21",
+"old": "      ArrayList var21 = new ArrayList();",
+"new": "      ArrayList<BlockPos> var21 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\FarmProcess.java",
+"line": 163,
+"end": 338,
+"var": "var22",
+"old": "      ArrayList var22 = new ArrayList();",
+"new": "      ArrayList<BlockPos> var22 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\FarmProcess.java",
+"line": 164,
+"end": 338,
+"var": "var23",
+"old": "      ArrayList var23 = new ArrayList();",
+"new": "      ArrayList<BlockPos> var23 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\FarmProcess.java",
+"line": 165,
+"end": 338,
+"var": "var24",
+"old": "      ArrayList var24 = new ArrayList();",
+"new": "      ArrayList<BlockPos> var24 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\FarmProcess.java",
+"line": 204,
+"end": 214,
+"var": "var35",
+"old": "            Optional var35 = RotationUtils.reachable(this.ctx, var30);",
+"new": "            var var35 = RotationUtils.reachable(this.ctx, var30);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\FarmProcess.java",
+"line": 217,
+"end": 338,
+"var": "var28",
+"old": "      ArrayList var28 = new ArrayList(var21);",
+"new": "      ArrayList<BlockPos> var28 = new ArrayList<>(var21);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\FarmProcess.java",
+"line": 223,
+"end": 235,
+"var": "var15",
+"old": "            Optional var15 = RotationUtils.reachableOffset(this.ctx, var36, new Vec3(var36.getX() + 0.5, var36.getY() + 1, var36.getZ() + 0.5), var26, false);",
+"new": "            var var15 = RotationUtils.reachableOffset(this.ctx, var36, new Vec3(var36.getX() + 0.5, var36.getY() + 1, var36.getZ() + 0.5), var26, false);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\FarmProcess.java",
+"line": 243,
+"end": 255,
+"var": "var17",
+"old": "                  Optional var17 = RotationUtils.reachableOffset(this.ctx, var37, var56, var26, false);",
+"new": "                  var var17 = RotationUtils.reachableOffset(this.ctx, var37, var56, var26, false);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\FarmProcess.java",
+"line": 262,
+"end": 271,
+"var": "var46",
+"old": "            Optional var46 = RotationUtils.reachable(this.ctx, var38);",
+"new": "            var var46 = RotationUtils.reachable(this.ctx, var38);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\GetToBlockProcess.java",
+"line": 128,
+"end": 150,
+"var": "var1",
+"old": "      ArrayList var1 = new ArrayList();",
+"new": "      ArrayList<BlockPos> var1 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\GetToBlockProcess.java",
+"line": 176,
+"end": 179,
+"var": "var3",
+"old": "      List var3 = MineProcess.searchWorld(var2, new BlockOptionalMetaLookup(this.gettingTo), 64, var1, this.blacklist, Collections.emptyList());",
+"new": "      var var3 = MineProcess.searchWorld(var2, new BlockOptionalMetaLookup(this.gettingTo), 64, var1, this.blacklist, Collections.emptyList());"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\GetToBlockProcess.java",
+"line": 193,
+"end": 211,
+"var": "var3",
+"old": "         Optional var3 = RotationUtils.reachable(this.ctx, var2, this.ctx.playerController().getBlockReachDistance());",
+"new": "         var var3 = RotationUtils.reachable(this.ctx, var2, this.ctx.playerController().getBlockReachDistance());"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\MineProcess.java",
+"line": 125,
+"end": 135,
+"var": "var8",
+"old": "            Optional var8 = RotationUtils.reachable(this.ctx, var6);",
+"new": "            var var8 = RotationUtils.reachable(this.ctx, var6);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\MineProcess.java",
+"line": 220,
+"end": 233,
+"var": "var4",
+"old": "            List var4 = this.droppedItemsScan();",
+"new": "            var var4 = this.droppedItemsScan();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\MineProcess.java",
+"line": 221,
+"end": 233,
+"var": "var5",
+"old": "            List var5 = searchWorld(var2, var3, Baritone.settings().mineMaxOreLocationsCount.value, var1, this.blacklist, var4);",
+"new": "            var var5 = searchWorld(var2, var3, Baritone.settings().mineMaxOreLocationsCount.value, var1, this.blacklist, var4);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\MineProcess.java",
+"line": 303,
+"end": 310,
+"var": "var12",
+"old": "      List var12 = prune(var0, var6, var1, var2, var4, var5);",
+"new": "      var var12 = prune(var0, var6, var1, var2, var4, var5);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\MineProcess.java",
+"line": 313,
+"end": 343,
+"var": "var1",
+"old": "      List var1 = this.droppedItemsScan();",
+"new": "      var var1 = this.droppedItemsScan();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\BuildLimitPathFinder.java",
+"line": 135,
+"end": 137,
+"var": "var27",
+"old": "         Tuple var27 = this.generateDirectPath(new BetterBlockPos(var1), new BetterBlockPos(var2), 0, 500);",
+"new": "         var var27 = this.generateDirectPath(new BetterBlockPos(var1), new BetterBlockPos(var2), 0, 500);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\BuildLimitPathFinder.java",
+"line": 141,
+"end": 143,
+"var": "var26",
+"old": "            Tuple var26 = this.generateDirectPath(new BetterBlockPos(var1), new BetterBlockPos(var2), (int)var5, 500);",
+"new": "            var var26 = this.generateDirectPath(new BetterBlockPos(var1), new BetterBlockPos(var2), (int)var5, 500);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\BuildLimitPathFinder.java",
+"line": 144,
+"end": 160,
+"var": "var24",
+"old": "            Tuple var24 = this.generateTransitionUp(new BetterBlockPos(var1), new BetterBlockPos(var2));",
+"new": "            var var24 = this.generateTransitionUp(new BetterBlockPos(var1), new BetterBlockPos(var2));"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\BuildLimitPathFinder.java",
+"line": 148,
+"end": 151,
+"var": "var34",
+"old": "               Tuple var34 = this.generateDirectPath((BetterBlockPos)var29.get(var29.size() - 1), new BetterBlockPos(var2), (int)var5, 500);",
+"new": "               var var34 = this.generateDirectPath((BetterBlockPos)var29.get(var29.size() - 1), new BetterBlockPos(var2), (int)var5, 500);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\BuildLimitPathFinder.java",
+"line": 162,
+"end": 176,
+"var": "var23",
+"old": "         Tuple var23 = this.generateTransitionDown(new BetterBlockPos(var1));",
+"new": "         var var23 = this.generateTransitionDown(new BetterBlockPos(var1));"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\BuildLimitPathFinder.java",
+"line": 167,
+"end": 169,
+"var": "var16",
+"old": "            Tuple var16 = this.generateDirectPath(new BetterBlockPos(var1), var33, 0, 2);",
+"new": "            var var16 = this.generateDirectPath(new BetterBlockPos(var1), var33, 0, 2);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\BuildLimitPathFinder.java",
+"line": 177,
+"end": 187,
+"var": "var12",
+"old": "         Tuple var12 = this.generateTransitionUp(new BetterBlockPos(var1), new BetterBlockPos(var2));",
+"new": "         var var12 = this.generateTransitionUp(new BetterBlockPos(var1), new BetterBlockPos(var2));"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\BuildLimitPathFinder.java",
+"line": 181,
+"end": 184,
+"var": "var15",
+"old": "            Tuple var15 = this.generateDirectPath((BetterBlockPos)var13.get(var13.size() - 1), new BetterBlockPos(var2), 0, 500);",
+"new": "            var var15 = this.generateDirectPath((BetterBlockPos)var13.get(var13.size() - 1), new BetterBlockPos(var2), 0, 500);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\ElytraBehavior.java",
+"line": 351,
+"end": 406,
+"var": "var11",
+"old": "            ArrayList var11 = new ArrayList();",
+"new": "            ArrayList<Pair> var11 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\ElytraBehavior.java",
+"line": 397,
+"end": 403,
+"var": "var35",
+"old": "                     Pair var35 = this.solvePitch(var1, var26, var6);",
+"new": "                     var var35 = this.solvePitch(var1, var26, var6);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\ElytraBehavior.java",
+"line": 640,
+"end": 693,
+"var": "var10",
+"old": "      ArrayDeque var10 = new ArrayDeque();",
+"new": "      ArrayDeque<ElytraBehavior.PitchResult> var10 = new ArrayDeque<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\ElytraBehavior.java",
+"line": 644,
+"end": 657,
+"var": "var12",
+"old": "         List var12 = this.simulate(var1, var8, var11, var5, var6, var7);",
+"new": "         var var12 = this.simulate(var1, var8, var11, var5, var6, var7);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\ElytraBehavior.java",
+"line": 659,
+"end": 693,
+"var": "var17",
+"old": "      Iterator var17 = var10.iterator();",
+"new": "      var var17 = var10.iterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\ElytraBehavior.java",
+"line": 700,
+"end": 737,
+"var": "var11",
+"old": "      ArrayList var11 = new ArrayList(var4 + 1);",
+"new": "      ArrayList<Vec3> var11 = new ArrayList<>(var4 + 1);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\ElytraBehavior.java",
+"line": 803,
+"end": 813,
+"var": "var1",
+"old": "      NonNullList var1 = this.ctx.player().getInventory().getNonEquipmentItems();",
+"new": "      var var1 = this.ctx.player().getInventory().getNonEquipmentItems();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\ElytraBehavior.java",
+"line": 1057,
+"end": 1093,
+"var": "var2",
+"old": "            List var2 = this.path.subList(0, var1 + 1);",
+"new": "            var var2 = this.path.subList(0, var1 + 1);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\ElytraBehavior.java",
+"line": 1106,
+"end": 1123,
+"var": "var2",
+"old": "         List var2 = var1.collect();",
+"new": "         var var2 = var1.collect();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\process\\elytra\\UnpackedSegment.java",
+"line": 29,
+"end": 44,
+"var": "var1",
+"old": "      List var1 = this.path.collect(Collectors.toList());",
+"new": "      var var1 = this.path.collect(Collectors.toList());"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\selection\\SelectionManager.java",
+"line": 67,
+"end": 80,
+"var": "var4",
+"old": "      ListIterator var4 = this.selections.listIterator();",
+"new": "      var var4 = this.selections.listIterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\selection\\SelectionManager.java",
+"line": 84,
+"end": 97,
+"var": "var4",
+"old": "      ListIterator var4 = this.selections.listIterator();",
+"new": "      var var4 = this.selections.listIterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\selection\\SelectionManager.java",
+"line": 101,
+"end": 114,
+"var": "var4",
+"old": "      ListIterator var4 = this.selections.listIterator();",
+"new": "      var var4 = this.selections.listIterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\utils\\PathingControlManager.java",
+"line": 172,
+"end": 195,
+"var": "var4",
+"old": "      Iterator var4 = this.active.iterator();",
+"new": "      var var4 = this.active.iterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\utils\\ToolSet.java",
+"line": 55,
+"end": 59,
+"var": "var3",
+"old": "         TagKey var3 = materialTagsPriorityList.get(var2);",
+"new": "         var var3 = materialTagsPriorityList.get(var2);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\utils\\schematic\\format\\defaults\\LitematicaSchematic.java",
+"line": 69,
+"end": 75,
+"var": "var3",
+"old": "      Optional var3 = var1.getValue(var2);",
+"new": "      var var3 = var1.getValue(var2);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\baritone\\utils\\schematic\\format\\defaults\\SpongeSchematic.java",
+"line": 125,
+"end": 131,
+"var": "var3",
+"old": "         Optional var3 = var1.getValue(var2);",
+"new": "         var var3 = var1.getValue(var2);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\recovered\\jaff\\CallSites.java",
+"line": 20,
+"end": 30,
+"var": "var6",
+"old": "      Class var6 = Class.forName(var4[1].replace('/', '.'), false, var5);",
+"new": "      var var6 = Class.forName(var4[1].replace('/', '.'), false, var5);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C02.java",
+"line": 86,
+"end": 94,
+"var": "var6",
+"old": "         Set var6 = this.f_0p.get(var4);",
+"new": "         var var6 = this.f_0p.get(var4);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C02.java",
+"line": 108,
+"end": 169,
+"var": "var12",
+"old": "            ArrayList var12 = new ArrayList();",
+"new": "            ArrayList<AABB> var12 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C02.java",
+"line": 200,
+"end": 217,
+"var": "var6",
+"old": "         ArrayList var6 = new ArrayList();",
+"new": "         ArrayList<java.lang.Long> var6 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C0g.java",
+"line": 60,
+"end": 91,
+"var": "var11",
+"old": "            List var11 = this.m_7_List();",
+"new": "            var var11 = this.m_7_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C0h.java",
+"line": 162,
+"end": 187,
+"var": "var11",
+"old": "            ArrayList var11 = new ArrayList();",
+"new": "            ArrayList<LivingEntity> var11 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C0k.java",
+"line": 1106,
+"end": 1130,
+"var": "var5",
+"old": "            Optional var5 = BoundingBox.encapsulatingPositions(this.f_68);",
+"new": "            var var5 = BoundingBox.encapsulatingPositions(this.f_68);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C0l.java",
+"line": 73,
+"end": 76,
+"var": "var4",
+"old": "      Registry var4 = C8a.f_9.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);",
+"new": "      var var4 = C8a.f_9.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C0l.java",
+"line": 74,
+"end": 76,
+"var": "var5",
+"old": "      Holder var5 = var4.get(Enchantments.SHARPNESS).orElse(null);",
+"new": "      var var5 = var4.get(Enchantments.SHARPNESS).orElse(null);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C0o.java",
+"line": 248,
+"end": 264,
+"var": "var5",
+"old": "      Iterator var5 = this.f_2q.entrySet().iterator();",
+"new": "      var var5 = this.f_2q.entrySet().iterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C0q.java",
+"line": 135,
+"end": 137,
+"var": "var4",
+"old": "         Set var4 = this.m_0_Set(var1);",
+"new": "         var var4 = this.m_0_Set(var1);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C0s.java",
+"line": 163,
+"end": 173,
+"var": "var2",
+"old": "      Set var2 = m_7_Set();",
+"new": "      var var2 = m_7_Set();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C0s.java",
+"line": 176,
+"end": 178,
+"var": "var2",
+"old": "      Set var2 = m_7_Set();",
+"new": "      var var2 = m_7_Set();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C0_b.java",
+"line": 27,
+"end": 72,
+"var": "var8",
+"old": "               ArrayList var8 = new ArrayList();",
+"new": "               ArrayList<Integer> var8 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C0_r.java",
+"line": 80,
+"end": 102,
+"var": "var7",
+"old": "                  List var7 = var6.items();",
+"new": "                  var var7 = var6.items();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C0__.java",
+"line": 489,
+"end": 507,
+"var": "var3",
+"old": "      List var3 = this.m_4_List();",
+"new": "      var var3 = this.m_4_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C0__.java",
+"line": 521,
+"end": 529,
+"var": "var4",
+"old": "      List var4 = this.m_4_List();",
+"new": "      var var4 = this.m_4_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C0__.java",
+"line": 773,
+"end": 791,
+"var": "var6",
+"old": "         Iterator var6 = this.f_7q.entrySet().iterator();",
+"new": "         var var6 = this.f_7q.entrySet().iterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C38.java",
+"line": 91,
+"end": 162,
+"var": "var4",
+"old": "         List var4 = C3p.m_1_List(8.0F);",
+"new": "         var var4 = C3p.m_1_List(8.0F);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C38.java",
+"line": 110,
+"end": 153,
+"var": "var7",
+"old": "                  List var7 = C3p.m_8_List(18.0F);",
+"new": "                  var var7 = C3p.m_8_List(18.0F);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C38.java",
+"line": 111,
+"end": 153,
+"var": "var8",
+"old": "                  List var8 = m_9(var4, C8_g.m_2_int() / 2 + 1);",
+"new": "                  var var8 = m_9(var4, C8_g.m_2_int() / 2 + 1);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C39.java",
+"line": 324,
+"end": 331,
+"var": "var5",
+"old": "         Iterator var5 = C8a.f_9.level.getEntities((Entity)null, var4, var0 -> var0 instanceof MinecartTNT).iterator();",
+"new": "         var var5 = C8a.f_9.level.getEntities((Entity)null, var4, var0 -> var0 instanceof MinecartTNT).iterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3d.java",
+"line": 59,
+"end": 78,
+"var": "var3",
+"old": "      List var3 = C7q.m_4_List();",
+"new": "      var var3 = C7q.m_4_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3d.java",
+"line": 251,
+"end": 282,
+"var": "var6",
+"old": "      List var6 = var3.stream().filter(var1x -> this.m_3_boolean(var1x.getItem())).toList();",
+"new": "      var var6 = var3.stream().filter(var1x -> this.m_3_boolean(var1x.getItem())).toList();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3g.java",
+"line": 120,
+"end": 138,
+"var": "var8",
+"old": "      ArrayList var8 = new ArrayList();",
+"new": "      ArrayList<Player> var8 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3i.java",
+"line": 251,
+"end": 274,
+"var": "var3",
+"old": "      ArrayList var3 = new ArrayList();",
+"new": "      ArrayList<Player> var3 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3i.java",
+"line": 280,
+"end": 306,
+"var": "var6",
+"old": "      ArrayList var6 = new ArrayList();",
+"new": "      ArrayList<Vec3> var6 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3i.java",
+"line": 368,
+"end": 382,
+"var": "var9",
+"old": "      Optional var9 = var1.inflate(var4).clip(var2, var3);",
+"new": "      var var9 = var1.inflate(var4).clip(var2, var3);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3p.java",
+"line": 209,
+"end": 555,
+"var": "var4",
+"old": "            List var4 = this.m_5_List();",
+"new": "            var var4 = this.m_5_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3p.java",
+"line": 237,
+"end": 549,
+"var": "var7",
+"old": "                  List var7 = this.m_8_List();",
+"new": "                  var var7 = this.m_8_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3p.java",
+"line": 313,
+"end": 547,
+"var": "var14",
+"old": "                        List var14 = this.m_2(var4, 0);",
+"new": "                        var var14 = this.m_2(var4, 0);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3p.java",
+"line": 316,
+"end": 547,
+"var": "var17",
+"old": "                        Set var17 = this.m_6_Set();",
+"new": "                        var var17 = this.m_6_Set();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3p.java",
+"line": 362,
+"end": 380,
+"var": "var19",
+"old": "                           List var19 = this.m_2(var4, C8_g.m_2_int() * 2 + 4);",
+"new": "                           var var19 = this.m_2(var4, C8_g.m_2_int() * 2 + 4);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3p.java",
+"line": 762,
+"end": 775,
+"var": "var8",
+"old": "            Iterator var8 = this.f_2__.iterator();",
+"new": "            var var8 = this.f_2__.iterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3p.java",
+"line": 858,
+"end": 880,
+"var": "var3",
+"old": "      ArrayList var3 = new ArrayList();",
+"new": "      ArrayList<net.minecraft.world.entity.player.Player> var3 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3p.java",
+"line": 1101,
+"end": 1137,
+"var": "var4",
+"old": "      Iterator var4 = this.f_2_i.entrySet().iterator();",
+"new": "      var var4 = this.f_2_i.entrySet().iterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3p.java",
+"line": 1118,
+"end": 1137,
+"var": "var9",
+"old": "      Iterator var9 = this.f_8y.entrySet().iterator();",
+"new": "      var var9 = this.f_8y.entrySet().iterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3p.java",
+"line": 1432,
+"end": 1458,
+"var": "var8",
+"old": "         ArrayList var8 = new ArrayList(var1);",
+"new": "         ArrayList<Player> var8 = new ArrayList<>(var1);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3q.java",
+"line": 96,
+"end": 108,
+"var": "var4",
+"old": "            List var4 = this.f_9h.m_5_C95().m_7_List();",
+"new": "            var var4 = this.f_9h.m_5_C95().m_7_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3v.java",
+"line": 194,
+"end": 210,
+"var": "var10",
+"old": "                  List var10 = this.m_8_List();",
+"new": "                  var var10 = this.m_8_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3v.java",
+"line": 388,
+"end": 405,
+"var": "var8",
+"old": "      ArrayList var8 = new ArrayList();",
+"new": "      ArrayList<Player> var8 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3v.java",
+"line": 442,
+"end": 453,
+"var": "var4",
+"old": "      Registry var4 = C8a.f_9.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);",
+"new": "      var var4 = C8a.f_9.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3v.java",
+"line": 918,
+"end": 921,
+"var": "var6",
+"old": "         Registry var6 = C8a.f_9.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);",
+"new": "         var var6 = C8a.f_9.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3z.java",
+"line": 49,
+"end": 105,
+"var": "var7",
+"old": "            ArrayList var7 = new ArrayList();",
+"new": "            ArrayList<GlobalPos> var7 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3z.java",
+"line": 122,
+"end": 124,
+"var": "var8",
+"old": "                     ResourceKey var8 = ResourceKey.create(Registries.DIMENSION, var7);",
+"new": "                     var var8 = ResourceKey.create(Registries.DIMENSION, var7);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C3_v.java",
+"line": 63,
+"end": 102,
+"var": "var6",
+"old": "         ArrayList var6 = new ArrayList();",
+"new": "         ArrayList<java.lang.Integer> var6 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C44.java",
+"line": 320,
+"end": 345,
+"var": "var4",
+"old": "      ArrayList var4 = new ArrayList();",
+"new": "      ArrayList<BlockPos> var4 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C45.java",
+"line": 55,
+"end": 69,
+"var": "var5",
+"old": "            ArrayList var5 = new ArrayList();",
+"new": "            ArrayList<net.minecraft.world.entity.decoration.ArmorStand> var5 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C45.java",
+"line": 67,
+"end": 69,
+"var": "var11",
+"old": "            Optional var11 = this.m_8_Optional(var5);",
+"new": "            var var11 = this.m_8_Optional(var5);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C46.java",
+"line": 64,
+"end": 116,
+"var": "var14",
+"old": "            HashSet var14 = new HashSet();",
+"new": "            HashSet<UUID> var14 = new HashSet<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4b.java",
+"line": 893,
+"end": 904,
+"var": "var5",
+"old": "      NonNullList var5 = var1.getMenu().slots;",
+"new": "      var var5 = var1.getMenu().slots;"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4b.java",
+"line": 907,
+"end": 918,
+"var": "var4",
+"old": "      NonNullList var4 = var1.getMenu().slots;",
+"new": "      var var4 = var1.getMenu().slots;"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4l.java",
+"line": 438,
+"end": 459,
+"var": "var8",
+"old": "         Supplier var8 = m_0_Supplier();",
+"new": "         var var8 = m_0_Supplier();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4l.java",
+"line": 512,
+"end": 563,
+"var": "var10",
+"old": "      Supplier var10 = m_0_Supplier();",
+"new": "      var var10 = m_0_Supplier();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4l.java",
+"line": 583,
+"end": 597,
+"var": "var10",
+"old": "      Supplier var10 = m_0_Supplier();",
+"new": "      var var10 = m_0_Supplier();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4l.java",
+"line": 608,
+"end": 618,
+"var": "var4",
+"old": "      Supplier var4 = m_0_Supplier();",
+"new": "      var var4 = m_0_Supplier();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4l.java",
+"line": 621,
+"end": 629,
+"var": "var3",
+"old": "      Supplier var3 = m_0_Supplier();",
+"new": "      var var3 = m_0_Supplier();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4n.java",
+"line": 887,
+"end": 912,
+"var": "var8",
+"old": "      ArrayList var8 = new ArrayList();",
+"new": "      ArrayList<Integer> var8 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4n.java",
+"line": 1065,
+"end": 1091,
+"var": "var3",
+"old": "         ArrayList var3 = new ArrayList();",
+"new": "         ArrayList<ArmorStand> var3 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4q.java",
+"line": 167,
+"end": 188,
+"var": "var4",
+"old": "      ArrayList var4 = new ArrayList();",
+"new": "      ArrayList<BooleanSupplier> var4 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4r.java",
+"line": 54,
+"end": 61,
+"var": "var4",
+"old": "            List var4 = C5c.m_7_List();",
+"new": "            var var4 = C5c.m_7_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4r.java",
+"line": 58,
+"end": 60,
+"var": "var5",
+"old": "               Set var5 = Set.copyOf(var4);",
+"new": "               var var5 = Set.copyOf(var4);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4r.java",
+"line": 68,
+"end": 87,
+"var": "var4",
+"old": "         List var4 = C5c.m_7_List();",
+"new": "         var var4 = C5c.m_7_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4r.java",
+"line": 69,
+"end": 87,
+"var": "var5",
+"old": "         List var5 = C5c.m_6_List();",
+"new": "         var var5 = C5c.m_6_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4u.java",
+"line": 216,
+"end": 289,
+"var": "var8",
+"old": "         ArrayList var8 = new ArrayList(this.f_9j.size());",
+"new": "         ArrayList<C4u.C0> var8 = new ArrayList<>(this.f_9j.size());"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4u.java",
+"line": 217,
+"end": 289,
+"var": "var9",
+"old": "         Iterator var9 = this.f_9j.iterator();",
+"new": "         var var9 = this.f_9j.iterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4v.java",
+"line": 34,
+"end": 46,
+"var": "var4",
+"old": "         List var4 = this.m_9_List();",
+"new": "         var var4 = this.m_9_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4w.java",
+"line": 61,
+"end": 84,
+"var": "var13",
+"old": "         Iterator var13 = this.f_2_o.values().iterator();",
+"new": "         var var13 = this.f_2_o.values().iterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4z.java",
+"line": 307,
+"end": 309,
+"var": "var4",
+"old": "      Optional var4 = C8a.f_9.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get(Enchantments.MULTISHOT);",
+"new": "      var var4 = C8a.f_9.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get(Enchantments.MULTISHOT);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4z.java",
+"line": 538,
+"end": 546,
+"var": "var13",
+"old": "         Optional var13 = var12.clip(var1, var2);",
+"new": "         var var13 = var12.clip(var1, var2);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4z.java",
+"line": 573,
+"end": 603,
+"var": "var6",
+"old": "      List var6 = this.m_7_List(var3.f_4l);",
+"new": "      var var6 = this.m_7_List(var3.f_4l);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4z.java",
+"line": 642,
+"end": 674,
+"var": "var9",
+"old": "      Iterator var9 = this.f_79.entrySet().iterator();",
+"new": "      var var9 = this.f_79.entrySet().iterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4_c.java",
+"line": 99,
+"end": 152,
+"var": "var13",
+"old": "            Iterable var13 = C8a.f_9.level.entitiesForRendering();",
+"new": "            var var13 = C8a.f_9.level.entitiesForRendering();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4_d.java",
+"line": 40,
+"end": 72,
+"var": "var15",
+"old": "         Iterator var15 = this.f_7_k.entrySet().iterator();",
+"new": "         var var15 = this.f_7_k.entrySet().iterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4_g.java",
+"line": 980,
+"end": 1126,
+"var": "var15",
+"old": "      List var15 = C8a.f_9.player.getActiveEffects().stream().sorted(Comparator.reverseOrder()).toList();",
+"new": "      var var15 = C8a.f_9.player.getActiveEffects().stream().sorted(Comparator.reverseOrder()).toList();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4_g.java",
+"line": 981,
+"end": 1126,
+"var": "var16",
+"old": "      ArrayList var16 = new ArrayList();",
+"new": "      ArrayList<C4_g.C0> var16 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4_g.java",
+"line": 1141,
+"end": 1249,
+"var": "var13",
+"old": "      ArrayList var13 = new ArrayList();",
+"new": "      ArrayList<C4_g.C3> var13 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4_g.java",
+"line": 2127,
+"end": 2242,
+"var": "var22",
+"old": "      ArrayList var22 = new ArrayList();",
+"new": "      ArrayList<C4_g.C6> var22 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4_g.java",
+"line": 2722,
+"end": 2825,
+"var": "var12",
+"old": "         ArrayList var12 = new ArrayList();",
+"new": "         ArrayList<C4_g.C9> var12 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4_g.java",
+"line": 2769,
+"end": 2825,
+"var": "var21",
+"old": "         ArrayList var21 = new ArrayList(var12.size());",
+"new": "         ArrayList<C19> var21 = new ArrayList<>(var12.size());"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4_g.java",
+"line": 3036,
+"end": 3057,
+"var": "var10",
+"old": "         Iterator var10 = this.f_62.iterator();",
+"new": "         var var10 = this.f_62.iterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4_i.java",
+"line": 138,
+"end": 189,
+"var": "var12",
+"old": "            List var12 = Screen.getTooltipFromItem(C8a.f_9, var8);",
+"new": "            var var12 = Screen.getTooltipFromItem(C8a.f_9, var8);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4_i.java",
+"line": 205,
+"end": 232,
+"var": "var9",
+"old": "      NonNullList var9 = m_0_NonNullList(var2);",
+"new": "      var var9 = m_0_NonNullList(var2);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4_i.java",
+"line": 251,
+"end": 261,
+"var": "var4",
+"old": "         NonNullList var4 = NonNullList.withSize(27, ItemStack.EMPTY);",
+"new": "         var var4 = NonNullList.withSize(27, ItemStack.EMPTY);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C4_t.java",
+"line": 28,
+"end": 59,
+"var": "var11",
+"old": "         List var11 = this.m_0_List();",
+"new": "         var var11 = this.m_0_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5.java",
+"line": 78,
+"end": 86,
+"var": "var7",
+"old": "         Optional var7 = BuiltInRegistries.ITEM.getOptional(Identifier.parse(var6.get(\"item\").getAsString()));",
+"new": "         var var7 = BuiltInRegistries.ITEM.getOptional(Identifier.parse(var6.get(\"item\").getAsString()));"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C50.java",
+"line": 165,
+"end": 215,
+"var": "var2",
+"old": "      LinkedHashSet var2 = new LinkedHashSet();",
+"new": "      LinkedHashSet<String> var2 = new LinkedHashSet<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C57.java",
+"line": 78,
+"end": 85,
+"var": "var9",
+"old": "            Optional var9 = f_5.getResourceManager().getResource(var4);",
+"new": "            var var9 = f_5.getResourceManager().getResource(var4);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5a.java",
+"line": 775,
+"end": 777,
+"var": "var4",
+"old": "         Optional var4 = BuiltInRegistries.ITEM.getOptional(Identifier.parse(var3.get(\"i\").getAsString()));",
+"new": "         var var4 = BuiltInRegistries.ITEM.getOptional(Identifier.parse(var3.get(\"i\").getAsString()));"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5c.java",
+"line": 68,
+"end": 93,
+"var": "var4",
+"old": "      List var4 = var1.m_0_List();",
+"new": "      var var4 = var1.m_0_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5c.java",
+"line": 96,
+"end": 109,
+"var": "var4",
+"old": "      List var4 = var1.m_0_List();",
+"new": "      var var4 = var1.m_0_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5d.java",
+"line": 430,
+"end": 444,
+"var": "var1",
+"old": "      Registry var1 = f_9.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);",
+"new": "      var var1 = f_9.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5d.java",
+"line": 448,
+"end": 450,
+"var": "var1",
+"old": "         Registry var1 = f_9.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);",
+"new": "         var var1 = f_9.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5f.java",
+"line": 126,
+"end": 162,
+"var": "var21",
+"old": "                        Iterator var21 = var20.iterator();",
+"new": "                        var var21 = var20.iterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5h.java",
+"line": 111,
+"end": 119,
+"var": "var10",
+"old": "      Optional var10 = var9.clip(var6, var8);",
+"new": "      var var10 = var9.clip(var6, var8);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5h.java",
+"line": 126,
+"end": 134,
+"var": "var11",
+"old": "      Optional var11 = var10.clip(var7, var9);",
+"new": "      var var11 = var10.clip(var7, var9);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5q.java",
+"line": 162,
+"end": 165,
+"var": "var7",
+"old": "      List var7 = m_8(var4, var0);",
+"new": "      var var7 = m_8(var4, var0);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5q.java",
+"line": 202,
+"end": 205,
+"var": "var9",
+"old": "      List var9 = m_8(var6, var3);",
+"new": "      var var9 = m_8(var6, var3);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5q.java",
+"line": 322,
+"end": 328,
+"var": "var6",
+"old": "         List var6 = m_8(List.of(\"parse\", \"stop\", \"list\"), var3);",
+"new": "         var var6 = m_8(List.of(\"parse\", \"stop\", \"list\"), var3);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5r.java",
+"line": 124,
+"end": 142,
+"var": "var4",
+"old": "               List var4 = var0.getTooltipLines(TooltipContext.of(var3.level), var3.player, TooltipFlag.NORMAL);",
+"new": "               var var4 = var0.getTooltipLines(TooltipContext.of(var3.level), var3.player, TooltipFlag.NORMAL);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5r.java",
+"line": 243,
+"end": 279,
+"var": "var7",
+"old": "         ArrayList var7 = new ArrayList();",
+"new": "         ArrayList<Component> var7 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5s.java",
+"line": 220,
+"end": 226,
+"var": "var6",
+"old": "               Set var6 = var4.relatives();",
+"new": "               var var6 = var4.relatives();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5t.java",
+"line": 584,
+"end": 663,
+"var": "var8",
+"old": "      List var8 = this.f_1c.m_7_List();",
+"new": "      var var8 = this.f_1c.m_7_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5t.java",
+"line": 761,
+"end": 776,
+"var": "var27",
+"old": "         List var27 = m_1(var15.motd);",
+"new": "         var var27 = m_1(var15.motd);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5t.java",
+"line": 1484,
+"end": 1494,
+"var": "var5",
+"old": "            Pair var5 = m_4_Minecraft().createWorldOpenFlows().recreateWorldData(var4);",
+"new": "            var var5 = m_4_Minecraft().createWorldOpenFlows().recreateWorldData(var4);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5t.java",
+"line": 1662,
+"end": 1676,
+"var": "var6",
+"old": "         List var6 = this.f_1c.m_7_List();",
+"new": "         var var6 = this.f_1c.m_7_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5_a.java",
+"line": 220,
+"end": 237,
+"var": "var6",
+"old": "         List var6 = this.m_4_List();",
+"new": "         var var6 = this.m_4_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5_a.java",
+"line": 244,
+"end": 261,
+"var": "var5",
+"old": "         List var5 = this.m_4_List();",
+"new": "         var var5 = this.m_4_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5_b.java",
+"line": 61,
+"end": 79,
+"var": "var3",
+"old": "      Collection var3 = C5s.m_5_Collection();",
+"new": "      var var3 = C5s.m_5_Collection();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5_g.java",
+"line": 55,
+"end": 79,
+"var": "var4",
+"old": "      List var4 = this.f_5.get(var1.getClass());",
+"new": "      var var4 = this.f_5.get(var1.getClass());"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5_q.java",
+"line": 368,
+"end": 394,
+"var": "var21",
+"old": "                     List var21 = this.m_8_List();",
+"new": "                     var var21 = this.m_8_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5_q.java",
+"line": 602,
+"end": 611,
+"var": "var25",
+"old": "               List var25 = this.m_7_List();",
+"new": "               var var25 = this.m_7_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5_q.java",
+"line": 740,
+"end": 751,
+"var": "var62",
+"old": "                     List var62 = this.m_8_List();",
+"new": "                     var var62 = this.m_8_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5_v.java",
+"line": 77,
+"end": 114,
+"var": "var7",
+"old": "      List var7 = C7x.m_9_C7x().m_9_List();",
+"new": "      var var7 = C7x.m_9_C7x().m_9_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C5_x.java",
+"line": 227,
+"end": 240,
+"var": "var4",
+"old": "      List var4 = this.m_6_List();",
+"new": "      var var4 = this.m_6_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6a.java",
+"line": 36,
+"end": 47,
+"var": "var3",
+"old": "      Registry var3 = var0.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);",
+"new": "      var var3 = var0.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6c.java",
+"line": 60,
+"end": 71,
+"var": "var7",
+"old": "      List var7 = this.m_9_List();",
+"new": "      var var7 = this.m_9_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6k.java",
+"line": 15,
+"end": 21,
+"var": "var3",
+"old": "      List var3 = f_4.get();",
+"new": "      var var3 = f_4.get();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6o.java",
+"line": 232,
+"end": 250,
+"var": "var7",
+"old": "      List var7 = m_2_List();",
+"new": "      var var7 = m_2_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6o.java",
+"line": 239,
+"end": 250,
+"var": "var9",
+"old": "      List var9 = this.m_3_List(var7);",
+"new": "      var var9 = this.m_3_List(var7);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6o.java",
+"line": 344,
+"end": 373,
+"var": "var7",
+"old": "      List var7 = m_1_List(var1);",
+"new": "      var var7 = m_1_List(var1);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6o.java",
+"line": 480,
+"end": 521,
+"var": "var8",
+"old": "      List var8 = m_2_List();",
+"new": "      var var8 = m_2_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6o.java",
+"line": 546,
+"end": 582,
+"var": "var21",
+"old": "      List var21 = m_1_List(var1);",
+"new": "      var var21 = m_1_List(var1);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6y.java",
+"line": 66,
+"end": 106,
+"var": "var4",
+"old": "      HashSet var4 = new HashSet();",
+"new": "      HashSet<BlockPos> var4 = new HashSet<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6y.java",
+"line": 73,
+"end": 106,
+"var": "var15",
+"old": "      ArrayDeque var15 = new ArrayDeque();",
+"new": "      ArrayDeque<BlockPos> var15 = new ArrayDeque<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6_a.java",
+"line": 118,
+"end": 164,
+"var": "var14",
+"old": "      List var14 = m_4(var1.getAsJsonArray(\"tags\"));",
+"new": "      var var14 = m_4(var1.getAsJsonArray(\"tags\"));"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6_a.java",
+"line": 119,
+"end": 164,
+"var": "var16",
+"old": "      List var16 = m_1_List(var1.getAsJsonArray(\"props\"));",
+"new": "      var var16 = m_1_List(var1.getAsJsonArray(\"props\"));"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6_a.java",
+"line": 757,
+"end": 784,
+"var": "var4",
+"old": "         List var4 = m_1_List(var1.getAsJsonArray(\"l\"));",
+"new": "         var var4 = m_1_List(var1.getAsJsonArray(\"l\"));"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6_c.java",
+"line": 277,
+"end": 305,
+"var": "var3",
+"old": "         ArrayList var3 = new ArrayList();",
+"new": "         ArrayList<String> var3 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6_d.java",
+"line": 35,
+"end": 83,
+"var": "var9",
+"old": "      final ArrayList var9 = new ArrayList();",
+"new": "      final ArrayList<C6_d.C5> var9 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6_d.java",
+"line": 66,
+"end": 71,
+"var": "var17",
+"old": "                  Optional var17 = var16.f_3__.move(var16.f_3_w.scale(var3)).inflate(var10).clip(var1, var9x);",
+"new": "                  var var17 = var16.f_3__.move(var16.f_3_w.scale(var3)).inflate(var10).clip(var1, var9x);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6_r.java",
+"line": 72,
+"end": 79,
+"var": "var3",
+"old": "      List var3 = Onetap.f_7_r.m_2_List();",
+"new": "      var var3 = Onetap.f_7_r.m_2_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6_s.java",
+"line": 415,
+"end": 439,
+"var": "var7",
+"old": "      ArrayList var7 = new ArrayList(var6 - var5);",
+"new": "      ArrayList<C6_s.C2> var7 = new ArrayList<>(var6 - var5);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C6_s.java",
+"line": 429,
+"end": 432,
+"var": "var11",
+"old": "               List var11 = m_5(var10, var4);",
+"new": "               var var11 = m_5(var10, var4);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C7.java",
+"line": 75,
+"end": 149,
+"var": "var3",
+"old": "      List var3 = this.m_2_List();",
+"new": "      var var3 = this.m_2_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C74.java",
+"line": 44,
+"end": 60,
+"var": "var7",
+"old": "      List var7 = C7q.m_4_List();",
+"new": "      var var7 = C7q.m_4_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C74.java",
+"line": 49,
+"end": 60,
+"var": "var8",
+"old": "      List var8 = this.m_9_List();",
+"new": "      var var8 = this.m_9_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C74.java",
+"line": 169,
+"end": 198,
+"var": "var6",
+"old": "      List var6 = m_7(this.f_3_f);",
+"new": "      var var6 = m_7(this.f_3_f);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C74.java",
+"line": 378,
+"end": 407,
+"var": "var15",
+"old": "      List var15 = m_7(this.f_3_f);",
+"new": "      var var15 = m_7(this.f_3_f);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C7k.java",
+"line": 93,
+"end": 116,
+"var": "var15",
+"old": "            List var15 = m_3(var1, var2, var8);",
+"new": "            var var15 = m_3(var1, var2, var8);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C7k.java",
+"line": 199,
+"end": 202,
+"var": "var19",
+"old": "            List var19 = m_2(var0, var1, var2, var3, var7, var8, var11, var17, var13, var14);",
+"new": "            var var19 = m_2(var0, var1, var2, var3, var7, var8, var11, var17, var13, var14);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C7k.java",
+"line": 439,
+"end": 474,
+"var": "var10",
+"old": "      ArrayList var10 = new ArrayList(var2 - var1);",
+"new": "      ArrayList<C7k.C9> var10 = new ArrayList<>(var2 - var1);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C7k.java",
+"line": 620,
+"end": 674,
+"var": "var7",
+"old": "      ArrayList var7 = new ArrayList();",
+"new": "      ArrayList<C7k.C1> var7 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C7k.java",
+"line": 646,
+"end": 673,
+"var": "var15",
+"old": "         ArrayList var15 = new ArrayList();",
+"new": "         ArrayList<C7k.C1> var15 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C7k.java",
+"line": 724,
+"end": 775,
+"var": "var10",
+"old": "      ArrayList var10 = new ArrayList();",
+"new": "      ArrayList<Integer> var10 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C7k.java",
+"line": 1011,
+"end": 1083,
+"var": "var24",
+"old": "      List var24 = m_7(var23, var9);",
+"new": "      var var24 = m_7(var23, var9);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C7k.java",
+"line": 1193,
+"end": 1195,
+"var": "var2",
+"old": "         List var2 = m_7_List(var0.above(), var1);",
+"new": "         var var2 = m_7_List(var0.above(), var1);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C7m.java",
+"line": 46,
+"end": 55,
+"var": "var6",
+"old": "      Registry var6 = var5.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);",
+"new": "      var var6 = var5.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C7m.java",
+"line": 79,
+"end": 94,
+"var": "var5",
+"old": "      Registry var5 = var4.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);",
+"new": "      var var5 = var4.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C7o.java",
+"line": 87,
+"end": 129,
+"var": "var18",
+"old": "            Supplier var18 = m_8(var16, var3, var4);",
+"new": "            var var18 = m_8(var16, var3, var4);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C83.java",
+"line": 100,
+"end": 121,
+"var": "var7",
+"old": "         List var7 = this.f_6n.m_9_List();",
+"new": "         var var7 = this.f_6n.m_9_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C83.java",
+"line": 270,
+"end": 274,
+"var": "var6",
+"old": "         List var6 = C6_a.m_1_List(this.f_6_k.getAsJsonArray(\"blw\"));",
+"new": "         var var6 = C6_a.m_1_List(this.f_6_k.getAsJsonArray(\"blw\"));"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C84.java",
+"line": 213,
+"end": 224,
+"var": "var8",
+"old": "            Map var8 = m_8(var7);",
+"new": "            var var8 = m_8(var7);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C84.java",
+"line": 387,
+"end": 432,
+"var": "var10",
+"old": "         Optional var10 = ServerNameResolver.DEFAULT.resolveAddress(var3).map(ResolvedServerAddress::asInetSocketAddress);",
+"new": "         var var10 = ServerNameResolver.DEFAULT.resolveAddress(var3).map(ResolvedServerAddress::asInetSocketAddress);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C84.java",
+"line": 616,
+"end": 618,
+"var": "var3",
+"old": "      Map var3 = m_1_Map(var0);",
+"new": "      var var3 = m_1_Map(var0);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C84.java",
+"line": 621,
+"end": 628,
+"var": "var4",
+"old": "      Map var4 = m_1_Map(var0);",
+"new": "      var var4 = m_1_Map(var0);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C88.java",
+"line": 177,
+"end": 253,
+"var": "var10",
+"old": "      ArrayList var10 = new ArrayList(var1.size());",
+"new": "      ArrayList<Integer> var10 = new ArrayList<>(var1.size());"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8k.java",
+"line": 90,
+"end": 96,
+"var": "var3",
+"old": "      List var3 = Onetap.f_7_k.m_8_List().stream().filter(var0 -> var0.m_6_int() > 0).toList();",
+"new": "      var var3 = Onetap.f_7_k.m_8_List().stream().filter(var0 -> var0.m_6_int() > 0).toList();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8l.java",
+"line": 249,
+"end": 277,
+"var": "var9",
+"old": "         ArrayList var9 = new ArrayList(var8.size());",
+"new": "         ArrayList<ItemStack> var9 = new ArrayList<>(var8.size());"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8l.java",
+"line": 294,
+"end": 302,
+"var": "var19",
+"old": "               Class var19 = C8a.f_9.gameMode.getClass();",
+"new": "               var var19 = C8a.f_9.gameMode.getClass();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8l.java",
+"line": 318,
+"end": 324,
+"var": "var10000",
+"old": "               Class var10000 = C8a.f_9.gameMode.getClass();",
+"new": "               var var10000 = C8a.f_9.gameMode.getClass();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8l.java",
+"line": 354,
+"end": 357,
+"var": "var10000",
+"old": "         Class var10000 = var3.getClass();",
+"new": "         var var10000 = var3.getClass();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8r.java",
+"line": 100,
+"end": 102,
+"var": "var10",
+"old": "            List var10 = List.of(var8.substring(var9).trim().split(\"\\\\s+\"));",
+"new": "            var var10 = List.of(var8.substring(var9).trim().split(\"\\\\s+\"));"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8v.java",
+"line": 99,
+"end": 107,
+"var": "var18",
+"old": "         List var18 = m_7(var10);",
+"new": "         var var18 = m_7(var10);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8v.java",
+"line": 114,
+"end": 124,
+"var": "var6",
+"old": "         List var6 = m_7(var5);",
+"new": "         var var6 = m_7(var5);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8x.java",
+"line": 37,
+"end": 39,
+"var": "var4",
+"old": "      NonNullList var4 = var0.getMenu().slots;",
+"new": "      var var4 = var0.getMenu().slots;"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8_l.java",
+"line": 15,
+"end": 18,
+"var": "var5",
+"old": "      List var5 = List.of(var2);",
+"new": "      var var5 = List.of(var2);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8_q.java",
+"line": 463,
+"end": 494,
+"var": "var5",
+"old": "      List var5 = Entity.collectAllColliders(this.f_3o, this.f_3o.level(), var4.expandTowards(var1));",
+"new": "      var var5 = Entity.collectAllColliders(this.f_3o, this.f_3o.level(), var4.expandTowards(var1));"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8_q.java",
+"line": 471,
+"end": 491,
+"var": "var12",
+"old": "         List var12 = Entity.collectAllColliders(this.f_3o, this.f_3o.level(), var11.expandTowards(new Vec3(var1.x, this.f_3o.maxUpStep(), var1.z)));",
+"new": "         var var12 = Entity.collectAllColliders(this.f_3o, this.f_3o.level(), var11.expandTowards(new Vec3(var1.x, this.f_3o.maxUpStep(), var1.z)));"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8_q.java",
+"line": 480,
+"end": 491,
+"var": "var17",
+"old": "         List var17 = Entity.collectAllColliders(this.f_3o, this.f_3o.level(), var16.expandTowards(var1.x, 0.0, var1.z));",
+"new": "         var var17 = Entity.collectAllColliders(this.f_3o, this.f_3o.level(), var16.expandTowards(var1.x, 0.0, var1.z));"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8_q.java",
+"line": 488,
+"end": 490,
+"var": "var20",
+"old": "            List var20 = Entity.collectAllColliders(this.f_3o, this.f_3o.level(), var19.expandTowards(0.0, -var13.y + var1.y, 0.0));",
+"new": "            var var20 = Entity.collectAllColliders(this.f_3o, this.f_3o.level(), var19.expandTowards(0.0, -var13.y + var1.y, 0.0));"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8_v.java",
+"line": 75,
+"end": 138,
+"var": "var35",
+"old": "         List var35 = m_5(var0, var1, var3, var4, var7, var9);",
+"new": "         var var35 = m_5(var0, var1, var3, var4, var7, var9);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8_v.java",
+"line": 661,
+"end": 695,
+"var": "var18",
+"old": "      ArrayList var18 = new ArrayList();",
+"new": "      ArrayList<Vec3> var18 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8_v.java",
+"line": 703,
+"end": 739,
+"var": "var12",
+"old": "      ArrayList var12 = new ArrayList();",
+"new": "      ArrayList<Vec3> var12 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C8_x.java",
+"line": 145,
+"end": 147,
+"var": "var4",
+"old": "         List var4 = this.f_6.stream().map(var0 -> new MobEffectInstance(var0.m_3_t_Holder(), var0.m_9o_int(), Math.max(0, var0.m_9d() - 1))).toList();",
+"new": "         var var4 = this.f_6.stream().map(var0 -> new MobEffectInstance(var0.m_3_t_Holder(), var0.m_9o_int(), Math.max(0, var0.m_9d() - 1))).toList();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C93.java",
+"line": 79,
+"end": 163,
+"var": "var14",
+"old": "               List var14 = C7_w.f_2.m_1_List();",
+"new": "               var var14 = C7_w.f_2.m_1_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C95.java",
+"line": 53,
+"end": 102,
+"var": "var4",
+"old": "         ArrayList var4 = new ArrayList();",
+"new": "         ArrayList<C3_w> var4 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9g.java",
+"line": 71,
+"end": 74,
+"var": "var10000",
+"old": "                  Class var10000 = var3.getClass();",
+"new": "                  var var10000 = var3.getClass();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9g.java",
+"line": 87,
+"end": 94,
+"var": "var5",
+"old": "         Map var5 = var2x.getValue();",
+"new": "         var var5 = var2x.getValue();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9g.java",
+"line": 104,
+"end": 121,
+"var": "var10",
+"old": "            Map var10 = f_0.get(var9);",
+"new": "            var var10 = f_0.get(var9);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9l.java",
+"line": 59,
+"end": 81,
+"var": "var4",
+"old": "            List var4 = m_3_List();",
+"new": "            var var4 = m_3_List();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_n.java",
+"line": 68,
+"end": 102,
+"var": "var5",
+"old": "      Supplier var5 = m_7_Supplier(var2);",
+"new": "      var var5 = m_7_Supplier(var2);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_n.java",
+"line": 105,
+"end": 111,
+"var": "var4",
+"old": "      Supplier var4 = m_7_Supplier(var1);",
+"new": "      var var4 = m_7_Supplier(var1);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_n.java",
+"line": 114,
+"end": 126,
+"var": "var7",
+"old": "      Supplier var7 = m_7_Supplier(var4);",
+"new": "      var var7 = m_7_Supplier(var4);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_n.java",
+"line": 130,
+"end": 252,
+"var": "var6",
+"old": "         Supplier var6 = m_7_Supplier(var2);",
+"new": "         var var6 = m_7_Supplier(var2);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_n.java",
+"line": 139,
+"end": 252,
+"var": "var15",
+"old": "         List var15 = C8a.f_9.player.getActiveEffects().stream().sorted(Comparator.reverseOrder()).toList();",
+"new": "         var var15 = C8a.f_9.player.getActiveEffects().stream().sorted(Comparator.reverseOrder()).toList();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_n.java",
+"line": 140,
+"end": 252,
+"var": "var16",
+"old": "         ArrayList var16 = new ArrayList();",
+"new": "         ArrayList<C9_n.C9> var16 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_n.java",
+"line": 256,
+"end": 315,
+"var": "var5",
+"old": "      Supplier var5 = m_7_Supplier(var2);",
+"new": "      var var5 = m_7_Supplier(var2);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_n.java",
+"line": 262,
+"end": 315,
+"var": "var11",
+"old": "      List var11 = Onetap.f_7_k.m_8_List().stream().filter(var0x -> var0x.m_6_int() != -1).toList();",
+"new": "      var var11 = Onetap.f_7_k.m_8_List().stream().filter(var0x -> var0x.m_6_int() != -1).toList();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_n.java",
+"line": 319,
+"end": 407,
+"var": "var5",
+"old": "      Supplier var5 = m_7_Supplier(var2);",
+"new": "      var var5 = m_7_Supplier(var2);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_n.java",
+"line": 325,
+"end": 407,
+"var": "var11",
+"old": "      ArrayList var11 = new ArrayList();",
+"new": "      ArrayList<C9_n.C7> var11 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_n.java",
+"line": 429,
+"end": 519,
+"var": "var3",
+"old": "         Supplier var3 = m_7_Supplier(var0);",
+"new": "         var var3 = m_7_Supplier(var0);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_u.java",
+"line": 111,
+"end": 237,
+"var": "var8",
+"old": "         ArrayList var8 = new ArrayList();",
+"new": "         ArrayList<Long> var8 = new ArrayList<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_u.java",
+"line": 132,
+"end": 237,
+"var": "var24",
+"old": "         LinkedHashSet var24 = new LinkedHashSet();",
+"new": "         LinkedHashSet<Long> var24 = new LinkedHashSet<>();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_u.java",
+"line": 159,
+"end": 237,
+"var": "var32",
+"old": "         Iterator var32 = this.f_8.keySet().iterator();",
+"new": "         var var32 = this.f_8.keySet().iterator();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_z.java",
+"line": 43,
+"end": 47,
+"var": "var4",
+"old": "            Class var4 = Class.forName(\"com.viaversion.viafabricplus.screen.impl.PerServerVersionScreen\");",
+"new": "            var var4 = Class.forName(\"com.viaversion.viafabricplus.screen.impl.PerServerVersionScreen\");"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_z.java",
+"line": 63,
+"end": 66,
+"var": "var10001",
+"old": "            Class var10001 = var2.getClass();",
+"new": "            var var10001 = var2.getClass();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_z.java",
+"line": 91,
+"end": 102,
+"var": "var4",
+"old": "         Class var4 = Class.forName(var0);",
+"new": "         var var4 = Class.forName(var0);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_z.java",
+"line": 126,
+"end": 128,
+"var": "var4",
+"old": "            Class var4 = Class.forName(\"com.viaversion.viaversion.api.protocol.version.ProtocolVersion\");",
+"new": "            var var4 = Class.forName(\"com.viaversion.viaversion.api.protocol.version.ProtocolVersion\");"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\C9_z.java",
+"line": 139,
+"end": 142,
+"var": "var10000",
+"old": "         Class var10000 = var0.getClass();",
+"new": "         var var10000 = var0.getClass();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\w.java",
+"line": 164,
+"end": 167,
+"var": "var7",
+"old": "                  Class var7 = var2[var6];",
+"new": "                  var var7 = var2[var6];"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\w.java",
+"line": 266,
+"end": 279,
+"var": "var2",
+"old": "      ArrayList var2 = b(var0);",
+"new": "      var var2 = b(var0);"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\w.java",
+"line": 300,
+"end": 317,
+"var": "var3",
+"old": "      Class var3 = var0.getSuperclass();",
+"new": "      var var3 = var0.getSuperclass();"
+},
+{
+"file": "C:\\Users\\eiema\\OneDrive\\Desktop\\Moonward_Portable\\moonward-source\\project\\src\\main\\java\\wtf\\onetap\\w.java",
+"line": 310,
+"end": 316,
+"var": "var6",
+"old": "         Class var6 = var4[var5];",
+"new": "         var var6 = var4[var5];"
+}
+]

@@ -1,0 +1,36 @@
+package baritone.utils.schematic;
+
+import baritone.api.schematic.AbstractSchematic;
+import baritone.api.schematic.IStaticSchematic;
+import java.util.List;
+import net.minecraft.world.level.block.state.BlockState;
+
+public class StaticSchematic extends AbstractSchematic implements IStaticSchematic {
+   protected BlockState[][][] states;
+
+   public StaticSchematic() {
+   }
+
+   public StaticSchematic(BlockState[][][] var1) {
+      this.states = var1;
+      boolean var2 = var1.length == 0 || var1[0].length == 0 || var1[0][0].length == 0;
+      this.x = var2 ? 0 : var1.length;
+      this.z = var2 ? 0 : var1[0].length;
+      this.y = var2 ? 0 : var1[0][0].length;
+   }
+
+   @Override
+   public BlockState desiredState(int var1, int var2, int var3, BlockState var4, List<BlockState> var5) {
+      return this.states[var1][var3][var2];
+   }
+
+   @Override
+   public BlockState getDirect(int var1, int var2, int var3) {
+      return this.states[var1][var3][var2];
+   }
+
+   @Override
+   public BlockState[] getColumn(int var1, int var2) {
+      return this.states[var1][var2];
+   }
+}
