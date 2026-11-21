@@ -28,13 +28,35 @@ jobs:
             "https://github.com/kokobashka-alt/Plusclient2/releases/download/Alpha/Moonward-recovered.rar" \
             -o /tmp/Moonward-recovered.rar
 
-      - name: Extract into repository root
+          test -s /tmp/Moonward-recovered.rar
+
+      - name: Extract archive
         run: |
           set -euo pipefail
-          unrar-free -x /tmp/Moonward-recovered.rar ./
+
+          mkdir -p /tmp/moonward
+          unrar-free -x /tmp/Moonward-recovered.rar /tmp/moonward/
+
+          echo "Archive structure:"
+          find /tmp/moonward -maxdepth 3 -print
+
+      - name: Move files into repository root
+        run: |
+          set -euo pipefail
+
+          SOURCE="/tmp/moonward/Moonward-recovered"
+
+          if [ ! -d "$SOURCE" ]; then
+            echo "ERROR: Moonward-recovered folder not found"
+            exit 1
+          fi
+
+          cp -a "$SOURCE/." ./
+
+          echo "Repository root after extraction:"
           ls -la
 
-      - name: Commit extracted files
+      - name: Commit changes
         run: |
           set -euo pipefail
 
@@ -46,7 +68,13 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Extract Moonward archive into repository root"
+            git commit -m "Import Moonward recovered files"
             git push
           fi
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -rf /tmp/moonward
+          rm -f /tmp/Moonward-recovered.rar
           
