@@ -25,16 +25,13 @@ jobs:
           set -euo pipefail
 
           curl -fL --retry 3 \
-            "https://github.com/kokobashka-alt/Plusclient2/releases/download/untagged-3a9e540418b6764c91f7/Moonward-recovered.rar" \
+            "https://github.com/kokobashka-alt/Plusclient2/releases/download/Alpha/Moonward-recovered.rar" \
             -o /tmp/Moonward-recovered.rar
 
       - name: Extract into repository root
         run: |
           set -euo pipefail
-
           unrar-free -x /tmp/Moonward-recovered.rar ./
-
-          echo "Root directory:"
           ls -la
 
       - name: Commit extracted files
