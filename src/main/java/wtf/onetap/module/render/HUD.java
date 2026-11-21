@@ -850,7 +850,7 @@ public class HUD extends Module {
       float floatValue17 = Draw2D.getCenteredY("\uf017", Fonts.SUPPLIER8, floatValue8, floatValue4, floatValue6);
       float floatValue18 = Draw2D.getCenteredY("•", Fonts.SUPPLIER18, floatValue10, floatValue4, floatValue6);
       float floatValue19 = Draw2D.getTextWidth("•", Fonts.SUPPLIER18, floatValue10);
-      float floatValue20 = Draw2D.getTextWidth("Moonward", Fonts.SUPPLIER18, floatValue7);
+      float floatValue20 = Draw2D.getTextWidth("De_Otpor", Fonts.SUPPLIER18, floatValue7);
       float floatValue21 = Draw2D.getTextWidth(" 26.2", Fonts.SUPPLIER18, floatValue7);
       float floatValue22 = Draw2D.getTextWidth(text3, Fonts.SUPPLIER18, floatValue7);
       float floatValue23 = Draw2D.getTextWidth(text4, Fonts.SUPPLIER18, floatValue7);
