@@ -893,7 +893,7 @@ public class HUD extends Module {
       Draw2D.drawTextWithShadow("\ue900", Fonts.SUPPLIER6, floatValue34, floatValue33, ColorUtil.rgba(255, 255, 255, 255), floatValue13);
       floatValue30 += floatValue12 + floatValue9;
       float floatValue35 = (float)(System.currentTimeMillis() % 4000L) / 4000.0F;
-      Draw2D.m_9("Moonward", Fonts.SUPPLIER18, floatValue30, floatValue14, value6, value7, floatValue7, floatValue35);
+      Draw2D.m_9("De_Otpor", Fonts.SUPPLIER18, floatValue30, floatValue14, value6, value7, floatValue7, floatValue35);
       floatValue30 += floatValue20;
       Draw2D.drawStyledText(" 26.2", Fonts.SUPPLIER18, floatValue30, floatValue14, value5, floatValue7);
       floatValue30 += floatValue21 + floatValue11;
