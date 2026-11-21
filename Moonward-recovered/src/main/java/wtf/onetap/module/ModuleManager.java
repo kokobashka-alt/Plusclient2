@@ -105,7 +105,6 @@ import wtf.onetap.module.player.PotionSwap;
 import wtf.onetap.module.player.RPSpoofer;
 import wtf.onetap.module.player.SendCoords;
 import wtf.onetap.module.player.StaffExploit;
-import wtf.onetap.module.player.VoiceChat;
 import wtf.onetap.module.pve.ActionRecorder;
 import wtf.onetap.module.pve.AutoAppleFarm;
 import wtf.onetap.module.pve.AutoBuy;
@@ -355,7 +354,6 @@ public class ModuleManager {
          new AreaBreak(),
          new BackTrack(),
          new SendCoords(),
-         new VoiceChat(),
          new NoInteract(),
          new NoCommands(),
          new ChatCorrector(),
