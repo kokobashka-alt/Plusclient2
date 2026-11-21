@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -16,8 +16,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult.Success;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResult.Success;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -60,7 +60,7 @@ import wtf.onetap.util.Rotations;
 import wtf.onetap.util.TickExecutor;
 import wtf.onetap.util.TimeHelper;
 
-@ModuleInformation(name = "CrystalAura", description = "Автоматически ставит обсидиан/кристал в выгодных условиях", category = Category.COMBAT)
+@ModuleInformation(name = "CrystalAura", description = "Быстрая и умная авто-установка и взрыв кристаллов", category = Category.COMBAT)
 public class CrystalAura extends Module {
    private static final LatencyStats.StateHolder C0 = LatencyStats.getOrCreate("CrystalAura targets");
    private static final LatencyStats.StateHolder C02 = LatencyStats.getOrCreate("CrystalAura boxes");
@@ -70,16 +70,19 @@ public class CrystalAura extends Module {
    private static final LatencyStats.StateHolder C06 = LatencyStats.getOrCreate("CrystalAura hold");
    private static final LatencyStats.StateHolder C07 = LatencyStats.getOrCreate("CrystalAura deferred");
    private static final double[] DOUBLE_VALUE_ARRAY = new double[32];
+
    private final FloatSetting placeRange = new FloatSetting("Дальность установки", 4.5F, 3.0F, 6.0F, 0.1F).build();
-   private final FloatSetting explosionRange = new FloatSetting("Дальность взрыва", 3.0F, 1.0F, 6.0F, 0.1F).build();
-   private final FloatSetting minEnemyDamage = new FloatSetting("Мин. урон врагу", 6.0F, 1.0F, 20.0F, 0.5F).build();
-   private final FloatSetting maxSelfDamage = new FloatSetting("Макс. урон себе", 8.0F, 0.0F, 20.0F, 0.5F).build();
+   private final FloatSetting explosionRange = new FloatSetting("Дальность взрыва", 3.5F, 1.0F, 6.0F, 0.1F).build();
+   private final FloatSetting minEnemyDamage = new FloatSetting("Мин. урон врагу", 5.5F, 1.0F, 20.0F, 0.5F).build();
+   private final FloatSetting maxSelfDamage = new FloatSetting("Макс. урон себе", 8.5F, 0.0F, 20.0F, 0.5F).build();
    private final FloatSetting predictTickCount = new FloatSetting("Предикт тиков", 2.0F, 0.0F, 4.0F, 1.0F).build();
+   private final BooleanSetting fastBreak = new BooleanSetting("Быстрый взрыв", true).build();
    private final BooleanSetting autoDigUnder = new BooleanSetting("Авто подкоп", true).build();
    private final BooleanSetting renderPosition = new BooleanSetting("Рендер позиции", true).build();
    private final BooleanSetting dontBlowResources = new BooleanSetting("Не взрывать ресурсы", true).build();
-   private final BooleanSetting crystalDelay = new BooleanSetting("Задержка кристаллов", true).build();
+   private final BooleanSetting crystalDelay = new BooleanSetting("Задержка кристаллов", false).build();
    private final BooleanSetting autoWeb = new BooleanSetting("Авто паутина", false).build();
+
    private final TimeHelper timeHelper = new TimeHelper();
    private final HotbarSwitcher hotbarSwitcher = new HotbarSwitcher();
    private final Map<BlockPos, Integer> blockPosMap = new HashMap<>();
@@ -88,6 +91,7 @@ public class CrystalAura extends Module {
    private final Map<BlockPos, Integer> blockPosMap4 = new HashMap<>();
    private final Map<Integer, Integer> integerMap = new HashMap<>();
    private final List<CrystalAura.DataRecord2> c6List = new ArrayList<>();
+
    private ClientLevel clientLevel;
    private int value = -1;
    private BlockPos blockPos;
@@ -185,7 +189,7 @@ public class CrystalAura extends Module {
             TickExecutor.m_4(() -> {
                if (this.isEnabled()) {
                   long longValue2 = System.nanoTime();
-                  CrystalPlacer.setDeadline(40000000L);
+                  CrystalPlacer.setDeadline(35000000L);
                   CrystalMining.onTickStart();
 
                   try {
@@ -196,10 +200,13 @@ public class CrystalAura extends Module {
                         Onetap.LOGGER.error("CrystalAura: the async search failed", e);
                      }
                   } finally {
+                     this.flag = false;
                      CrystalMining.tickCooldown();
                      CrystalPlacer.setDeadline(0L);
                      C05.recordSince(longValue2);
                   }
+               } else {
+                  this.flag = false;
                }
             });
          }
@@ -213,17 +220,15 @@ public class CrystalAura extends Module {
          this.c6List.clear();
       }
 
-      if (!this.queue.isEmpty()) {
-         CrystalAura.DataRecord2 c6;
-         while ((c6 = this.queue.poll()) != null) {
-            this.c6List.add(c6);
-         }
+      CrystalAura.DataRecord2 c6;
+      while ((c6 = this.queue.poll()) != null) {
+         this.c6List.add(c6);
       }
    }
 
    private void m_6_n_void() {
       this.c4 = null;
-      if (this.clientLevel != MinecraftAccess.MINECRAFT.level || MinecraftAccess.MINECRAFT.player != null && MinecraftAccess.MINECRAFT.player.tickCount < this.value) {
+      if (this.clientLevel != MinecraftAccess.MINECRAFT.level || (MinecraftAccess.MINECRAFT.player != null && MinecraftAccess.MINECRAFT.player.tickCount < this.value)) {
          this.resetAll();
          this.clientLevel = MinecraftAccess.MINECRAFT.level;
       }
@@ -250,7 +255,7 @@ public class CrystalAura extends Module {
                }
 
                Vec3 vec32 = MinecraftAccess.MINECRAFT.player.getEyePosition();
-               if (this.timeHelper.getElapsed() > 4L) {
+               if (this.timeHelper.getElapsed() >= 0L) {
                   this.m_0_void(vec32);
                   if (this.blockPos7 != null) {
                      BlockPos blockPos10 = this.blockPos7;
@@ -285,15 +290,13 @@ public class CrystalAura extends Module {
                      this.blockPos8 = null;
                   }
 
-                  Set set = this.integerMap.keySet();
+                  Set<Integer> set = new HashSet<>(this.integerMap.keySet());
                   if (!this.integerMap2.isEmpty()) {
-                     HashSet set2 = new HashSet<>(this.integerMap.keySet());
                      this.integerMap2.forEach((integer, integer2) -> {
                         if (integer2 >= 2) {
-                           set2.add(integer);
+                           set.add(integer);
                         }
                      });
-                     set = set2;
                   }
 
                   EndCrystal endCrystal = this.blockPos5 == null ? null : this.findCrystalAt(this.blockPos5.above());
@@ -333,244 +336,246 @@ public class CrystalAura extends Module {
                      );
                   }
 
-                  if (endCrystal == null || !this.m_7_boolean(endCrystal)) {
-                     if (!this.tryPlaceWeb(playerList3, playerList4, vec32)) {
-                        boolean flag4 = InventoryUtil.findHotbarSlot(Items.END_CRYSTAL) >= 0;
-                        boolean flag5 = !this.blockPosMap3.isEmpty() || !this.blockPosMap4.isEmpty();
-                        boolean flag6 = !flag5 && InventoryUtil.findHotbarSlot(Items.OBSIDIAN) >= 0;
-                        boolean flag7 = flag4 && this.isDelayElapsed();
-                        var c5List2 = this.m_2(playerList3, 0);
-                        float floatValue8 = (float)CrystalInteraction.clampInteractionRange(this.placeRange.getFloat());
-                        BlockPos blockPos11 = this.blockPos3 != null ? this.blockPos3 : (this.blockPos2 != null && MinecraftAccess.MINECRAFT.player.tickCount - this.value3 <= 80 ? this.blockPos2 : null);
-                        var blockPosSet = this.getBlockedPositions();
-                        CrystalPlacer.DataRecord2 c2 = flag4
-                           ? CrystalPlacer.m_7(
-                              c5List2,
-                              vec32,
-                              floatValue8,
-                              this.getExplosionRange(),
-                              this.maxSelfDamage.getFloat(),
-                              this.minEnemyDamage.getFloat(),
-                              this.m_9_float(),
-                              flag6,
-                              false,
-                              floatValue7,
-                              playerList4,
-                              blockPos11,
-                              blockPosSet,
-                              this.integerMap.keySet(),
-                              this::hasNearbyItems
-                           )
-                           : null;
-                        if (c2 == null
-                           && flag4
-                           && flag6
-                           && this.blockPos4 != null
-                           && this.blockPos == null
-                           && !CrystalPlacer.isObsidianOrBedrock(this.blockPos4)
-                           && MinecraftAccess.MINECRAFT.level.getBlockState(this.blockPos4).canBeReplaced()) {
-                           c2 = CrystalPlacer.m_1(
-                              this.blockPos4,
-                              c5List2,
-                              vec32,
-                              floatValue8,
-                              this.getExplosionRange(),
-                              this.maxSelfDamage.getFloat(),
-                              this.m_9_float(),
-                              true,
-                              false,
-                              floatValue7,
-                              playerList4,
-                              blockPosSet,
-                              this.integerMap.keySet(),
-                              this::hasNearbyItems
-                           );
-                        }
+                  if (endCrystal != null && this.m_7_boolean(endCrystal)) {
+                     return;
+                  }
 
-                        if (c2 == null && flag4 && flag6) {
-                           var c5List3 = this.m_2(playerList3, CrystalInteraction.getPing() * 2 + 4);
-                           c2 = CrystalPlacer.m_7(
-                              c5List3,
-                              vec32,
-                              floatValue8,
-                              this.getExplosionRange(),
-                              this.maxSelfDamage.getFloat(),
-                              this.minEnemyDamage.getFloat(),
-                              this.m_9_float(),
-                              true,
-                              false,
-                              floatValue7,
-                              playerList4,
-                              blockPos11,
-                              blockPosSet,
-                              this.integerMap.keySet(),
-                              this::hasNearbyItems
-                           );
-                        }
+                  if (!this.tryPlaceWeb(playerList3, playerList4, vec32)) {
+                     boolean flag4 = InventoryUtil.findHotbarSlot(Items.END_CRYSTAL) >= 0;
+                     boolean flag5 = !this.blockPosMap3.isEmpty() || !this.blockPosMap4.isEmpty();
+                     boolean flag6 = !flag5 && InventoryUtil.findHotbarSlot(Items.OBSIDIAN) >= 0;
+                     boolean flag7 = flag4 && this.isDelayElapsed();
+                     var c5List2 = this.m_2(playerList3, 0);
+                     float floatValue8 = (float)CrystalInteraction.clampInteractionRange(this.placeRange.getFloat());
+                     BlockPos blockPos11 = this.blockPos3 != null ? this.blockPos3 : (this.blockPos2 != null && MinecraftAccess.MINECRAFT.player.tickCount - this.value3 <= 80 ? this.blockPos2 : null);
+                     var blockPosSet = this.getBlockedPositions();
+                     CrystalPlacer.DataRecord2 c2 = flag4
+                        ? CrystalPlacer.m_7(
+                           c5List2,
+                           vec32,
+                           floatValue8,
+                           this.getExplosionRange(),
+                           this.maxSelfDamage.getFloat(),
+                           this.minEnemyDamage.getFloat(),
+                           this.m_9_float(),
+                           flag6,
+                           false,
+                           floatValue7,
+                           playerList4,
+                           blockPos11,
+                           blockPosSet,
+                           set,
+                           this::hasNearbyItems
+                        )
+                        : null;
+                     if (c2 == null
+                        && flag4
+                        && flag6
+                        && this.blockPos4 != null
+                        && this.blockPos == null
+                        && !CrystalPlacer.isObsidianOrBedrock(this.blockPos4)
+                        && MinecraftAccess.MINECRAFT.level.getBlockState(this.blockPos4).canBeReplaced()) {
+                        c2 = CrystalPlacer.m_1(
+                           this.blockPos4,
+                           c5List2,
+                           vec32,
+                           floatValue8,
+                           this.getExplosionRange(),
+                           this.maxSelfDamage.getFloat(),
+                           this.m_9_float(),
+                           true,
+                           false,
+                           floatValue7,
+                           playerList4,
+                           blockPosSet,
+                           set,
+                           this::hasNearbyItems
+                        );
+                     }
 
-                        if (c2 != null) {
-                           if (!this.m_7(c2)) {
-                              this.stopMining();
-                              this.blockPos3 = c2.m_7_i();
-                              if (c2.m_60()) {
-                                 this.tryPlaceObsidian(c2.m_7_i());
-                              } else if (!flag7) {
-                                 CrystalInteraction.DataRecord c22 = CrystalInteraction.m_6(c2.m_7_i(), vec32, this.placeRange.getFloat());
-                                 if (c22 != null) {
-                                    this.aimAt(c22.m_7a());
+                     if (c2 == null && flag4 && flag6) {
+                        var c5List3 = this.m_2(playerList3, CrystalInteraction.getPing() * 2 + 3);
+                        c2 = CrystalPlacer.m_7(
+                           c5List3,
+                           vec32,
+                           floatValue8,
+                           this.getExplosionRange(),
+                           this.maxSelfDamage.getFloat(),
+                           this.minEnemyDamage.getFloat(),
+                           this.m_9_float(),
+                           true,
+                           false,
+                           floatValue7,
+                           playerList4,
+                           blockPos11,
+                           blockPosSet,
+                           set,
+                           this::hasNearbyItems
+                        );
+                     }
+
+                     if (c2 != null) {
+                        if (!this.m_7(c2)) {
+                           this.stopMining();
+                           this.blockPos3 = c2.m_7_i();
+                           if (c2.m_60()) {
+                              this.tryPlaceObsidian(c2.m_7_i());
+                           } else if (!flag7) {
+                              CrystalInteraction.DataRecord c22 = CrystalInteraction.m_6(c2.m_7_i(), vec32, this.placeRange.getFloat());
+                              if (c22 != null) {
+                                 this.aimAt(c22.m_7a());
+                              }
+                           } else if (this.tryPlaceCrystal(c2.m_7_i())) {
+                              this.blockPos4 = null;
+                           }
+                        }
+                     } else if (flag5) {
+                        if (this.blockPos5 == null || !this.blockPosMap4.containsKey(this.blockPos5) || !this.tryPlaceCrystal(this.blockPos5)) {
+                           if (this.blockPos4 != null && flag4 && (Boolean)this.autoDigUnder.getValue()) {
+                              HashSet<BlockPos> set3 = new HashSet<>(this.blockPosMap.keySet());
+                              set3.addAll(this.blockPosMap2.keySet());
+                              CrystalPlacer.DataRecord2 c23 = CrystalPlacer.m_1(
+                                 this.blockPos4,
+                                 c5List2,
+                                 vec32,
+                                 floatValue8,
+                                 this.getExplosionRange(),
+                                 this.maxSelfDamage.getFloat(),
+                                 this.m_3_float(),
+                                 false,
+                                 true,
+                                 floatValue7,
+                                 playerList4,
+                                 set3,
+                                 set,
+                                 this::hasNearbyItems
+                              );
+                              if (c23 != null && c23.m_6y_boolean()) {
+                                 if (!this.m_7(c23)) {
+                                    this.m_5(c23);
                                  }
-                              } else if (this.tryPlaceCrystal(c2.m_7_i())) {
-                                 this.blockPos4 = null;
+
+                                 return;
                               }
                            }
-                        } else if (flag5) {
-                           if (this.blockPos5 == null || !this.blockPosMap4.containsKey(this.blockPos5) || !this.tryPlaceCrystal(this.blockPos5)) {
-                              if (this.blockPos4 != null && flag4 && (Boolean)this.autoDigUnder.getValue()) {
-                                 HashSet set3 = new HashSet<>(this.blockPosMap.keySet());
-                                 set3.addAll(this.blockPosMap2.keySet());
-                                 CrystalPlacer.DataRecord2 c23 = CrystalPlacer.m_1(
-                                    this.blockPos4,
-                                    c5List2,
-                                    vec32,
-                                    floatValue8,
-                                    this.getExplosionRange(),
-                                    this.maxSelfDamage.getFloat(),
-                                    this.m_3_float(),
-                                    false,
-                                    true,
-                                    floatValue7,
-                                    playerList4,
-                                    set3,
-                                    this.integerMap.keySet(),
-                                    this::hasNearbyItems
-                                 );
-                                 if (c23 != null && c23.m_6y_boolean()) {
-                                    if (!this.m_7(c23)) {
-                                       this.m_5(c23);
-                                    }
 
-                                    return;
-                                 }
+                           this.c4 = AutoAnchor.DataRecord.f_1;
+                           this.stopMining();
+                           this.hotbarSwitcher.m_8_void();
+                           BlockPos blockPos12 = (this.blockPosMap4.isEmpty() ? this.blockPosMap3 : this.blockPosMap4).keySet().iterator().next();
+                           this.aimAt(new Vec3(blockPos12.getX() + 0.5, blockPos12.getY() + 1.0, blockPos12.getZ() + 0.5));
+                        }
+                     } else {
+                        if (!(Boolean)this.autoDigUnder.getValue() || !flag4) {
+                           this.stopMining();
+                        }
+
+                        if (this.blockPos3 != null && (this.blockPos3.equals(this.blockPos6) || CrystalPlacer.m_8(this.blockPos3, set))) {
+                           if (this.value4 < 0) {
+                              this.value4 = MinecraftAccess.MINECRAFT.player.tickCount;
+                           }
+
+                           if (this.blockPos5 == null && flag4 && this.value11 < 2 && MinecraftAccess.MINECRAFT.player.tickCount >= this.value10) {
+                              CrystalPlacer.DataRecord2 c24 = CrystalPlacer.m_8(
+                                 this.blockPos3,
+                                 c5List2,
+                                 vec32,
+                                 floatValue8,
+                                 this.getExplosionRange(),
+                                 Math.min(this.maxSelfDamage.getFloat(), this.m_3_float()),
+                                 floatValue7,
+                                 playerList4,
+                                 flag6,
+                                 blockPosSet,
+                                 set,
+                                 this::hasNearbyItems
+                              );
+                              if (c24 != null) {
+                                 this.blockPos5 = c24.m_7_i();
+                                 this.value9 = MinecraftAccess.MINECRAFT.player.tickCount;
+                                 this.value11++;
+                              }
+                           }
+
+                           if (this.blockPos5 != null && !this.blockPosMap3.containsKey(this.blockPos5) && this.findCrystalAt(this.blockPos5.above()) == null) {
+                              this.stopMining();
+                              if (CrystalPlacer.isObsidianOrBedrock(this.blockPos5)) {
+                                 this.tryPlaceCrystal(this.blockPos5);
+                              } else {
+                                 this.tryPlaceObsidian(this.blockPos5);
                               }
 
-                              this.c4 = AutoAnchor.DataRecord.f_1;
-                              this.stopMining();
+                              return;
+                           }
+
+                           if (this.blockPos5 != null || MinecraftAccess.MINECRAFT.player.tickCount < this.value10 || MinecraftAccess.MINECRAFT.player.tickCount - this.value4 <= 20) {
                               this.hotbarSwitcher.m_8_void();
-                              BlockPos blockPos12 = (this.blockPosMap4.isEmpty() ? this.blockPosMap3 : this.blockPosMap4).keySet().iterator().next();
-                              this.aimAt(new Vec3(blockPos12.getX() + 0.5, blockPos12.getY() + 1.0, blockPos12.getZ() + 0.5));
+                              return;
                            }
                         } else {
-                           if (!(Boolean)this.autoDigUnder.getValue() || !flag4) {
+                           this.value4 = -1;
+                           this.value11 = 0;
+                        }
+
+                        if (this.blockPos != null && CrystalInteraction.m_9(this.blockPos, vec32, this.placeRange.getFloat()) == null) {
+                           this.hotbarSwitcher.m_8_void();
+                        } else {
+                           boolean flag8 = flag4 && (Boolean)this.autoDigUnder.getValue();
+                           boolean flag9 = this.m_5_boolean(c5List2);
+                           CrystalPlacer.DataRecord2 c25 = flag8 && this.blockPos4 != null
+                              ? CrystalPlacer.m_1(
+                                 this.blockPos4,
+                                 c5List2,
+                                 vec32,
+                                 floatValue8,
+                                 this.getExplosionRange(),
+                                 this.maxSelfDamage.getFloat(),
+                                 this.m_3_float(),
+                                 flag6,
+                                 true,
+                                 floatValue7,
+                                 playerList4,
+                                 blockPosSet,
+                                 set,
+                                 this::hasNearbyItems
+                              )
+                              : null;
+                           c2 = c25 != null
+                              ? c25
+                              : (
+                                 flag8 && flag9
+                                    ? CrystalPlacer.m_7(
+                                       c5List2,
+                                       vec32,
+                                       floatValue8,
+                                       this.getExplosionRange(),
+                                       this.maxSelfDamage.getFloat(),
+                                       this.minEnemyDamage.getFloat(),
+                                       flag6,
+                                       true,
+                                       floatValue7,
+                                       playerList4,
+                                       this.blockPos4,
+                                       blockPosSet,
+                                       set,
+                                       this::hasNearbyItems
+                                    )
+                                    : null
+                              );
+                           if (c2 != null
+                              && c2.m_72_BlockPos() != null
+                              && c2.m_7_i().equals(this.blockPos4)
+                              && this.blockPos != null
+                              && (this.blockPos.equals(this.blockPos4) || this.blockPos.equals(this.blockPos4.above()))
+                              && CrystalPlacer.m_8_boolean(MinecraftAccess.MINECRAFT.level.getBlockState(this.blockPos))) {
+                              c2 = new CrystalPlacer.DataRecord2(c2.m_7_i(), c2.m_60(), this.blockPos, c2.m_1_u_float(), c2.m_1_c(), false);
+                           }
+
+                           if (c2 == null) {
                               this.stopMining();
-                           }
-
-                           if (this.blockPos3 != null && (this.blockPos3.equals(this.blockPos6) || CrystalPlacer.m_8(this.blockPos3, this.integerMap.keySet()))) {
-                              if (this.value4 < 0) {
-                                 this.value4 = MinecraftAccess.MINECRAFT.player.tickCount;
-                              }
-
-                              if (this.blockPos5 == null && flag4 && this.value11 < 2 && MinecraftAccess.MINECRAFT.player.tickCount >= this.value10) {
-                                 CrystalPlacer.DataRecord2 c24 = CrystalPlacer.m_8(
-                                    this.blockPos3,
-                                    c5List2,
-                                    vec32,
-                                    floatValue8,
-                                    this.getExplosionRange(),
-                                    Math.min(this.maxSelfDamage.getFloat(), this.m_3_float()),
-                                    floatValue7,
-                                    playerList4,
-                                    flag6,
-                                    blockPosSet,
-                                    this.integerMap.keySet(),
-                                    this::hasNearbyItems
-                                 );
-                                 if (c24 != null) {
-                                    this.blockPos5 = c24.m_7_i();
-                                    this.value9 = MinecraftAccess.MINECRAFT.player.tickCount;
-                                    this.value11++;
-                                 }
-                              }
-
-                              if (this.blockPos5 != null && !this.blockPosMap3.containsKey(this.blockPos5) && this.findCrystalAt(this.blockPos5.above()) == null) {
-                                 this.stopMining();
-                                 if (CrystalPlacer.isObsidianOrBedrock(this.blockPos5)) {
-                                    this.tryPlaceCrystal(this.blockPos5);
-                                 } else {
-                                    this.tryPlaceObsidian(this.blockPos5);
-                                 }
-
-                                 return;
-                              }
-
-                              if (this.blockPos5 != null || MinecraftAccess.MINECRAFT.player.tickCount < this.value10 || MinecraftAccess.MINECRAFT.player.tickCount - this.value4 <= 20) {
-                                 this.hotbarSwitcher.m_8_void();
-                                 return;
-                              }
-                           } else {
-                              this.value4 = -1;
-                              this.value11 = 0;
-                           }
-
-                           if (this.blockPos != null && CrystalInteraction.m_9(this.blockPos, vec32, this.placeRange.getFloat()) == null) {
                               this.hotbarSwitcher.m_8_void();
-                           } else {
-                              boolean flag8 = flag4 && (Boolean)this.autoDigUnder.getValue();
-                              boolean flag9 = this.m_5_boolean(c5List2);
-                              CrystalPlacer.DataRecord2 c25 = flag8 && this.blockPos4 != null
-                                 ? CrystalPlacer.m_1(
-                                    this.blockPos4,
-                                    c5List2,
-                                    vec32,
-                                    floatValue8,
-                                    this.getExplosionRange(),
-                                    this.maxSelfDamage.getFloat(),
-                                    this.m_3_float(),
-                                    flag6,
-                                    true,
-                                    floatValue7,
-                                    playerList4,
-                                    blockPosSet,
-                                    this.integerMap.keySet(),
-                                    this::hasNearbyItems
-                                 )
-                                 : null;
-                              c2 = c25 != null
-                                 ? c25
-                                 : (
-                                    flag8 && flag9
-                                       ? CrystalPlacer.m_7(
-                                          c5List2,
-                                          vec32,
-                                          floatValue8,
-                                          this.getExplosionRange(),
-                                          this.maxSelfDamage.getFloat(),
-                                          this.minEnemyDamage.getFloat(),
-                                          flag6,
-                                          true,
-                                          floatValue7,
-                                          playerList4,
-                                          this.blockPos4,
-                                          blockPosSet,
-                                          this.integerMap.keySet(),
-                                          this::hasNearbyItems
-                                       )
-                                       : null
-                                 );
-                              if (c2 != null
-                                 && c2.m_72_BlockPos() != null
-                                 && c2.m_7_i().equals(this.blockPos4)
-                                 && this.blockPos != null
-                                 && (this.blockPos.equals(this.blockPos4) || this.blockPos.equals(this.blockPos4.above()))
-                                 && CrystalPlacer.m_8_boolean(MinecraftAccess.MINECRAFT.level.getBlockState(this.blockPos))) {
-                                 c2 = new CrystalPlacer.DataRecord2(c2.m_7_i(), c2.m_60(), this.blockPos, c2.m_1_u_float(), c2.m_1_c(), false);
-                              }
-
-                              if (c2 == null) {
-                                 this.stopMining();
-                                 this.hotbarSwitcher.m_8_void();
-                              } else if (!this.m_7(c2)) {
-                                 this.m_5(c2);
-                              }
+                           } else if (!this.m_7(c2)) {
+                              this.m_5(c2);
                            }
                         }
                      }
@@ -681,7 +686,7 @@ public class CrystalAura extends Module {
                      this.integerMap.put(endCrystal.getId(), MinecraftAccess.MINECRAFT.player.tickCount + getPingDelay());
                      if (this.blockPos5 != null && endCrystal.blockPosition().equals(this.blockPos5.above())) {
                         this.blockPos5 = null;
-                        this.value10 = MinecraftAccess.MINECRAFT.player.tickCount + getPingDelay() + 4;
+                        this.value10 = MinecraftAccess.MINECRAFT.player.tickCount + getPingDelay() + 2;
                      }
 
                      this.value6 = MinecraftAccess.MINECRAFT.player.tickCount;
@@ -740,7 +745,7 @@ public class CrystalAura extends Module {
                               this.blockPosMap4.putIfAbsent(c92.m_4_t_BlockPos(), MinecraftAccess.MINECRAFT.player.tickCount);
                            }
                         } else {
-                           this.blockPosMap2.put(c92.m_4_t_BlockPos(), MinecraftAccess.MINECRAFT.player.tickCount + 12);
+                           this.blockPosMap2.put(c92.m_4_t_BlockPos(), MinecraftAccess.MINECRAFT.player.tickCount + 8);
                         }
                      } finally {
                         this.hotbarSwitcher.m_8_void();
@@ -791,7 +796,7 @@ public class CrystalAura extends Module {
             var iterator = this.c6List.iterator();
 
             while (iterator.hasNext()) {
-               CrystalAura.DataRecord2 c62 = (CrystalAura.DataRecord2)iterator.next();
+               CrystalAura.DataRecord2 c62 = iterator.next();
                float floatValue7 = (float)(longValue2 - c62.m_5j()) / 300.0F;
                if (floatValue7 >= 1.0F) {
                   iterator.remove();
@@ -865,36 +870,39 @@ public class CrystalAura extends Module {
    }
 
    public static List<Player> getEnemies(float floatValue7) {
-      ArrayList list = new ArrayList();
+      ArrayList<Player> list = new ArrayList<>();
       if (MinecraftAccess.MINECRAFT.level != null && MinecraftAccess.MINECRAFT.player != null) {
+         AntiBot antiBot = Onetap.MODULE_MANAGER.get(AntiBot.class);
+         Vec3 eye = MinecraftAccess.MINECRAFT.player.getEyePosition();
+         double maxDistSq = floatValue7 * floatValue7;
+
          for (Player player : MinecraftAccess.MINECRAFT.level.players()) {
             if (player != MinecraftAccess.MINECRAFT.player
                && player.isAlive()
                && !player.isSpectator()
-               && CrystalPlacer.distanceSqToBox(MinecraftAccess.MINECRAFT.player.getEyePosition(), player.getBoundingBox()) <= floatValue7 * floatValue7
-               && Onetap.FRIEND_MANAGER.isFriend(player.getName().getString())) {
+               && CrystalPlacer.distanceSqToBox(eye, player.getBoundingBox()) <= maxDistSq
+               && !Onetap.FRIEND_MANAGER.isFriend(player.getName().getString())
+               && (antiBot == null || !antiBot.isBot(player))) {
                list.add(player);
             }
          }
-
-         return list;
-      } else {
-         return list;
       }
+      return list;
    }
 
    public static List<Player> getNearbyPlayers(float floatValue7) {
-      ArrayList<net.minecraft.world.entity.player.Player> playerList3 = new ArrayList<>();
+      ArrayList<Player> playerList3 = new ArrayList<>();
       if (MinecraftAccess.MINECRAFT.level != null && MinecraftAccess.MINECRAFT.player != null) {
          AntiBot antiBot = Onetap.MODULE_MANAGER.get(AntiBot.class);
          Vec3 vec32 = MinecraftAccess.MINECRAFT.player.getEyePosition();
+         double maxDistSq = floatValue7 * floatValue7;
 
          for (Player player : MinecraftAccess.MINECRAFT.level.players()) {
             if (player != MinecraftAccess.MINECRAFT.player
                && player.isAlive()
                && !player.isSpectator()
                && !player.isCreative()
-               && CrystalPlacer.distanceSqToBox(vec32, player.getBoundingBox()) <= floatValue7 * floatValue7
+               && CrystalPlacer.distanceSqToBox(vec32, player.getBoundingBox()) <= maxDistSq
                && !Onetap.FRIEND_MANAGER.isFriend(player.getName().getString())
                && (antiBot == null || !antiBot.isBot(player))) {
                playerList3.add(player);
@@ -902,10 +910,8 @@ public class CrystalAura extends Module {
          }
 
          playerList3.sort(Comparator.comparingDouble(player2 -> CrystalPlacer.distanceSqToBox(vec32, player2.getBoundingBox())));
-         return playerList3;
-      } else {
-         return playerList3;
       }
+      return playerList3;
    }
 
    private List<Player> getPlayers() {
@@ -944,8 +950,7 @@ public class CrystalAura extends Module {
 
    private boolean tryPlaceCrystal(BlockPos blockPos10) {
       return !this.blockPosMap3.containsKey(blockPos10) && CrystalPlacer.m_7_boolean(blockPos10, this.integerMap.keySet())
-         ? this.queueAction(CrystalAura.ModeKind.CRYSTAL, blockPos10, CrystalInteraction.m_6(blockPos10, MinecraftAccess.MINECRAFT.player.getEyePosition(), this.placeRange.getFloat()), null)
-         : false;
+         && this.queueAction(CrystalAura.ModeKind.CRYSTAL, blockPos10, CrystalInteraction.m_6(blockPos10, MinecraftAccess.MINECRAFT.player.getEyePosition(), this.placeRange.getFloat()), null);
    }
 
    private boolean tryPlaceObsidian(BlockPos blockPos10) {
@@ -1005,7 +1010,7 @@ public class CrystalAura extends Module {
 
    private boolean queueAction(CrystalAura.ModeKind c42, BlockPos blockPos10, CrystalInteraction.DataRecord c2, EndCrystal endCrystal) {
       if (c42 != CrystalAura.ModeKind.ATTACK && c2 == null) {
-         this.blockPosMap2.put(blockPos10.immutable(), MinecraftAccess.MINECRAFT.player.tickCount + 6);
+         this.blockPosMap2.put(blockPos10.immutable(), MinecraftAccess.MINECRAFT.player.tickCount + 5);
          return false;
       } else {
          this.c9 = new CrystalAura.DataRecord3(c42, blockPos10.immutable(), c2, endCrystal, MinecraftAccess.MINECRAFT.player.tickCount);
@@ -1094,10 +1099,10 @@ public class CrystalAura extends Module {
    private void cancelCurrentAction() {
       if (this.c9 != null) {
          if (this.c9.m_4f() == CrystalAura.ModeKind.DIG) {
-            this.blockPosMap.put(this.c9.m_4_t_BlockPos(), MinecraftAccess.MINECRAFT.player.tickCount + 40);
+            this.blockPosMap.put(this.c9.m_4_t_BlockPos(), MinecraftAccess.MINECRAFT.player.tickCount + 30);
             this.stopMining();
          } else if (this.c9.m_4f() != CrystalAura.ModeKind.ATTACK) {
-            this.blockPosMap2.put(this.c9.m_4_t_BlockPos(), MinecraftAccess.MINECRAFT.player.tickCount + 12);
+            this.blockPosMap2.put(this.c9.m_4_t_BlockPos(), MinecraftAccess.MINECRAFT.player.tickCount + 8);
          }
 
          this.c9 = null;
@@ -1127,12 +1132,12 @@ public class CrystalAura extends Module {
 
    private void m_6w_void() {
       int value18 = MinecraftAccess.MINECRAFT.player.tickCount;
-      var iterator = this.blockPosMap4.entrySet().iterator();
+      Iterator<Entry<BlockPos, Integer>> iterator = this.blockPosMap4.entrySet().iterator();
 
       while (iterator.hasNext()) {
-         Entry entry = (Entry)iterator.next();
-         BlockPos blockPos10 = (BlockPos)entry.getKey();
-         int value19 = value18 - (Integer)entry.getValue();
+         Entry<BlockPos, Integer> entry = iterator.next();
+         BlockPos blockPos10 = entry.getKey();
+         int value19 = value18 - entry.getValue();
          if (!CrystalInteraction.m_5_boolean(blockPos10) && MinecraftAccess.MINECRAFT.level.getBlockState(blockPos10).is(Blocks.OBSIDIAN)) {
             this.blockPos2 = blockPos10;
             this.value3 = value18;
@@ -1144,12 +1149,12 @@ public class CrystalAura extends Module {
          }
       }
 
-      var iterator2 = this.blockPosMap3.entrySet().iterator();
+      Iterator<Entry<BlockPos, Integer>> iterator2 = this.blockPosMap3.entrySet().iterator();
 
       while (iterator2.hasNext()) {
-         Entry entry2 = (Entry)iterator2.next();
-         BlockPos blockPos11 = (BlockPos)entry2.getKey();
-         int value20 = value18 - (Integer)entry2.getValue();
+         Entry<BlockPos, Integer> entry2 = iterator2.next();
+         BlockPos blockPos11 = entry2.getKey();
+         int value20 = value18 - entry2.getValue();
          if (this.findCrystalAt(blockPos11.above()) != null) {
             this.addRenderPos(blockPos11.above(), true);
             iterator2.remove();
@@ -1157,7 +1162,7 @@ public class CrystalAura extends Module {
             if (CrystalPlacer.m_8(blockPos11, this.integerMap.keySet())) {
                this.blockPos3 = blockPos11;
             } else {
-               this.blockPosMap2.put(blockPos11, value18 + 10);
+               this.blockPosMap2.put(blockPos11, value18 + 8);
             }
 
             iterator2.remove();
@@ -1167,10 +1172,10 @@ public class CrystalAura extends Module {
 
    private EndCrystal findCrystalAt(BlockPos blockPos10) {
       AABB aABB2 = new AABB(blockPos10.getX(), blockPos10.getY(), blockPos10.getZ(), blockPos10.getX() + 1, blockPos10.getY() + 2, blockPos10.getZ() + 1);
-      List list = MinecraftAccess.MINECRAFT
+      List<EndCrystal> list = MinecraftAccess.MINECRAFT
          .level
          .getEntitiesOfClass(EndCrystal.class, aABB2, endCrystal -> endCrystal.isAlive() && !this.integerMap.containsKey(endCrystal.getId()) && endCrystal.blockPosition().equals(blockPos10));
-      return list.isEmpty() ? null : (EndCrystal)list.getFirst();
+      return list.isEmpty() ? null : list.getFirst();
    }
 
    private void addRenderPos(BlockPos blockPos10, boolean flag4) {
@@ -1188,7 +1193,7 @@ public class CrystalAura extends Module {
             boolean flag4 = CrystalPlacer.distanceSqToBlock(vec32, blockPos10) <= doubleValue * doubleValue;
             boolean flag5 = MinecraftAccess.MINECRAFT.player.tickCount - this.value2 <= 10;
             if (!CrystalPlacer.m_8_boolean(blockState) || !flag4 || !flag5) {
-               this.blockPosMap.put(blockPos10, MinecraftAccess.MINECRAFT.player.tickCount + 40);
+               this.blockPosMap.put(blockPos10, MinecraftAccess.MINECRAFT.player.tickCount + 30);
                this.stopMining();
             }
          } else {
@@ -1202,7 +1207,7 @@ public class CrystalAura extends Module {
          CrystalInteraction.DataRecord c2 = CrystalInteraction.m_9(blockPos10, MinecraftAccess.MINECRAFT.player.getEyePosition(), this.placeRange.getFloat());
          if (c2 == null) {
             if (!blockPos10.equals(this.blockPos)) {
-               this.blockPosMap.put(blockPos10.immutable(), MinecraftAccess.MINECRAFT.player.tickCount + 10);
+               this.blockPosMap.put(blockPos10.immutable(), MinecraftAccess.MINECRAFT.player.tickCount + 8);
                this.stopMining();
             }
          } else {
@@ -1278,7 +1283,7 @@ public class CrystalAura extends Module {
 
    private void m_2(List<Player> playerList3) {
       int value18 = MinecraftAccess.MINECRAFT.player.tickCount;
-      HashSet set = new HashSet();
+      HashSet<Integer> set = new HashSet<>();
 
       for (Player player : playerList3) {
          int value19 = Mth.floor(player.getX());
@@ -1355,31 +1360,31 @@ public class CrystalAura extends Module {
                }
             }
          }
-
-         return false;
-      } else {
-         return false;
       }
+      return false;
    }
 
    private Set<BlockPos> getBlockedPositions() {
-      HashSet set = new HashSet<>(this.blockPosMap.keySet());
+      HashSet<BlockPos> set = new HashSet<>(this.blockPosMap.keySet());
       set.addAll(this.blockPosMap2.keySet());
       if (this.blockPos6 != null) {
          set.add(this.blockPos6);
       }
 
       for (BlockPos blockPos10 : this.blockPosMap3.keySet()) {
-         for (BlockPos blockPos11 : BlockPos.betweenClosed(blockPos10.offset(-1, -1, -1), blockPos10.offset(1, 1, 1))) {
-            set.add(blockPos11.immutable());
-         }
+         set.add(blockPos10);
+         set.add(blockPos10.above());
       }
 
       return set;
    }
 
    private boolean isDelayElapsed() {
-      return !(Boolean)this.crystalDelay.getValue() || MinecraftAccess.MINECRAFT.player.tickCount - this.value6 >= 2;
+      if (!(Boolean)this.crystalDelay.getValue()) {
+         return true;
+      }
+      int minTicks = (Boolean)this.fastBreak.getValue() ? 1 : 2;
+      return MinecraftAccess.MINECRAFT.player.tickCount - this.value6 >= minTicks;
    }
 
    private boolean hasNearbyItems(Vec3 vec32) {
@@ -1406,7 +1411,7 @@ public class CrystalAura extends Module {
    }
 
    private static int getPingDelay() {
-      return CrystalInteraction.getPing() + 4;
+      return Math.max(1, CrystalInteraction.getPing() + 3);
    }
 
    private float getExplosionRange() {
@@ -1460,10 +1465,10 @@ public class CrystalAura extends Module {
          int value19 = this.predictTickCount.getInt();
          ArrayList<Player> playerList4 = new ArrayList<>(playerList3);
          playerList4.sort(Comparator.comparingDouble(player -> CrystalPlacer.distanceSqToBox(MinecraftAccess.MINECRAFT.player.getEyePosition(), player.getBoundingBox())));
-         ArrayList list = new ArrayList();
+         ArrayList<CrystalPlacer.DataRecord4> list = new ArrayList<>();
 
          for (int i = 0; i < Math.min(playerList4.size(), 3); i++) {
-            Player player2 = (Player)playerList4.get(i);
+            Player player2 = playerList4.get(i);
             AABB aABB2 = player2.getBoundingBox();
             if (this.m_5_boolean(player2)) {
                list.add(new CrystalPlacer.DataRecord4(player2, this.aABB, true));
@@ -1543,17 +1548,9 @@ public class CrystalAura extends Module {
    }
 
    private record DataRecord(int f_95, int f_99, int f_9b) {
-      public int m_95() {
-         return this.f_95;
-      }
-
-      public int m_99() {
-         return this.f_99;
-      }
-
-      public int m_9b() {
-         return this.f_9b;
-      }
+      public int m_95() { return this.f_95; }
+      public int m_99() { return this.f_99; }
+      public int m_9b() { return this.f_9b; }
    }
 
    private enum ModeKind {
@@ -1562,68 +1559,19 @@ public class CrystalAura extends Module {
       ATTACK,
       DIG,
       WEB;
-
-      private static String a(byte[] byteArray) {
-         int value18 = 0;
-         int value19;
-         char[] charArray = new char[value19 = byteArray.length];
-
-         for (int i = 0; i < value19; i++) {
-            int value20;
-            if ((value20 = 255 & byteArray[i]) < 192) {
-               charArray[value18++] = (char)value20;
-            } else if (value20 < 224) {
-               char ch = (char)((char)(value20 & 31) << 6);
-               byte byteValue = byteArray[++i];
-               ch = (char)(ch | (char)(byteValue & 63));
-               charArray[value18++] = ch;
-            } else if (i < value19 - 2) {
-               char ch2 = (char)((char)(value20 & 15) << '\f');
-               byte byteValue2 = byteArray[++i];
-               ch2 = (char)(ch2 | (char)(byteValue2 & 63) << 6);
-               byteValue2 = byteArray[++i];
-               ch2 = (char)(ch2 | (char)(byteValue2 & 63));
-               charArray[value18++] = ch2;
-            }
-         }
-
-         return new String(charArray, 0, value18);
-      }
    }
 
    private record DataRecord2(BlockPos f_6_s, boolean f_1i, long f_5j) {
-      public BlockPos m_6_s() {
-         return this.f_6_s;
-      }
-
-      public boolean m_1i_boolean() {
-         return this.f_1i;
-      }
-
-      public long m_5j() {
-         return this.f_5j;
-      }
+      public BlockPos m_6_s() { return this.f_6_s; }
+      public boolean m_1i_boolean() { return this.f_1i; }
+      public long m_5j() { return this.f_5j; }
    }
 
    private record DataRecord3(CrystalAura.ModeKind f_4f, BlockPos f_4_t, CrystalInteraction.DataRecord f_1w, EndCrystal f_5h, int f_2b) {
-      public CrystalAura.ModeKind m_4f() {
-         return this.f_4f;
-      }
-
-      public BlockPos m_4_t_BlockPos() {
-         return this.f_4_t;
-      }
-
-      public CrystalInteraction.DataRecord m_1w_C2() {
-         return this.f_1w;
-      }
-
-      public EndCrystal m_5h() {
-         return this.f_5h;
-      }
-
-      public int m_2b() {
-         return this.f_2b;
-      }
+      public CrystalAura.ModeKind m_4f() { return this.f_4f; }
+      public BlockPos m_4_t_BlockPos() { return this.f_4_t; }
+      public CrystalInteraction.DataRecord m_1w_C2() { return this.f_1w; }
+      public EndCrystal m_5h() { return this.f_5h; }
+      public int m_2b() { return this.f_2b; }
    }
 }
