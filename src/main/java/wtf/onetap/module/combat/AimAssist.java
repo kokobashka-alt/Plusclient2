@@ -9,6 +9,8 @@ import net.minecraft.world.phys.Vec3;
 import wtf.onetap.annotation.EventTarget;
 import wtf.onetap.annotation.ModuleInformation;
 import wtf.onetap.combat.AimUtil;
+import wtf.onetap.combat.CombatTargetHolder;
+import wtf.onetap.event.Render3DEvent;
 import wtf.onetap.event.TickEvent;
 import wtf.onetap.module.Category;
 import wtf.onetap.module.Module;
@@ -26,14 +28,14 @@ public class AimAssist extends Module {
    private final FloatSetting strength = new FloatSetting("Сила доводки", 0.5F, 0.0F, 1.0F, 0.05F).build();
    private final FloatSetting speed = new FloatSetting("Скорость (град/с)", 60.0F, 5.0F, 300.0F, 5.0F).build();
    private final FloatSetting verticalScale = new FloatSetting("Вертикаль", 0.6F, 0.0F, 1.0F, 0.05F).build();
-   private final BooleanSetting onlyWhileAttackKey = new BooleanSetting("Только при зажатой ЛКМ", true).build();
+   private final BooleanSetting onlyWhileAttackKey = new BooleanSetting("Только при зажатой ЛКМ", false).build();
    private final BooleanSetting triggerBot = new BooleanSetting("Триггербот", false).build();
    private final FloatSetting delayMin = new FloatSetting("Задержка мин (мс)", 80.0F, 0.0F, 400.0F, 10.0F)
       .visibleWhen(this.triggerBot::getValue).build();
    private final FloatSetting delayMax = new FloatSetting("Задержка макс (мс)", 140.0F, 0.0F, 600.0F, 10.0F)
       .visibleWhen(this.triggerBot::getValue).build();
-   private LivingEntity target;
-   private long lastNanos;
+   private volatile LivingEntity target;
+   private long lastFrameNanos;
    private long attackAtMs;
 
    public AimAssist() {
@@ -42,57 +44,72 @@ public class AimAssist extends Module {
    @Override
    public void onDisable() {
       this.target = null;
-      this.lastNanos = 0L;
+      this.lastFrameNanos = 0L;
       this.attackAtMs = 0L;
+      CombatTargetHolder.setAimAssistTarget(null);
    }
 
+   /** Picks the target and runs the triggerbot once per game tick. */
    @EventTarget
    private void onTick(TickEvent event) {
       Player player = MinecraftAccess.MINECRAFT.player;
       if (!this.isEnabled() || player == null || MinecraftAccess.MINECRAFT.level == null || MinecraftAccess.MINECRAFT.gameMode == null) {
          this.target = null;
+         this.attackAtMs = 0L;
+         CombatTargetHolder.setAimAssistTarget(null);
          return;
       }
-
-      long now = System.nanoTime();
-      float dtSeconds = this.lastNanos == 0L ? 0.0F : (float) ((now - this.lastNanos) / 1.0E9);
-      this.lastNanos = now;
 
       boolean attacking = !(Boolean)this.onlyWhileAttackKey.getValue() || MinecraftAccess.MINECRAFT.options.keyAttack.isDown();
       Vec3 eye = player.getEyePosition();
       this.target = attacking ? this.findTarget(player, eye) : null;
-      if (this.target == null) {
-         this.attackAtMs = 0L;
-         return;
-      }
-
-      Rotations toTarget = new Rotations(eye, this.target.getBoundingBox().getCenter());
-      float yaw = player.getYRot();
-      float pitch = player.getXRot();
-      float cutoff = this.fov.getFloat() / 2.0F;
-      if (AimAssistMath.fovDistance(yaw, pitch, toTarget.getFloatValue(), toTarget.getFloatValue2()) <= cutoff) {
-         float[] step = AimAssistMath.smoothStep(
-            yaw, pitch, toTarget.getFloatValue(), toTarget.getFloatValue2(),
-            this.strength.getFloat(), this.speed.getFloat(), this.verticalScale.getFloat(), dtSeconds
-         );
-         player.setYRot(yaw + step[0]);
-         player.setXRot(AimAssistMath.clampPitch(pitch + step[1]));
-      }
+      CombatTargetHolder.setAimAssistTarget(this.target);
 
       if ((Boolean)this.triggerBot.getValue()) {
-         this.handleTriggerBot(player, now);
+         this.handleTriggerBot(player, eye);
       }
    }
 
-   private void handleTriggerBot(Player player, long nowNanos) {
-      boolean inCrosshair = AimUtil.isLookingAtEntity(this.target, null, this.reach.getFloat());
+   /** Moves the view toward the target once per rendered frame, using the real frame time. */
+   @EventTarget
+   private void onRender3D(Render3DEvent event) {
+      Player player = MinecraftAccess.MINECRAFT.player;
+      long now = System.nanoTime();
+      float dtSeconds = this.lastFrameNanos == 0L ? 0.0F : (float) ((now - this.lastFrameNanos) / 1.0E9);
+      this.lastFrameNanos = now;
+
+      LivingEntity current = this.target;
+      if (!this.isEnabled() || player == null || current == null || !current.isAlive()) {
+         return;
+      }
+
+      Rotations toTarget = new Rotations(player.getEyePosition(), current.getBoundingBox().getCenter());
+      float yaw = player.getYRot();
+      float pitch = player.getXRot();
+      float targetYaw = toTarget.getFloatValue();
+      float targetPitch = toTarget.getFloatValue2();
+      if (AimAssistMath.fovDistance(yaw, pitch, targetYaw, targetPitch) > this.fov.getFloat() / 2.0F) {
+         return;
+      }
+
+      float[] step = AimAssistMath.smoothStep(
+         yaw, pitch, targetYaw, targetPitch,
+         this.strength.getFloat(), this.speed.getFloat(), this.verticalScale.getFloat(), dtSeconds
+      );
+      player.setYRot(yaw + step[0]);
+      player.setXRot(AimAssistMath.clampPitch(pitch + step[1]));
+   }
+
+   private void handleTriggerBot(Player player, Vec3 eye) {
+      LivingEntity current = this.target;
+      boolean inCrosshair = current != null && AimUtil.isLookingAtEntity(current, null, this.reach.getFloat());
       boolean ready = player.getAttackStrengthScale(0.0F) >= 1.0F;
       if (!inCrosshair || !ready) {
          this.attackAtMs = 0L;
          return;
       }
 
-      long nowMs = nowNanos / 1_000_000L;
+      long nowMs = System.nanoTime() / 1_000_000L;
       if (this.attackAtMs == 0L) {
          this.attackAtMs = nowMs + AimAssistMath.humanDelayMs(
             ThreadLocalRandom.current().nextDouble(),
@@ -103,7 +120,7 @@ public class AimAssist extends Module {
       }
 
       if (nowMs >= this.attackAtMs) {
-         MinecraftAccess.MINECRAFT.gameMode.attack(player, this.target);
+         MinecraftAccess.MINECRAFT.gameMode.attack(player, current);
          player.swing(InteractionHand.MAIN_HAND);
          this.attackAtMs = 0L;
       }
