@@ -1,80 +1,60 @@
 
-name: Download and Extract Moonward
+name: Upload Holyworld Rotation
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - "holyworld.7z"
+      - ".github/workflows/unpack-holyworld.yml"
 
 permissions:
   contents: write
 
 jobs:
-  download:
+  unpack-and-upload:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install extraction tools
+      - name: Install 7-Zip
         run: |
           sudo apt-get update
-          sudo apt-get install -y unrar-free
-
-      - name: Download archive
-        run: |
-          set -euo pipefail
-
-          curl -fL --retry 3 \
-            "https://github.com/kokobashka-alt/Plusclient2/releases/download/Alpha/Moonward-recovered.rar" \
-            -o /tmp/Moonward-recovered.rar
-
-          test -s /tmp/Moonward-recovered.rar
+          sudo apt-get install -y p7zip-full
 
       - name: Extract archive
         run: |
-          set -euo pipefail
+          mkdir -p extracted
+          7z x holyworld.7z -oextracted -y
 
-          mkdir -p /tmp/moonward
-          unrar-free -x /tmp/Moonward-recovered.rar /tmp/moonward/
-
-          echo "Archive structure:"
-          find /tmp/moonward -maxdepth 3 -print
-
-      - name: Move files into repository root
-        run: |
-          set -euo pipefail
-
-          SOURCE="/tmp/moonward/Moonward-recovered"
-
-          if [ ! -d "$SOURCE" ]; then
-            echo "ERROR: Moonward-recovered folder not found"
+          if [ ! -d "extracted/holyworld" ]; then
+            echo "Folder holyworld not found inside archive"
             exit 1
           fi
 
-          cp -a "$SOURCE/." ./
-
-          echo "Repository root after extraction:"
-          ls -la
-
-      - name: Commit changes
+      - name: Copy Holyworld folder
         run: |
-          set -euo pipefail
+          mkdir -p src/main/java/wtf/onetap/combat/rotation
 
+          rm -rf src/main/java/wtf/onetap/combat/rotation/holyworld
+
+          cp -a extracted/holyworld \
+            src/main/java/wtf/onetap/combat/rotation/
+
+      - name: Commit and push
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add -A
+          git add src/main/java/wtf/onetap/combat/rotation/holyworld
 
           if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Import Moonward recovered files"
-            git push
+            echo "No changes to upload"
+            exit 0
           fi
 
-      - name: Cleanup
-        if: always()
-        run: |
-          rm -rf /tmp/moonward
-          rm -f /tmp/Moonward-recovered.rar
+          git commit -m "Add Holyworld rotation sources"
+          git push
           
