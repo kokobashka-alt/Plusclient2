@@ -166,6 +166,8 @@ import wtf.onetap.module.render.WaterSplash;
 import wtf.onetap.module.render.Weather;
 import wtf.onetap.module.render.Wings;
 import wtf.onetap.module.render.Zoom;
+import wtf.onetap.module.combat.AimAssist;
+import wtf.onetap.module.combat.TriggerBot;
 
 public class ModuleManager {
    private final List<Module> modules;
@@ -369,7 +371,9 @@ public class ModuleManager {
          new AntiAFK(),
          new AutoPilot(),
          new AutoFish(),
-         new AutoJoiner()
+         new AutoJoiner(),
+         new Aimassist(),
+         new TriggerBot()
       );
    }
 
