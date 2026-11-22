@@ -373,7 +373,7 @@ public class ModuleManager {
          new AutoPilot(),
          new AutoFish(),
          new AutoJoiner(),
-         new Aimassist(),
+         new AimAssist(),
          new TriggerBot(),
          new AntiTotemExploit()
       );
