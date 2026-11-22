@@ -53,6 +53,7 @@ public class CommandManager {
       this.register(new VClipCommand());
       this.register(new HClipCommand());
       this.register(new TpCommand());
+      this.register(new HolyWorldCommand());
    }
 
    public void register(Command command) {
