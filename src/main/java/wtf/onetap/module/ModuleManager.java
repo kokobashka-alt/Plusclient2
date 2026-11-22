@@ -168,6 +168,7 @@ import wtf.onetap.module.render.Wings;
 import wtf.onetap.module.render.Zoom;
 import wtf.onetap.module.combat.AimAssist;
 import wtf.onetap.module.combat.TriggerBot;
+import wtf.onetap.module.combat.AntiTotemExploit;
 
 public class ModuleManager {
    private final List<Module> modules;
@@ -373,7 +374,8 @@ public class ModuleManager {
          new AutoFish(),
          new AutoJoiner(),
          new Aimassist(),
-         new TriggerBot()
+         new TriggerBot(),
+         new AntiTotemExploit()
       );
    }
 
