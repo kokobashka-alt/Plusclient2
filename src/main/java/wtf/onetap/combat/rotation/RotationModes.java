@@ -40,7 +40,7 @@ public class RotationModes implements MinecraftAccess {
    private int value2;
    private final Map<RotationMode, LatencyStats.StateHolder> rotationModeMap;
    private final Map<RotationMode, LatencyStats.StateHolder> rotationModeMap2;
-   private static final List<String> STRING_LIST = List.of("Vanilla", "SP (old)", "Snap", "Snap2", "Рывки", "Shakal", "LegitSnap", "Assist", "NoRot");
+   private static final List<String> STRING_LIST = List.of("Vanilla", "SP (old)", "Snap", "Snap2", "Рывки", "Shakal", "LegitSnap", "Assist", "HolyWorld", "NoRot");
    private static final Set<String> STRING_SET = Set.copyOf(STRING_LIST);
    private static final Set<String> STRING_SET2 = Set.of();
    private Vec3 vec3;
@@ -55,7 +55,7 @@ public class RotationModes implements MinecraftAccess {
 
    public RotationModes() {
       this.value = Integer.MIN_VALUE;
-      this.rotationModeList = List.of(new SpOldRotation(), new SnapRotation(), new Snap2Rotation(), new DashRotation(), new ShakalRotation(), new LegitSnapRotation(), new AssistRotation());
+      this.rotationModeList = List.of(new SpOldRotation(), new SnapRotation(), new Snap2Rotation(), new DashRotation(), new ShakalRotation(), new LegitSnapRotation(), new AssistRotation(), new HolyWorldRotation());
       this.rotationModeMap = new IdentityHashMap<>();
       this.rotationModeMap2 = new IdentityHashMap<>();
 
