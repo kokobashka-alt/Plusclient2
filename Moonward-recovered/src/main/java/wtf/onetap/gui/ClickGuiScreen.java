@@ -822,7 +822,7 @@ public class ClickGuiScreen {
       float floatValue28 = floatValue23 + floatValue22 + 8.0F;
       float floatValue29 = Draw2D.getTextBaseline(Fonts.SUPPLIER18, 16.0F, 0.0F, 38.0F);
       float floatValue30 = (float)(System.currentTimeMillis() % 4000L) / 4000.0F;
-      Draw2D.m_9("Moonward", Fonts.SUPPLIER18, floatValue28, floatValue29, ColorUtil.withAlpha(value5, value7), ColorUtil.withAlpha(value6, value7), 16.0F, floatValue30);
+      Draw2D.m_9("PlusClient", Fonts.SUPPLIER18, floatValue28, floatValue29, ColorUtil.withAlpha(value5, value7), ColorUtil.withAlpha(value6, value7), 16.0F, floatValue30);
       float floatValue31 = 144.0F;
       float floatValue32 = (this.floatValue19 - 8.0F - floatValue31 - 6.0F) / 2.0F;
       this.searchBox.m_5(floatValue31 + floatValue32 + 6.0F, floatValue32, 38.0F, floatValue21);
