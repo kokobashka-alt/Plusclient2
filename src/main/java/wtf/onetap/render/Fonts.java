@@ -13,8 +13,8 @@ public class Fonts {
    );
    public static final Supplier<FontAtlas> SUPPLIER4 = Suppliers.memoize(() -> FontAtlas.m_0_C1().withText("bold").withText3("bold").withText2("bold").build());
    public static final Supplier<FontAtlas> SUPPLIER5 = Suppliers.memoize(() -> FontAtlas.m_0_C1().withText("icons2").withText3("icons2").withText2("icons2").build());
-   public static final Supplier<FontAtlas> SUPPLIER6 = Suppliers.memoize(() -> FontAtlas.m_0_C1().withText("moonward").withText3("moonward").withText2("moonward").build());
-   public static final Supplier<FontAtlas> SUPPLIER7 = Suppliers.memoize(() -> FontAtlas.m_0_C1().withText("moonward_new").withText3("moonward_new").withText2("moonward_new").build());
+   public static final Supplier<FontAtlas> SUPPLIER6 = Suppliers.memoize(() -> FontAtlas.m_0_C1().withText("PlusClient").withText3("PlusClient").withText2("PlusClient").build());
+   public static final Supplier<FontAtlas> SUPPLIER7 = Suppliers.memoize(() -> FontAtlas.m_0_C1().withText("PlusClient_new").withText3("PlusClient_new").withText2("PlusClient_new").build());
    public static final Supplier<FontAtlas> SUPPLIER8 = Suppliers.memoize(() -> FontAtlas.m_0_C1().withText("icons").withText3("iconss").withText2("iconss").build());
    public static final Supplier<FontAtlas> SUPPLIER9 = Suppliers.memoize(() -> FontAtlas.m_0_C1().withText("GREY_BOLD").withText3("grey_bold").withText2("grey_bold").build());
    public static final Supplier<FontAtlas> SUPPLIER10 = Suppliers.memoize(
