@@ -707,11 +707,15 @@ public class RotationModes implements MinecraftAccess {
 
     public static class STtestRotation implements RotationMode {
         private final RotationEngine engine = new RotationEngine();
-        private final RotationModeInfo info = new RotationModeInfo("STtest");
 
         @Override
-        public RotationModeInfo getInfo() {
-            return this.info;
+        public RotationMode.Info getInfo() {
+            return new RotationMode.Info() {
+                @Override
+                public String name() {
+                    return "STtest";
+                }
+            };
         }
 
         @Override
@@ -750,10 +754,19 @@ public class RotationModes implements MinecraftAccess {
         }
 
         @Override
+        public Rotations m_5(float currentYaw, float currentPitch, Rotations targetRot, AABB aabb, boolean flag10, float floatValue11, float floatValue12) {
+            long now = System.nanoTime();
+            Vec3 eye = MinecraftAccess.MINECRAFT.player != null ? MinecraftAccess.MINECRAFT.player.getEyePosition() : Vec3.ZERO;
+            AABB box = aabb != null ? aabb : new AABB(eye, eye);
+            this.engine.update(eye, box, now);
+            return new Rotations(this.engine.getYaw(), this.engine.getPitch());
+        }
+
+        @Override
         public Rotations m_9(float currentYaw, float currentPitch, Rotations targetRot, AABB aabb, boolean flag10, float floatValue11, float floatValue12, LivingEntity target, Vec3 vec3, boolean flag11) {
             long now = System.nanoTime();
-            Vec3 eye = MinecraftAccess.MINECRAFT.player != null ? MinecraftAccess.MINECRAFT.player.getEyePosition() : vec3;
-            AABB box = aabb != null ? aabb : (target != null ? target.getBoundingBox() : new AABB(vec3, vec3));
+            Vec3 eye = MinecraftAccess.MINECRAFT.player != null ? MinecraftAccess.MINECRAFT.player.getEyePosition() : (vec3 != null ? vec3 : Vec3.ZERO);
+            AABB box = aabb != null ? aabb : (target != null ? target.getBoundingBox() : (vec3 != null ? new AABB(vec3, vec3) : new AABB(eye, eye)));
             this.engine.update(eye, box, now);
             return new Rotations(this.engine.getYaw(), this.engine.getPitch());
         }
