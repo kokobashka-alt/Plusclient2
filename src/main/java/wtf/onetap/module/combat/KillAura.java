@@ -424,7 +424,7 @@ public class KillAura extends Module {
          Onetap.ROTATION_MODES.rotateByModeFull(vec32, aABB2, "Snap", this.shouldUseClientLook(), 10, false, flag16, floatValue, this.livingEntity2);
       }
 
-      if (!(Boolean)this.rayTrace.getValue() || AimUtil.isLookingAt(Onetap.ROTATION_MODES.toRotations(), floatValue2, aABB2)) {
+      if ((!(Boolean)this.rayTrace.getValue() && !this.isLegitRotation()) || AimUtil.isLookingAt(Onetap.ROTATION_MODES.toRotations(), floatValue2, aABB2)) {
          if (!(Boolean)this.dontHitThroughEntities.getValue() || !AimUtil.m_5(Onetap.ROTATION_MODES.toRotations(), floatValue2, aABB2, this.livingEntity2)) {
             if ((Boolean)this.hitThroughBlocks.getValue() || !AimUtil.m_6(Onetap.ROTATION_MODES.toRotations(), floatValue2, aABB2)) {
                Player player = this.shieldBreaker.m_4_boolean(this.getShieldTarget()) ? this.getShieldTarget() : null;
@@ -894,8 +894,16 @@ public class KillAura extends Module {
       return this.legitVertical.getFloat();
    }
 
+   private boolean isLegitRotation() {
+      return ((String)this.rotation.getValue()).equals("Legit");
+   }
+
    private boolean shouldUseClientLook() {
-      return (Boolean)this.clientLook.getValue() || ((String)this.rotation.getValue()).equals("Assist") || ((String)this.rotation.getValue()).equals("Legit");
+      if (this.isLegitRotation()) {
+         return false;
+      }
+
+      return (Boolean)this.clientLook.getValue() || ((String)this.rotation.getValue()).equals("Assist");
    }
 
    public static boolean isCooldownReady(float floatValue, boolean flag13) {
