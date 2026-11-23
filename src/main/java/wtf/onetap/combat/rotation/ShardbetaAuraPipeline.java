@@ -10,6 +10,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec2;
 
 import wtf.onetap.util.MinecraftAccess;
 
@@ -113,10 +114,12 @@ public final class ShardbetaAuraPipeline {
         double rad = Math.toRadians(d);
         double co = Math.cos(rad);
         double si = Math.sin(rad);
-        float f = player.input.forwardImpulse;
-        float side = player.input.leftImpulse;
-        player.input.forwardImpulse = (float) (f * co - side * si);
-        player.input.leftImpulse = (float) (side * co + f * si);
+        Vec2 move = player.input.moveVector;
+        float f = move.y;
+        float side = move.x;
+        float nf = (float) (f * co - side * si);
+        float nside = (float) (side * co + f * si);
+        player.input.moveVector = new Vec2(nside, nf);
     }
 
     private static LivingEntity findTarget(LocalPlayer player, ClientLevel level) {
