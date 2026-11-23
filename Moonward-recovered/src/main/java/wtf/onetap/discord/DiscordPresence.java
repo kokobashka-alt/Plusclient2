@@ -124,7 +124,7 @@ public class DiscordPresence {
             jsonObject2.add("timestamps", jsonObject3);
             JsonObject jsonObject4 = new JsonObject();
             jsonObject4.addProperty("large_image", "https://cdn.discordapp.com/app-icons/1519311702057947226/3ad7939f0c3738f4b39472568f7a5539.png");
-            jsonObject4.addProperty("large_text", text6 != null ? text6 : "Moonward 26.2");
+            jsonObject4.addProperty("large_text", text6 != null ? text6 : "PlusClient 26.2");
             String text13 = text11 != null ? m_6_String(text11) : null;
             if (text13 != null) {
                jsonObject4.addProperty("small_image", text13);
