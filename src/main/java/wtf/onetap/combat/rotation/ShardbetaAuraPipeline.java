@@ -6,12 +6,13 @@ import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec2;
 
-import wtf.onetap.combat.rotation.mixin.MixinClientInput;
 import wtf.onetap.util.MinecraftAccess;
 
 public final class ShardbetaAuraPipeline {
@@ -106,10 +107,20 @@ public final class ShardbetaAuraPipeline {
         }
     }
 
-    public static void applyMoveFix() {
+    public static Vec2 fixMoveInput(float forward, float strafe) {
         LocalPlayer player = MinecraftAccess.MINECRAFT.player;
-        if (player == null) return;
-        MixinClientInput.applyMoveFix(player.input, mode.p.moveFix());
+        if (player == null || !mode.p.moveFix() || !ShardbetaRotationStorage.active()) {
+            return new Vec2(strafe, forward);
+        }
+        float diffRad = (float) Math.toRadians(Mth.wrapDegrees(ShardbetaRotationStorage.yaw() - player.getYRot()));
+        if (Math.abs(diffRad) < 1.0e-4f) {
+            return new Vec2(strafe, forward);
+        }
+        float cos = Mth.cos(diffRad);
+        float sin = Mth.sin(diffRad);
+        float newForward = forward * cos - strafe * sin;
+        float newStrafe = strafe * cos + forward * sin;
+        return new Vec2(newStrafe, newForward);
     }
 
     private static LivingEntity findTarget(LocalPlayer player, ClientLevel level) {
