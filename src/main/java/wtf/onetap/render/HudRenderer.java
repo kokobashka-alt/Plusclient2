@@ -84,7 +84,7 @@ public class HudRenderer implements MinecraftAccess {
       String text2 = MinecraftAccess.MINECRAFT.getFps() + "fps";
       PlayerInfo playerInfo = MinecraftAccess.MINECRAFT.getConnection() != null && MinecraftAccess.MINECRAFT.player != null ? MinecraftAccess.MINECRAFT.getConnection().getPlayerInfo(MinecraftAccess.MINECRAFT.player.getUUID()) : null;
       String text3 = (playerInfo != null ? playerInfo.getLatency() : 0) + "ms";
-      String text4 = "moonward";
+      String text4 = "PlusClient";
       String text5 = " | ";
       float floatValue6 = Draw2D.getTextWidth(text4, supplier, floatValue5);
       float floatValue7 = Draw2D.getTextWidth(text5, supplier, floatValue5);
