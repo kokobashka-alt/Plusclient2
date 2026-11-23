@@ -353,9 +353,9 @@ public class HUD extends Module {
       this.floatSetting = new FloatSetting("Масштаб", 1.0F, 0.5F, 2.0F, 0.05F).build();
       this.floatSetting2 = new FloatSetting("Размер Boykisser", 64.0F, 24.0F, 192.0F, 1.0F).visibleWhen(() -> this.multiModeSetting.isSelected("Boykisser")).build();
       this.labelSetting = new LabelSetting("Таргет худ").visibleWhen(() -> this.multiModeSetting.isSelected("Таргет худ")).build();
-      this.modeSetting = new ModeSetting("Мод таргет худа", "Moonward", "Moonward", "Rich Premium", "Liquid").visibleWhen(() -> this.multiModeSetting.isSelected("Таргет худ")).build();
-      this.modeSetting2 = new ModeSetting("Форма", "Полоса", "Полоса", "Кружок").visibleWhen(() -> this.multiModeSetting.isSelected("Таргет худ") && this.isMoonwardModeSetting()).build();
-      this.booleanSetting = new BooleanSetting("Частицы при уроне", true).visibleWhen(() -> this.multiModeSetting.isSelected("Таргет худ") && this.isMoonwardModeSetting() && !this.isCircleMode()).build();
+      this.modeSetting = new ModeSetting("Мод таргет худа", "PlusClient", "PlusClient", "Rich Premium", "Liquid").visibleWhen(() -> this.multiModeSetting.isSelected("Таргет худ")).build();
+      this.modeSetting2 = new ModeSetting("Форма", "Полоса", "Полоса", "Кружок").visibleWhen(() -> this.multiModeSetting.isSelected("Таргет худ") && this.isPlusClientModeSetting()).build();
+      this.booleanSetting = new BooleanSetting("Частицы при уроне", true).visibleWhen(() -> this.multiModeSetting.isSelected("Таргет худ") && this.isPlusClientModeSetting() && !this.isCircleMode()).build();
       this.labelSetting2 = new LabelSetting("Стафф").visibleWhen(() -> this.multiModeSetting.isSelected("Стафф")).build();
       this.modeSetting3 = new ModeSetting("Показывать стафф", "Все", "Все", "Онлайн", "Ваниш").visibleWhen(() -> this.multiModeSetting.isSelected("Стафф")).build();
       this.booleanSetting2 = new BooleanSetting("Только добавленный стафф", false).visibleWhen(() -> this.multiModeSetting.isSelected("Стафф")).build();
@@ -850,7 +850,7 @@ public class HUD extends Module {
       float floatValue17 = Draw2D.getCenteredY("\uf017", Fonts.SUPPLIER8, floatValue8, floatValue4, floatValue6);
       float floatValue18 = Draw2D.getCenteredY("•", Fonts.SUPPLIER18, floatValue10, floatValue4, floatValue6);
       float floatValue19 = Draw2D.getTextWidth("•", Fonts.SUPPLIER18, floatValue10);
-      float floatValue20 = Draw2D.getTextWidth("De_Otpor", Fonts.SUPPLIER18, floatValue7);
+      float floatValue20 = Draw2D.getTextWidth("PlusClient", Fonts.SUPPLIER18, floatValue7);
       float floatValue21 = Draw2D.getTextWidth(" 26.2", Fonts.SUPPLIER18, floatValue7);
       float floatValue22 = Draw2D.getTextWidth(text3, Fonts.SUPPLIER18, floatValue7);
       float floatValue23 = Draw2D.getTextWidth(text4, Fonts.SUPPLIER18, floatValue7);
@@ -893,7 +893,7 @@ public class HUD extends Module {
       Draw2D.drawTextWithShadow("\ue900", Fonts.SUPPLIER6, floatValue34, floatValue33, ColorUtil.rgba(255, 255, 255, 255), floatValue13);
       floatValue30 += floatValue12 + floatValue9;
       float floatValue35 = (float)(System.currentTimeMillis() % 4000L) / 4000.0F;
-      Draw2D.m_9("De_Otpor", Fonts.SUPPLIER18, floatValue30, floatValue14, value6, value7, floatValue7, floatValue35);
+      Draw2D.m_9("PlusClient", Fonts.SUPPLIER18, floatValue30, floatValue14, value6, value7, floatValue7, floatValue35);
       floatValue30 += floatValue20;
       Draw2D.drawStyledText(" 26.2", Fonts.SUPPLIER18, floatValue30, floatValue14, value5, floatValue7);
       floatValue30 += floatValue21 + floatValue11;
@@ -1390,11 +1390,11 @@ public class HUD extends Module {
    }
 
    private HudStylePanel getActivePanel() {
-      return this.isMoonwardModeSetting() ? this.hudStylePanel : (this.isLiquidModeSetting() ? this.hudStylePanel2 : null);
+      return this.isPlusClientModeSetting() ? this.hudStylePanel : (this.isLiquidModeSetting() ? this.hudStylePanel2 : null);
    }
 
-   private boolean isMoonwardModeSetting() {
-      return ((String)this.modeSetting.getValue()).equals("Moonward");
+   private boolean isPlusClientModeSetting() {
+      return ((String)this.modeSetting.getValue()).equals("PlusClient");
    }
 
    private boolean isCircleMode() {
@@ -1434,7 +1434,7 @@ public class HUD extends Module {
             }
 
             if (this.livingEntity != null) {
-               this.layoutField(this.textField9, this.isMoonwardModeSetting() ? 6.0F : (this.isLiquidModeSetting() ? 6.0F : 0.0F));
+               this.layoutField(this.textField9, this.isPlusClientModeSetting() ? 6.0F : (this.isLiquidModeSetting() ? 6.0F : 0.0F));
                float floatValue4 = this.textField9.m_5_float();
                float floatValue5 = this.textField9.m_8_float();
                this.applyScale(floatValue4, floatValue5);
@@ -1459,7 +1459,7 @@ public class HUD extends Module {
                if (this.isRichPremiumModeSetting()) {
                   this.m_2(event, livingEntity4, floatValue4, floatValue5, floatValue3, value3, floatValue14, floatValue16, floatValue15, text3);
                } else {
-                  boolean flag4 = this.isMoonwardModeSetting() && this.isCircleMode();
+                  boolean flag4 = this.isPlusClientModeSetting() && this.isCircleMode();
                   String text4 = flag4 ? String.valueOf(Math.round(floatValue14)) : String.format(Locale.US, "%.1f", floatValue14);
                   if (!text4.equals(this.text)) {
                      this.text2 = this.text.isEmpty() ? text4 : this.text;
