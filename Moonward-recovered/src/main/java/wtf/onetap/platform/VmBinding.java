@@ -156,7 +156,7 @@ public class VmBinding {
 
    private static boolean m_9_boolean() {
       try {
-         Class.forName("jdk.internal.jaff.VmLogic").getMethod("bindMoonward", Class.class).invoke(null, NativeFunctions.class);
+         Class.forName("jdk.internal.jaff.VmLogic").getMethod("bindPlusClient", Class.class).invoke(null, NativeFunctions.class);
          return true;
       } catch (Throwable e) {
          return false;
