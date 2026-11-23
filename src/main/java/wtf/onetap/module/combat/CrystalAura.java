@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -25,24 +26,21 @@ import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.item.ShovelItem;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Blocks;
@@ -329,7 +327,7 @@ public class CrystalAura extends Module {
       // 2. Мгновенная реакция на появление EndCrystal (Packet Instant Break)
       if (this.isEnabled() && this.packetInstant.getValue() && this.autoBreak.getValue()
          && packet instanceof ClientboundAddEntityPacket addPacket
-         && addPacket.getType() == EntityType.END_CRYSTAL) {
+         && addPacket.getType().getDescriptionId().equals("entity.minecraft.end_crystal")) {
 
          Vec3 crystalPos = new Vec3(addPacket.getX(), addPacket.getY(), addPacket.getZ());
          BlockPos basePos = BlockPos.containing(crystalPos).below();
@@ -1043,7 +1041,7 @@ public class CrystalAura extends Module {
             continue;
          }
          float speed = stack.getDestroySpeed(state);
-         if (state.is(Blocks.COBWEB) && stack.getItem() instanceof SwordItem) {
+         if (state.is(Blocks.COBWEB) && stack.is(ItemTags.SWORDS)) {
             speed += 15.0F;
          }
          if (speed > bestSpeed) {
@@ -1068,7 +1066,7 @@ public class CrystalAura extends Module {
       float bestDamage = 0.0F;
       for (int slot = 0; slot < 9; slot++) {
          ItemStack stack = inv.getItem(slot);
-         if (stack.getItem() instanceof SwordItem) {
+         if (stack.is(ItemTags.SWORDS)) {
             return slot;
          }
          if (stack.getItem() instanceof AxeItem && bestDamage < 5.0F) {
@@ -1509,8 +1507,8 @@ public class CrystalAura extends Module {
       damage *= (1.0F - f1 / 25.0F);
 
       // Учёт эффекта Сопротивления (Resistance)
-      if (entity.hasEffect(MobEffects.DAMAGE_RESISTANCE)) {
-         int amp = (entity.getEffect(MobEffects.DAMAGE_RESISTANCE).getAmplifier() + 1) * 5;
+      if (entity.hasEffect(MobEffects.RESISTANCE)) {
+         int amp = (entity.getEffect(MobEffects.RESISTANCE).getAmplifier() + 1) * 5;
          float j = Math.max(0.0F, 25.0F - amp);
          damage = damage * j / 25.0F;
       }
@@ -2027,6 +2025,51 @@ public class CrystalAura extends Module {
          (float) (box.maxZ - camPos.z),
          ColorUtil.withAlpha(color, Mth.clamp((int) (alpha * 255.0F), 0, 255))
       );
+   }
+
+   public static AABB getHighlightBox(BlockPos pos, float scale) {
+      return createCenteredBox(pos, scale);
+   }
+
+   public static Rotations smoothRotation(Rotations from, Rotations to) {
+      return computeSmoothRotation(from, to);
+   }
+
+   public static List<Player> getNearbyPlayers(float range) {
+      return collectPlayersInRange(range, false);
+   }
+
+   public static List<Player> getEnemies(float range) {
+      return collectPlayersInRange(range, true);
+   }
+
+   private static List<Player> collectPlayersInRange(float range, boolean enemiesOnly) {
+      Minecraft mc = MinecraftAccess.MINECRAFT;
+      LocalPlayer self = mc.player;
+      ClientLevel level = mc.level;
+      if (self == null || level == null) {
+         return List.of();
+      }
+      AntiBot antiBot = Onetap.MODULE_MANAGER.get(AntiBot.class);
+      Vec3 eyePos = self.getEyePosition();
+      double maxSq = Mth.square(range);
+      List<Player> result = new ArrayList<>();
+      for (Player p : level.players()) {
+         if (p == self || !p.isAlive() || p.isSpectator()) {
+            continue;
+         }
+         if (eyePos.distanceToSqr(p.getBoundingBox().getCenter()) > maxSq) {
+            continue;
+         }
+         if (enemiesOnly) {
+            if (p.isCreative() || Onetap.FRIEND_MANAGER.isFriend(p.getName().getString())
+               || (antiBot != null && antiBot.isBot(p))) {
+               continue;
+            }
+         }
+         result.add(p);
+      }
+      return result;
    }
 
    public static AABB createCenteredBox(BlockPos pos, float scale) {
