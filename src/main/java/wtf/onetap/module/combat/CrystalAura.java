@@ -1,42 +1,61 @@
 package wtf.onetap.module.combat;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Queue;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundExplodePacket;
+import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResult.Success;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.item.DiggerItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.PickaxeItem;
+import net.minecraft.world.item.ShovelItem;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Matrix4f;
 import wtf.onetap.Onetap;
 import wtf.onetap.annotation.EventTarget;
 import wtf.onetap.annotation.ModuleInformation;
-import wtf.onetap.combat.crystal.CrystalInteraction;
-import wtf.onetap.combat.crystal.CrystalMining;
-import wtf.onetap.combat.crystal.CrystalPlacer;
-import wtf.onetap.combat.crystal.CrystalTargeting;
-import wtf.onetap.combat.crystal.HotbarSwitcher;
 import wtf.onetap.event.ConnectedEvent;
 import wtf.onetap.event.ContinueAttackEvent;
 import wtf.onetap.event.EventPriority;
@@ -52,1526 +71,2055 @@ import wtf.onetap.render.ColorUtil;
 import wtf.onetap.setting.BooleanSetting;
 import wtf.onetap.setting.FloatSetting;
 import wtf.onetap.util.C9_q;
-import wtf.onetap.util.InventoryUtil;
 import wtf.onetap.util.LatencyStats;
 import wtf.onetap.util.MinecraftAccess;
-import wtf.onetap.util.PlayerUtil;
 import wtf.onetap.util.Rotations;
 import wtf.onetap.util.TickExecutor;
-import wtf.onetap.util.TimeHelper;
 
-@ModuleInformation(name = "CrystalAura", description = "Быстрая и умная авто-установка и взрыв кристаллов", category = Category.COMBAT)
+@ModuleInformation(
+   name = "CrystalAura",
+   description = "Продвинутая боевая система кристаллов с предиктом, авто-обсидианом и умным подкопом",
+   category = Category.COMBAT
+)
 public class CrystalAura extends Module {
-   private static final LatencyStats.StateHolder C0 = LatencyStats.getOrCreate("CrystalAura targets");
-   private static final LatencyStats.StateHolder C02 = LatencyStats.getOrCreate("CrystalAura boxes");
-   private static final LatencyStats.StateHolder C03 = LatencyStats.getOrCreate("CrystalAura aim");
-   private static final LatencyStats.StateHolder C04 = LatencyStats.getOrCreate("CrystalAura execute");
-   private static final LatencyStats.StateHolder C05 = LatencyStats.getOrCreate("CrystalAura async");
-   private static final LatencyStats.StateHolder C06 = LatencyStats.getOrCreate("CrystalAura hold");
-   private static final LatencyStats.StateHolder C07 = LatencyStats.getOrCreate("CrystalAura deferred");
-   private static final double[] DOUBLE_VALUE_ARRAY = new double[32];
 
-   private final FloatSetting placeRange = new FloatSetting("Дальность установки", 4.5F, 3.0F, 6.0F, 0.1F).build();
-   private final FloatSetting explosionRange = new FloatSetting("Дальность взрыва", 3.5F, 1.0F, 6.0F, 0.1F).build();
-   private final FloatSetting minEnemyDamage = new FloatSetting("Мин. урон врагу", 5.5F, 1.0F, 20.0F, 0.5F).build();
-   private final FloatSetting maxSelfDamage = new FloatSetting("Макс. урон себе", 8.5F, 0.0F, 20.0F, 0.5F).build();
-   private final FloatSetting predictTickCount = new FloatSetting("Предикт тиков", 2.0F, 0.0F, 4.0F, 1.0F).build();
-   private final BooleanSetting fastBreak = new BooleanSetting("Быстрый взрыв", true).build();
-   private final BooleanSetting autoDigUnder = new BooleanSetting("Авто подкоп", true).build();
-   private final BooleanSetting renderPosition = new BooleanSetting("Рендер позиции", true).build();
-   private final BooleanSetting dontBlowResources = new BooleanSetting("Не взрывать ресурсы", true).build();
-   private final BooleanSetting crystalDelay = new BooleanSetting("Задержка кристаллов", false).build();
-   private final BooleanSetting autoWeb = new BooleanSetting("Авто паутина", false).build();
+   // =========================================================================
+   // СТАТИСТИКА ПРОИЗВОДИТЕЛЬНОСТИ
+   // =========================================================================
+   private static final LatencyStats.StateHolder STAT_TARGETS = LatencyStats.getOrCreate("CrystalAura targets");
+   private static final LatencyStats.StateHolder STAT_SEARCH  = LatencyStats.getOrCreate("CrystalAura search");
+   private static final LatencyStats.StateHolder STAT_AIM     = LatencyStats.getOrCreate("CrystalAura aim");
+   private static final LatencyStats.StateHolder STAT_EXEC    = LatencyStats.getOrCreate("CrystalAura execute");
+   private static final LatencyStats.StateHolder STAT_ASYNC   = LatencyStats.getOrCreate("CrystalAura async");
 
-   private final TimeHelper timeHelper = new TimeHelper();
-   private final HotbarSwitcher hotbarSwitcher = new HotbarSwitcher();
-   private final Map<BlockPos, Integer> blockPosMap = new HashMap<>();
-   private final Map<BlockPos, Integer> blockPosMap2 = new HashMap<>();
-   private final Map<BlockPos, Integer> blockPosMap3 = new HashMap<>();
-   private final Map<BlockPos, Integer> blockPosMap4 = new HashMap<>();
-   private final Map<Integer, Integer> integerMap = new HashMap<>();
-   private final List<CrystalAura.DataRecord2> c6List = new ArrayList<>();
+   private static final double[] ROTATION_SCRATCH = new double[32];
+   private static final Direction[] HORIZONTAL_DIRS = new Direction[]{
+      Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST
+   };
+   private static final Direction[] ALL_DIRS = Direction.values();
 
-   private ClientLevel clientLevel;
-   private int value = -1;
-   private BlockPos blockPos;
-   private float floatValue;
-   private int value2;
-   private BlockPos blockPos2;
-   private int value3;
-   private int value4 = -1;
-   private BlockPos blockPos3;
-   private BlockPos blockPos4;
-   private BlockPos blockPos5;
-   private BlockPos blockPos6;
-   private int value5;
-   private int value6 = -2;
-   private BlockPos blockPos7;
-   private BlockPos blockPos8;
-   private int value7;
-   private int value8;
-   private AABB aABB;
-   private List<ItemEntity> itemEntityList = List.of();
-   private int value9;
-   private int value10;
-   private int value11;
-   private final Map<Integer, Integer> integerMap2 = new HashMap<>();
-   private final Map<Integer, CrystalAura.DataRecord> integerMap3 = new HashMap<>();
-   private CrystalAura.DataRecord3 c9;
-   private Vec3 vec3;
-   private Rotations rotations;
-   private Rotations rotations2;
-   private int value12 = -1;
-   private int value13;
-   private BlockPos blockPos9;
-   private float floatValue2;
-   private long longValue;
-   private AutoAnchor.DataRecord c4;
-   private int value14 = -1;
-   private List<Player> playerList = List.of();
-   private List<Player> playerList2 = List.of();
-   private int value15 = -1;
-   private int value16 = Integer.MIN_VALUE;
-   private List<CrystalPlacer.DataRecord4> c5List;
-   private boolean flag;
-   private boolean flag2;
-   private boolean flag3;
-   private final Queue<CrystalAura.DataRecord2> queue = new ConcurrentLinkedQueue<>();
-   private float floatValue3 = Float.NaN;
-   private float floatValue4;
-   private float floatValue5;
-   private int value17 = -1;
-   private float floatValue6;
-   private static String text;
+   // =========================================================================
+   // НАСТРОЙКИ МОДУЛЯ
+   // =========================================================================
+   private final FloatSetting targetRange      = new FloatSetting("Дистанция целей", 10.0F, 4.0F, 16.0F, 0.5F).build();
+   private final FloatSetting placeRange       = new FloatSetting("Дальность установки", 4.5F, 2.5F, 6.0F, 0.1F).build();
+   private final FloatSetting breakRange       = new FloatSetting("Дальность взрыва", 4.0F, 2.0F, 6.0F, 0.1F).build();
+   private final FloatSetting wallRange        = new FloatSetting("Дальность сквозь стены", 3.0F, 0.0F, 5.0F, 0.1F).build();
+
+   private final FloatSetting minEnemyDamage   = new FloatSetting("Мин. урон врагу", 5.5F, 1.0F, 20.0F, 0.5F).build();
+   private final FloatSetting maxSelfDamage    = new FloatSetting("Макс. урон себе", 8.0F, 0.0F, 20.0F, 0.5F).build();
+   private final FloatSetting lethalHealth     = new FloatSetting("Порог добивания HP", 8.0F, 2.0F, 20.0F, 0.5F).build();
+   private final FloatSetting antiSuicideMargin= new FloatSetting("Запас анти-суицида", 2.0F, 0.5F, 8.0F, 0.5F).build();
+
+   private final FloatSetting placeDelayTicks  = new FloatSetting("Задержка установки (тики)", 0.0F, 0.0F, 10.0F, 1.0F).build();
+   private final FloatSetting breakDelayTicks  = new FloatSetting("Задержка взрыва (тики)", 0.0F, 0.0F, 10.0F, 1.0F).build();
+   private final FloatSetting predictTicks     = new FloatSetting("Предикт движения", 2.0F, 0.0F, 6.0F, 1.0F).build();
+   private final FloatSetting digRange         = new FloatSetting("Дальность подкопа", 4.5F, 2.5F, 6.0F, 0.1F).build();
+
+   private final BooleanSetting autoPlace      = new BooleanSetting("Авто установка", true).build();
+   private final BooleanSetting autoBreak      = new BooleanSetting("Авто взрыв", true).build();
+   private final BooleanSetting autoObsidian   = new BooleanSetting("Авто обсидиан", true).build();
+   private final BooleanSetting autoDigUnder   = new BooleanSetting("Авто подкоп", true).build();
+   private final BooleanSetting digSmartTool   = new BooleanSetting("Умный выбор инструмента", true).build();
+   private final BooleanSetting digSurround    = new BooleanSetting("Копать защиту врага", true).build();
+   private final BooleanSetting digFloor       = new BooleanSetting("Копать пол под врагом", true).build();
+   private final BooleanSetting packetInstant  = new BooleanSetting("Мгновенный взрыв пакетом", true).build();
+   private final BooleanSetting predictPlace   = new BooleanSetting("Ре-плейс после взрыва", true).build();
+   private final BooleanSetting silentSwitch   = new BooleanSetting("Тихий свап слота", true).build();
+   private final BooleanSetting antiWeakness   = new BooleanSetting("Анти-слабость", true).build();
+   private final BooleanSetting dontBlowItems  = new BooleanSetting("Не взрывать ресурсы", true).build();
+   private final BooleanSetting rotateEnabled  = new BooleanSetting("Ротация", true).build();
+   private final BooleanSetting movementFix    = new BooleanSetting("Коррекция движения", true).build();
+   private final BooleanSetting renderVisuals  = new BooleanSetting("Рендер позиций", true).build();
+
+   // =========================================================================
+   // ВНУТРЕННИЕ СОСТОЯНИЯ И КЭШИ
+   // =========================================================================
+   private final AtomicBoolean asyncRunning = new AtomicBoolean(false);
+   private volatile long asyncStartNanos = 0L;
+   private boolean loggedAsyncError = false;
+
+   private ClientLevel lastLevel = null;
+   private int lastPlayerTick = -1;
+
+   // Кэш целей и позиций
+   private volatile List<TargetProfile> activeTargets = List.of();
+   private volatile List<Player> friendPlayers = List.of();
+   private volatile List<ItemEntity> nearbyLoot = List.of();
+   private final Map<Integer, MotionHistory> entityMotionMap = new ConcurrentHashMap<>();
+
+   // Таймеры и кулдауны действий
+   private int lastPlaceTick = -100;
+   private int lastBreakTick = -100;
+   private int lastObsidianTick = -100;
+
+   // Учёт атакованных / поставленных кристаллов и обсидиана
+   private final Map<Integer, Integer> attackedCrystals = new ConcurrentHashMap<>();
+   private final Map<Integer, Integer> failedAttackAttempts = new ConcurrentHashMap<>();
+   private final Map<BlockPos, Integer> pendingCrystalPlaces = new ConcurrentHashMap<>();
+   private final Map<BlockPos, Integer> pendingObsidianPlaces = new ConcurrentHashMap<>();
+   private final Map<BlockPos, Integer> blacklistedBlocks = new ConcurrentHashMap<>();
+   private final Map<BlockPos, Integer> blacklistedDigBlocks = new ConcurrentHashMap<>();
+
+   // Текущая запланированная задача на тик
+   private volatile CombatTask currentTask = null;
+   private volatile BlockPos currentAnchorBase = null;
+   private volatile BlockPos forcedRePlacePos = null;
+
+   // Состояние авто-подкопа (AutoDig)
+   private volatile DigTask activeDigTask = null;
+   private int savedSlotBeforeAction = -1;
+   private boolean isSilentlySwapped = false;
+
+   // Состояние ротации
+   private volatile Rotations targetRotation = null;
+   private volatile Rotations appliedRotation = null;
+   private int rotationAppliedTick = -1;
+   private int rotationHoldTicks = 0;
+
+   // Визуализация (Render3D)
+   private final Queue<RenderMarker> renderQueue = new ConcurrentLinkedQueue<>();
+   private final List<RenderMarker> activeMarkers = new ArrayList<>();
+   private volatile BlockPos renderDigPos = null;
+   private volatile float renderDigProgress = 0.0F;
+   private volatile long renderDigTimestamp = 0L;
+
+   // Внешняя интеграция
+   private AutoAnchor.DataRecord sharedAnchorLock = null;
+   private static String debugStatusText = "IDLE";
+
+   // =========================================================================
+   // ЖИЗНЕННЫЙ ЦИКЛ МОДУЛЯ
+   // =========================================================================
 
    public boolean isBusy() {
-      return this.isEnabled() && (this.c9 != null || this.rotations != null);
+      return this.isEnabled() && (this.currentTask != null || this.activeDigTask != null || this.targetRotation != null);
    }
 
    public AutoAnchor.DataRecord m_3_C4() {
-      return this.isEnabled() ? this.c4 : null;
+      return this.isEnabled() ? this.sharedAnchorLock : null;
+   }
+
+   public static String m_1_String() {
+      return debugStatusText;
+   }
+
+   public static void m_9_void(String status) {
+      debugStatusText = status;
    }
 
    @Override
    public void onEnable() {
-      this.flag = false;
+      this.asyncRunning.set(false);
+      this.loggedAsyncError = false;
+      this.resetAllState();
    }
 
    @Override
    public void onDisable() {
       TickExecutor.m_0_boolean();
-      this.flag = false;
-      this.resetAll();
+      this.asyncRunning.set(false);
+      this.restoreHotbarSlot();
+      this.resetAllState();
    }
+
+   // =========================================================================
+   // ГЛАВНЫЕ СОБЫТИЯ КЛИЕНТА
+   // =========================================================================
 
    @EventTarget
    private void onConnected(ConnectedEvent event) {
-      if (this.flag) {
+      Minecraft mc = MinecraftAccess.MINECRAFT;
+      if (mc.player == null || mc.level == null) {
+         return;
+      }
+
+      // Защита от зависшего асинхронного потока (> 60 мс)
+      if (this.asyncRunning.get() && (System.nanoTime() - this.asyncStartNanos) > 60_000_000L) {
          TickExecutor.m_0_boolean();
-         this.flag = false;
+         this.asyncRunning.set(false);
       }
 
-      long longValue2 = System.nanoTime();
-      this.tickRenderQueue();
-      C07.recordSince(longValue2);
-      long longValue3 = System.nanoTime();
-      this.tickRotation();
-      C06.recordSince(longValue3);
-      if (this.c9 == null) {
-         this.hotbarSwitcher.m_5_void();
+      this.flushRenderQueue();
+      this.maintainRotation();
+
+      if (this.currentTask == null && this.activeDigTask == null) {
+         this.restoreHotbarSlot();
       }
    }
 
+   /**
+    * Запускается планировщиком клиента для фонового поиска целей и расчёта позиций.
+    */
    public void scheduleAsync() {
-      if (this.isEnabled() && !this.flag) {
-         if (MinecraftAccess.MINECRAFT.player != null && MinecraftAccess.MINECRAFT.level != null) {
-            this.flag = true;
-            TickExecutor.m_4(() -> {
-               if (this.isEnabled()) {
-                  long longValue2 = System.nanoTime();
-                  CrystalPlacer.setDeadline(35000000L);
-                  CrystalMining.onTickStart();
-
-                  try {
-                     this.m_6_n_void();
-                  } catch (Throwable e) {
-                     if (!this.flag2) {
-                        this.flag2 = true;
-                        Onetap.LOGGER.error("CrystalAura: the async search failed", e);
-                     }
-                  } finally {
-                     this.flag = false;
-                     CrystalMining.tickCooldown();
-                     CrystalPlacer.setDeadline(0L);
-                     C05.recordSince(longValue2);
-                  }
-               } else {
-                  this.flag = false;
-               }
-            });
-         }
+      if (!this.isEnabled()) {
+         return;
       }
-   }
-
-   private void tickRenderQueue() {
-      this.hotbarSwitcher.m_3_void();
-      if (this.flag3) {
-         this.flag3 = false;
-         this.c6List.clear();
+      Minecraft mc = MinecraftAccess.MINECRAFT;
+      if (mc.player == null || mc.level == null) {
+         return;
+      }
+      if (!this.asyncRunning.compareAndSet(false, true)) {
+         return;
       }
 
-      CrystalAura.DataRecord2 c6;
-      while ((c6 = this.queue.poll()) != null) {
-         this.c6List.add(c6);
-      }
-   }
-
-   private void m_6_n_void() {
-      this.c4 = null;
-      if (this.clientLevel != MinecraftAccess.MINECRAFT.level || (MinecraftAccess.MINECRAFT.player != null && MinecraftAccess.MINECRAFT.player.tickCount < this.value)) {
-         this.resetAll();
-         this.clientLevel = MinecraftAccess.MINECRAFT.level;
-      }
-
-      if (MinecraftAccess.MINECRAFT.player != null && MinecraftAccess.MINECRAFT.level != null && MinecraftAccess.MINECRAFT.gameMode != null && !MinecraftAccess.MINECRAFT.player.isSpectator()) {
-         this.value = MinecraftAccess.MINECRAFT.player.tickCount;
-         this.vec3 = MinecraftAccess.MINECRAFT.player.getEyePosition();
-         if (this.isOtherModuleBusy()) {
-            this.cancelAndReset();
-         } else {
-            this.purgeExpired();
-            var playerList3 = this.getPlayers();
-            if (!playerList3.isEmpty() && !MinecraftAccess.MINECRAFT.player.isUsingItem()) {
-               this.m_2(playerList3);
-               this.m_6w_void();
-               if (this.c9 != null && this.c9.m_4f() != CrystalAura.ModeKind.DIG) {
-                  if (MinecraftAccess.MINECRAFT.player.tickCount - this.c9.m_2b() <= CrystalInteraction.getTimeoutTicks()) {
-                     this.c4 = AutoAnchor.DataRecord.f_1;
-                     this.m_6g_void();
-                     return;
-                  }
-
-                  this.cancelCurrentAction();
-               }
-
-               Vec3 vec32 = MinecraftAccess.MINECRAFT.player.getEyePosition();
-               if (this.timeHelper.getElapsed() >= 0L) {
-                  this.m_0_void(vec32);
-                  if (this.blockPos7 != null) {
-                     BlockPos blockPos10 = this.blockPos7;
-                     this.blockPos7 = null;
-                     if (this.tryPlaceCrystal(blockPos10)) {
-                        this.c4 = AutoAnchor.DataRecord.f_1;
-                        this.blockPos3 = blockPos10;
-                        return;
-                     }
-                  }
-
-                  float floatValue7 = this.m_4_float();
-                  var playerList4 = this.getFarPlayers();
-                  this.itemEntityList = this.dontBlowResources.getValue() ? LegacyCrystalAura.getNearbyItems() : List.of();
-                  if (this.blockPos5 != null && MinecraftAccess.MINECRAFT.player.tickCount - this.value9 > CrystalInteraction.getTimeoutTicks()) {
-                     this.blockPos5 = null;
-                  }
-
-                  if (this.blockPos6 != null && (MinecraftAccess.MINECRAFT.player.tickCount - this.value5 > getPingDelay() || CrystalPlacer.m_8(this.blockPos6, this.integerMap.keySet()))) {
-                     this.blockPos6 = null;
-                  }
-
-                  if (this.blockPos8 != null
-                     && (
-                        MinecraftAccess.MINECRAFT.player.tickCount - this.value7 > CrystalInteraction.getTimeoutTicks()
-                           || !(
-                              MinecraftAccess.MINECRAFT.level.getEntity(this.value8) instanceof Player player
-                                 && !this.m_3_boolean(player.getBoundingBox())
-                                 && (CrystalInteraction.m_5_boolean(this.blockPos8) || MinecraftAccess.MINECRAFT.level.getBlockState(this.blockPos8).is(Blocks.COBWEB))
-                           )
-                     )) {
-                     this.blockPos8 = null;
-                  }
-
-                  Set<Integer> set = new HashSet<>(this.integerMap.keySet());
-                  if (!this.integerMap2.isEmpty()) {
-                     this.integerMap2.forEach((integer, integer2) -> {
-                        if (integer2 >= 2) {
-                           set.add(integer);
-                        }
-                     });
-                  }
-
-                  EndCrystal endCrystal = this.blockPos5 == null ? null : this.findCrystalAt(this.blockPos5.above());
-                  if (endCrystal != null
-                     && (
-                        set.contains(endCrystal.getId())
-                           || CrystalPlacer.m_4(endCrystal, vec32, this.getExplosionRange()) == null
-                           || this.hasNearbyItems(endCrystal.position())
-                           || CrystalMining.m_3(endCrystal.position(), MinecraftAccess.MINECRAFT.player) >= Math.min(floatValue7, this.maxSelfDamage.getFloat())
-                     )) {
-                     endCrystal = null;
-                  }
-
-                  if (endCrystal == null) {
-                     endCrystal = CrystalPlacer.m_4(playerList3, vec32, this.getExplosionRange(), this.maxSelfDamage.getFloat(), this.m_9_float(), floatValue7, playerList4, set, this::hasNearbyItems);
-                     if (endCrystal != null && !this.isDelayElapsed()) {
-                        this.c4 = AutoAnchor.DataRecord.f_1;
-                        this.stopMining();
-                        this.hotbarSwitcher.m_8_void();
-                        Vec3 vec33 = this.m_7(endCrystal, vec32);
-                        if (vec33 != null) {
-                           this.aimAt(vec33);
-                        }
-
-                        return;
-                     }
-                  }
-
-                  if (endCrystal == null && this.blockPos == null) {
-                     EndCrystal endCrystal2 = this.blockPos4 == null ? null : this.findCrystalAt(this.blockPos4.above());
-                     if (endCrystal2 != null && playerList3.stream().anyMatch(player2 -> CrystalPlacer.collidesWithBlocks(player2.getBoundingBox()))) {
-                        set.add(endCrystal2.getId());
-                     }
-
-                     endCrystal = CrystalPlacer.m_4(
-                        playerList3, vec32, this.getExplosionRange(), Math.min(this.maxSelfDamage.getFloat(), this.m_3_float() * 0.5F), 0.0F, floatValue7, playerList4, set, this::hasNearbyItems
-                     );
-                  }
-
-                  if (endCrystal != null && this.m_7_boolean(endCrystal)) {
-                     return;
-                  }
-
-                  if (!this.tryPlaceWeb(playerList3, playerList4, vec32)) {
-                     boolean flag4 = InventoryUtil.findHotbarSlot(Items.END_CRYSTAL) >= 0;
-                     boolean flag5 = !this.blockPosMap3.isEmpty() || !this.blockPosMap4.isEmpty();
-                     boolean flag6 = !flag5 && InventoryUtil.findHotbarSlot(Items.OBSIDIAN) >= 0;
-                     boolean flag7 = flag4 && this.isDelayElapsed();
-                     var c5List2 = this.m_2(playerList3, 0);
-                     float floatValue8 = (float)CrystalInteraction.clampInteractionRange(this.placeRange.getFloat());
-                     BlockPos blockPos11 = this.blockPos3 != null ? this.blockPos3 : (this.blockPos2 != null && MinecraftAccess.MINECRAFT.player.tickCount - this.value3 <= 80 ? this.blockPos2 : null);
-                     var blockPosSet = this.getBlockedPositions();
-                     CrystalPlacer.DataRecord2 c2 = flag4
-                        ? CrystalPlacer.m_7(
-                           c5List2,
-                           vec32,
-                           floatValue8,
-                           this.getExplosionRange(),
-                           this.maxSelfDamage.getFloat(),
-                           this.minEnemyDamage.getFloat(),
-                           this.m_9_float(),
-                           flag6,
-                           false,
-                           floatValue7,
-                           playerList4,
-                           blockPos11,
-                           blockPosSet,
-                           set,
-                           this::hasNearbyItems
-                        )
-                        : null;
-                     if (c2 == null
-                        && flag4
-                        && flag6
-                        && this.blockPos4 != null
-                        && this.blockPos == null
-                        && !CrystalPlacer.isObsidianOrBedrock(this.blockPos4)
-                        && MinecraftAccess.MINECRAFT.level.getBlockState(this.blockPos4).canBeReplaced()) {
-                        c2 = CrystalPlacer.m_1(
-                           this.blockPos4,
-                           c5List2,
-                           vec32,
-                           floatValue8,
-                           this.getExplosionRange(),
-                           this.maxSelfDamage.getFloat(),
-                           this.m_9_float(),
-                           true,
-                           false,
-                           floatValue7,
-                           playerList4,
-                           blockPosSet,
-                           set,
-                           this::hasNearbyItems
-                        );
-                     }
-
-                     if (c2 == null && flag4 && flag6) {
-                        var c5List3 = this.m_2(playerList3, CrystalInteraction.getPing() * 2 + 3);
-                        c2 = CrystalPlacer.m_7(
-                           c5List3,
-                           vec32,
-                           floatValue8,
-                           this.getExplosionRange(),
-                           this.maxSelfDamage.getFloat(),
-                           this.minEnemyDamage.getFloat(),
-                           this.m_9_float(),
-                           true,
-                           false,
-                           floatValue7,
-                           playerList4,
-                           blockPos11,
-                           blockPosSet,
-                           set,
-                           this::hasNearbyItems
-                        );
-                     }
-
-                     if (c2 != null) {
-                        if (!this.m_7(c2)) {
-                           this.stopMining();
-                           this.blockPos3 = c2.m_7_i();
-                           if (c2.m_60()) {
-                              this.tryPlaceObsidian(c2.m_7_i());
-                           } else if (!flag7) {
-                              CrystalInteraction.DataRecord c22 = CrystalInteraction.m_6(c2.m_7_i(), vec32, this.placeRange.getFloat());
-                              if (c22 != null) {
-                                 this.aimAt(c22.m_7a());
-                              }
-                           } else if (this.tryPlaceCrystal(c2.m_7_i())) {
-                              this.blockPos4 = null;
-                           }
-                        }
-                     } else if (flag5) {
-                        if (this.blockPos5 == null || !this.blockPosMap4.containsKey(this.blockPos5) || !this.tryPlaceCrystal(this.blockPos5)) {
-                           if (this.blockPos4 != null && flag4 && (Boolean)this.autoDigUnder.getValue()) {
-                              HashSet<BlockPos> set3 = new HashSet<>(this.blockPosMap.keySet());
-                              set3.addAll(this.blockPosMap2.keySet());
-                              CrystalPlacer.DataRecord2 c23 = CrystalPlacer.m_1(
-                                 this.blockPos4,
-                                 c5List2,
-                                 vec32,
-                                 floatValue8,
-                                 this.getExplosionRange(),
-                                 this.maxSelfDamage.getFloat(),
-                                 this.m_3_float(),
-                                 false,
-                                 true,
-                                 floatValue7,
-                                 playerList4,
-                                 set3,
-                                 set,
-                                 this::hasNearbyItems
-                              );
-                              if (c23 != null && c23.m_6y_boolean()) {
-                                 if (!this.m_7(c23)) {
-                                    this.m_5(c23);
-                                 }
-
-                                 return;
-                              }
-                           }
-
-                           this.c4 = AutoAnchor.DataRecord.f_1;
-                           this.stopMining();
-                           this.hotbarSwitcher.m_8_void();
-                           BlockPos blockPos12 = (this.blockPosMap4.isEmpty() ? this.blockPosMap3 : this.blockPosMap4).keySet().iterator().next();
-                           this.aimAt(new Vec3(blockPos12.getX() + 0.5, blockPos12.getY() + 1.0, blockPos12.getZ() + 0.5));
-                        }
-                     } else {
-                        if (!(Boolean)this.autoDigUnder.getValue() || !flag4) {
-                           this.stopMining();
-                        }
-
-                        if (this.blockPos3 != null && (this.blockPos3.equals(this.blockPos6) || CrystalPlacer.m_8(this.blockPos3, set))) {
-                           if (this.value4 < 0) {
-                              this.value4 = MinecraftAccess.MINECRAFT.player.tickCount;
-                           }
-
-                           if (this.blockPos5 == null && flag4 && this.value11 < 2 && MinecraftAccess.MINECRAFT.player.tickCount >= this.value10) {
-                              CrystalPlacer.DataRecord2 c24 = CrystalPlacer.m_8(
-                                 this.blockPos3,
-                                 c5List2,
-                                 vec32,
-                                 floatValue8,
-                                 this.getExplosionRange(),
-                                 Math.min(this.maxSelfDamage.getFloat(), this.m_3_float()),
-                                 floatValue7,
-                                 playerList4,
-                                 flag6,
-                                 blockPosSet,
-                                 set,
-                                 this::hasNearbyItems
-                              );
-                              if (c24 != null) {
-                                 this.blockPos5 = c24.m_7_i();
-                                 this.value9 = MinecraftAccess.MINECRAFT.player.tickCount;
-                                 this.value11++;
-                              }
-                           }
-
-                           if (this.blockPos5 != null && !this.blockPosMap3.containsKey(this.blockPos5) && this.findCrystalAt(this.blockPos5.above()) == null) {
-                              this.stopMining();
-                              if (CrystalPlacer.isObsidianOrBedrock(this.blockPos5)) {
-                                 this.tryPlaceCrystal(this.blockPos5);
-                              } else {
-                                 this.tryPlaceObsidian(this.blockPos5);
-                              }
-
-                              return;
-                           }
-
-                           if (this.blockPos5 != null || MinecraftAccess.MINECRAFT.player.tickCount < this.value10 || MinecraftAccess.MINECRAFT.player.tickCount - this.value4 <= 20) {
-                              this.hotbarSwitcher.m_8_void();
-                              return;
-                           }
-                        } else {
-                           this.value4 = -1;
-                           this.value11 = 0;
-                        }
-
-                        if (this.blockPos != null && CrystalInteraction.m_9(this.blockPos, vec32, this.placeRange.getFloat()) == null) {
-                           this.hotbarSwitcher.m_8_void();
-                        } else {
-                           boolean flag8 = flag4 && (Boolean)this.autoDigUnder.getValue();
-                           boolean flag9 = this.m_5_boolean(c5List2);
-                           CrystalPlacer.DataRecord2 c25 = flag8 && this.blockPos4 != null
-                              ? CrystalPlacer.m_1(
-                                 this.blockPos4,
-                                 c5List2,
-                                 vec32,
-                                 floatValue8,
-                                 this.getExplosionRange(),
-                                 this.maxSelfDamage.getFloat(),
-                                 this.m_3_float(),
-                                 flag6,
-                                 true,
-                                 floatValue7,
-                                 playerList4,
-                                 blockPosSet,
-                                 set,
-                                 this::hasNearbyItems
-                              )
-                              : null;
-                           c2 = c25 != null
-                              ? c25
-                              : (
-                                 flag8 && flag9
-                                    ? CrystalPlacer.m_7(
-                                       c5List2,
-                                       vec32,
-                                       floatValue8,
-                                       this.getExplosionRange(),
-                                       this.maxSelfDamage.getFloat(),
-                                       this.minEnemyDamage.getFloat(),
-                                       flag6,
-                                       true,
-                                       floatValue7,
-                                       playerList4,
-                                       this.blockPos4,
-                                       blockPosSet,
-                                       set,
-                                       this::hasNearbyItems
-                                    )
-                                    : null
-                              );
-                           if (c2 != null
-                              && c2.m_72_BlockPos() != null
-                              && c2.m_7_i().equals(this.blockPos4)
-                              && this.blockPos != null
-                              && (this.blockPos.equals(this.blockPos4) || this.blockPos.equals(this.blockPos4.above()))
-                              && CrystalPlacer.m_8_boolean(MinecraftAccess.MINECRAFT.level.getBlockState(this.blockPos))) {
-                              c2 = new CrystalPlacer.DataRecord2(c2.m_7_i(), c2.m_60(), this.blockPos, c2.m_1_u_float(), c2.m_1_c(), false);
-                           }
-
-                           if (c2 == null) {
-                              this.stopMining();
-                              this.hotbarSwitcher.m_8_void();
-                           } else if (!this.m_7(c2)) {
-                              this.m_5(c2);
-                           }
-                        }
-                     }
-                  }
-               }
-            } else {
-               this.cancelAndReset();
-               this.blockPos3 = null;
-               this.blockPos4 = null;
+      this.asyncStartNanos = System.nanoTime();
+      TickExecutor.m_4(() -> {
+         try {
+            if (this.isEnabled()) {
+               this.runCombatPlanner();
             }
+         } catch (Throwable t) {
+            if (!this.loggedAsyncError) {
+               this.loggedAsyncError = true;
+               Onetap.LOGGER.error("CrystalAura: ошибка в планировщике расчётов", t);
+            }
+         } finally {
+            this.asyncRunning.set(false);
+            STAT_ASYNC.recordSince(this.asyncStartNanos);
          }
-      } else {
-         this.resetAll();
-      }
-   }
-
-   private void m_5(CrystalPlacer.DataRecord2 c2) {
-      this.blockPos3 = c2.m_7_i();
-      if (c2.m_72_BlockPos() != null) {
-         this.blockPos4 = c2.m_7_i();
-      }
-
-      if (c2.m_72_BlockPos() == null || c2.m_6y_boolean() && c2.m_60()) {
-         this.stopMining();
-         if (c2.m_60()) {
-            this.tryPlaceObsidian(c2.m_7_i());
-         } else {
-            this.tryPlaceCrystal(c2.m_7_i());
-         }
-      } else {
-         this.m_1_void(c2.m_72_BlockPos());
-      }
+      });
    }
 
    @EventTarget(priority = EventPriority.LOWEST)
    private void onPreMotion(PreMotionEvent event) {
-      if (this.c9 != null && MinecraftAccess.MINECRAFT.player != null && MinecraftAccess.MINECRAFT.level != null && MinecraftAccess.MINECRAFT.gameMode != null && !MinecraftAccess.MINECRAFT.player.isUsingItem()) {
-         if (this.isOtherModuleBusy()) {
-            this.cancelAndReset();
-         } else if (this.isRotationReady()) {
-            Vec3 vec32 = MinecraftAccess.MINECRAFT.player.position().add(0.0, MinecraftAccess.MINECRAFT.player.getEyeHeight(), 0.0);
-            long longValue2 = System.nanoTime();
-
-            Vec3 vec33;
-            try {
-               if (this.c9.m_4f() == CrystalAura.ModeKind.ATTACK) {
-                  vec33 = this.m_7(this.c9.m_5h(), vec32);
-               } else {
-                  CrystalInteraction.DataRecord c2 = switch (this.c9.m_4f().ordinal()) {
-                     case 0 -> CrystalInteraction.m_6(this.c9.m_4_t_BlockPos(), vec32, this.placeRange.getFloat(), false);
-                     case 1 -> CrystalInteraction.m_6(this.c9.m_4_t_BlockPos(), vec32, this.placeRange.getFloat());
-                     default -> CrystalInteraction.m_9(this.c9.m_4_t_BlockPos(), vec32, this.placeRange.getFloat());
-                     case 4 -> CrystalInteraction.m_6(this.c9.m_4_t_BlockPos(), vec32, this.placeRange.getFloat(), true);
-                  };
-                  if (c2 == null && this.c9.m_4f() != CrystalAura.ModeKind.DIG) {
-                     c2 = this.c9.m_1w_C2();
-                  }
-
-                  vec33 = c2 == null ? null : c2.m_7a();
-                  this.c9 = new CrystalAura.DataRecord3(this.c9.m_4f(), this.c9.m_4_t_BlockPos(), c2, this.c9.m_5h(), this.c9.m_2b());
-               }
-            } finally {
-               C03.recordSince(longValue2);
-            }
-
-            if (vec33 == null) {
-               this.c9 = null;
-               this.hotbarSwitcher.m_8_void();
-            } else {
-               this.m_3_void(vec32);
-            }
-         }
+      Minecraft mc = MinecraftAccess.MINECRAFT;
+      if (mc.player == null || mc.level == null || mc.gameMode == null) {
+         return;
       }
-   }
 
-   private void m_3_void(Vec3 vec32) {
-      long longValue2 = System.nanoTime();
+      // Если асинхронный планировщик не был вызван снаружи в этом тике — запускаем синхронный фоллбэк
+      if (this.lastPlayerTick != mc.player.tickCount && !this.asyncRunning.get()) {
+         this.runCombatPlanner();
+      }
 
+      if (mc.player.isUsingItem() || mc.player.isSpectator() || this.isExternalCombatModuleBusy()) {
+         this.abortCurrentExecution();
+         return;
+      }
+
+      long execStart = System.nanoTime();
       try {
-         this.executeAction(vec32);
+         this.executeScheduledTask(mc);
       } finally {
-         C04.recordSince(longValue2);
-      }
-   }
-
-   private void executeAction(Vec3 vec32) {
-      CrystalAura.DataRecord3 c92 = this.c9;
-      if (c92.m_4f() != CrystalAura.ModeKind.ATTACK || this.m_0(c92.m_5h())) {
-         int value18 = this.m_5(c92);
-         if (value18 < 0) {
-            this.cancelCurrentAction();
-         } else {
-            this.hotbarSwitcher.m_2_void(value18);
-            if (c92.m_4f() == CrystalAura.ModeKind.ATTACK) {
-               EndCrystal endCrystal = c92.m_5h();
-               if (CrystalPlacer.m_4(endCrystal, MinecraftAccess.MINECRAFT.player.getEyePosition(), this.getExplosionRange()) == null) {
-                  this.cancelCurrentAction();
-               } else if (!CrystalPlacer.m_3(endCrystal, this.getPlayers(), this.maxSelfDamage.getFloat(), 0.0F, this.m_4_float(), this.getFarPlayers())) {
-                  this.cancelCurrentAction();
-               } else if (this.hasNearbyItems(endCrystal.position())) {
-                  this.cancelCurrentAction();
-               } else {
-                  this.c9 = null;
-
-                  try {
-                     this.hotbarSwitcher.markTick();
-                     MinecraftAccess.MINECRAFT.gameMode.attack(MinecraftAccess.MINECRAFT.player, endCrystal);
-                     this.integerMap.put(endCrystal.getId(), MinecraftAccess.MINECRAFT.player.tickCount + getPingDelay());
-                     if (this.blockPos5 != null && endCrystal.blockPosition().equals(this.blockPos5.above())) {
-                        this.blockPos5 = null;
-                        this.value10 = MinecraftAccess.MINECRAFT.player.tickCount + getPingDelay() + 2;
-                     }
-
-                     this.value6 = MinecraftAccess.MINECRAFT.player.tickCount;
-                     MinecraftAccess.MINECRAFT.player.swing(InteractionHand.MAIN_HAND);
-                     this.timeHelper.reset();
-                     this.tryPlaceOnCrystal(endCrystal, vec32);
-                  } finally {
-                     this.hotbarSwitcher.m_8_void();
-                  }
-               }
-            } else {
-               Rotations rotations3 = Onetap.ROTATION_MODES.toRotations();
-               boolean flag4 = c92.m_4f() == CrystalAura.ModeKind.OBSIDIAN || c92.m_4f() == CrystalAura.ModeKind.WEB;
-               BlockHitResult blockHitResult = flag4 && CrystalInteraction.m_5_boolean(c92.m_1w_C2().m_5b())
-                  ? null
-                  : CrystalInteraction.m_2(c92.m_1w_C2(), this.placeRange.getFloat(), vec32, rotations3.getFloatValue(), rotations3.getFloatValue2());
-               if (blockHitResult == null) {
-                  if (c92.m_4f() != CrystalAura.ModeKind.DIG) {
-                     this.c9 = null;
-                  }
-               } else if (c92.m_4f() == CrystalAura.ModeKind.DIG) {
-                  if ((Boolean)this.autoDigUnder.getValue() && CrystalPlacer.m_8_boolean(MinecraftAccess.MINECRAFT.level.getBlockState(c92.m_4_t_BlockPos()))) {
-                     this.c9 = null;
-                     this.breakBlock(c92.m_4_t_BlockPos(), blockHitResult);
-                  } else {
-                     this.cancelCurrentAction();
-                  }
-               } else {
-                  boolean flag5 = c92.m_4f() == CrystalAura.ModeKind.CRYSTAL
-                     ? !this.blockPosMap3.containsKey(c92.m_4_t_BlockPos()) && CrystalPlacer.m_7_boolean(c92.m_4_t_BlockPos(), this.integerMap.keySet())
-                     : CrystalInteraction.m_8(c92.m_4_t_BlockPos(), blockHitResult, MinecraftAccess.MINECRAFT.player.getMainHandItem())
-                        && (c92.m_4f() == CrystalAura.ModeKind.WEB || !CrystalPlacer.isBlocked(c92.m_4_t_BlockPos()));
-                  if (!flag5) {
-                     this.cancelCurrentAction();
-                  } else {
-                     this.c9 = null;
-
-                     try {
-                        this.hotbarSwitcher.markTick();
-                        InteractionResult interactionResult = MinecraftAccess.MINECRAFT.gameMode.useItemOn(MinecraftAccess.MINECRAFT.player, InteractionHand.MAIN_HAND, blockHitResult);
-                        LegacyCrystalAura.m_0(rotations3);
-                        boolean flag6 = c92.m_4f() == CrystalAura.ModeKind.CRYSTAL
-                           || interactionResult instanceof Success success
-                              && success.wasItemInteraction()
-                              && MinecraftAccess.MINECRAFT.level.getBlockState(c92.m_4_t_BlockPos()).is(c92.m_4f() == CrystalAura.ModeKind.WEB ? Blocks.COBWEB : Blocks.OBSIDIAN);
-                        if (flag6) {
-                           MinecraftAccess.MINECRAFT.player.swing(InteractionHand.MAIN_HAND);
-                           this.timeHelper.reset();
-                           if (c92.m_4f() == CrystalAura.ModeKind.CRYSTAL) {
-                              this.blockPosMap3.putIfAbsent(c92.m_4_t_BlockPos(), MinecraftAccess.MINECRAFT.player.tickCount);
-                              this.value6 = MinecraftAccess.MINECRAFT.player.tickCount;
-                           } else if (c92.m_4f() == CrystalAura.ModeKind.WEB) {
-                              this.blockPos8 = c92.m_4_t_BlockPos();
-                              this.value7 = MinecraftAccess.MINECRAFT.player.tickCount;
-                           } else {
-                              this.blockPosMap4.putIfAbsent(c92.m_4_t_BlockPos(), MinecraftAccess.MINECRAFT.player.tickCount);
-                           }
-                        } else {
-                           this.blockPosMap2.put(c92.m_4_t_BlockPos(), MinecraftAccess.MINECRAFT.player.tickCount + 8);
-                        }
-                     } finally {
-                        this.hotbarSwitcher.m_8_void();
-                     }
-                  }
-               }
-            }
-         }
+         STAT_EXEC.recordSince(execStart);
       }
    }
 
    @EventTarget
    private void onReceivePacket(ReceivePacketEvent event) {
-      if (MinecraftAccess.MINECRAFT.player != null && event.getPacket() instanceof ClientboundSetEntityMotionPacket clientboundSetEntityMotionPacket && clientboundSetEntityMotionPacket.id() != MinecraftAccess.MINECRAFT.player.getId()) {
-         CrystalTargeting.m_6(clientboundSetEntityMotionPacket.id(), clientboundSetEntityMotionPacket.movement());
+      Minecraft mc = MinecraftAccess.MINECRAFT;
+      if (mc.player == null || mc.level == null) {
+         return;
+      }
+
+      Object packet = event.getPacket();
+
+      // 1. Обновление скорости сущностей для точного предикта
+      if (packet instanceof ClientboundSetEntityMotionPacket motionPacket) {
+         if (motionPacket.id() != mc.player.getId()) {
+            this.entityMotionMap.put(
+               motionPacket.id(),
+               new MotionHistory(motionPacket.movement(), mc.player.tickCount)
+            );
+         }
+         return;
+      }
+
+      // 2. Мгновенная реакция на появление EndCrystal (Packet Instant Break)
+      if (this.isEnabled() && this.packetInstant.getValue() && this.autoBreak.getValue()
+         && packet instanceof ClientboundAddEntityPacket addPacket
+         && addPacket.getType() == EntityType.END_CRYSTAL) {
+
+         Vec3 crystalPos = new Vec3(addPacket.getX(), addPacket.getY(), addPacket.getZ());
+         BlockPos basePos = BlockPos.containing(crystalPos).below();
+         this.pendingCrystalPlaces.remove(basePos);
+
+         Vec3 eyePos = mc.player.getEyePosition();
+         double maxBreakSq = Mth.square(this.getEffectiveBreakRange(mc.player));
+         if (eyePos.distanceToSqr(crystalPos.add(0.0, 1.0, 0.0)) <= maxBreakSq) {
+            this.evaluatePacketCrystal(mc, addPacket.getId(), crystalPos);
+         }
+         return;
+      }
+
+      // 3. Очистка кэша при удалении сущностей
+      if (packet instanceof ClientboundRemoveEntitiesPacket removePacket) {
+         for (int id : removePacket.getEntityIds()) {
+            this.attackedCrystals.remove(id);
+            this.failedAttackAttempts.remove(id);
+            this.entityMotionMap.remove(id);
+         }
+         return;
+      }
+
+      // 4. Обновление блоков (подтверждение установки обсидиана или разрушения блока при подкопе)
+      if (packet instanceof ClientboundBlockUpdatePacket blockPacket) {
+         BlockPos pos = blockPacket.getPos();
+         BlockState newState = blockPacket.getBlockState();
+         if (newState.is(Blocks.OBSIDIAN)) {
+            this.pendingObsidianPlaces.remove(pos);
+            this.blacklistedBlocks.remove(pos);
+         } else if (newState.isAir() || newState.canBeReplaced()) {
+            this.blacklistedDigBlocks.remove(pos);
+            DigTask dig = this.activeDigTask;
+            if (dig != null && dig.targetBlock.equals(pos)) {
+               this.activeDigTask = null;
+               this.forcedRePlacePos = dig.obsidianAnchor;
+            }
+         }
       }
    }
 
    @EventTarget
    private void onMovementInput(MovementInputEvent event) {
-      if (MinecraftAccess.MINECRAFT.player != null && this.rotations != null) {
+      if (this.movementFix.getValue() && MinecraftAccess.MINECRAFT.player != null && this.targetRotation != null) {
          LegacyCrystalAura.fixMovement(event);
       }
    }
 
    @EventTarget
    private void onContinueAttack(ContinueAttackEvent event) {
-      if (this.blockPos != null) {
+      if (this.activeDigTask != null) {
          event.cancel();
       }
    }
 
    @EventTarget
    private void onRender3D(Render3DEvent event) {
-      CrystalAura.DataRecord2 c6;
-      while ((c6 = this.queue.poll()) != null) {
-         this.c6List.add(c6);
+      this.flushRenderQueue();
+      Minecraft mc = MinecraftAccess.MINECRAFT;
+      if (mc.player == null || mc.level == null) {
+         return;
       }
 
-      if (MinecraftAccess.MINECRAFT.player != null && MinecraftAccess.MINECRAFT.level != null) {
-         if (!(Boolean)this.renderPosition.getValue()) {
-            this.c6List.clear();
-            this.blockPos9 = null;
-         } else if (!this.c6List.isEmpty() || this.blockPos9 != null) {
-            Matrix4f matrix4f = new Matrix4f(event.getMatrix4f()).mul(event.getMatrix4f2());
-            Vec3 vec32 = event.getVec3();
-            long longValue2 = System.currentTimeMillis();
-            var iterator = this.c6List.iterator();
+      if (!this.renderVisuals.getValue()) {
+         this.activeMarkers.clear();
+         this.renderDigPos = null;
+         return;
+      }
 
-            while (iterator.hasNext()) {
-               CrystalAura.DataRecord2 c62 = iterator.next();
-               float floatValue7 = (float)(longValue2 - c62.m_5j()) / 300.0F;
-               if (floatValue7 >= 1.0F) {
-                  iterator.remove();
-               } else {
-                  drawBox(matrix4f, vec32, getHighlightBox(c62.m_6_s(), 0.4F + 0.6F * floatValue7), c62.m_1i_boolean() ? -4962561 : -13795841, (1.0F - floatValue7) * 0.39215687F);
-               }
-            }
+      if (this.activeMarkers.isEmpty() && this.renderDigPos == null && this.currentAnchorBase == null) {
+         return;
+      }
 
-            this.renderPlacement(matrix4f, vec32, longValue2);
+      Matrix4f matrix = new Matrix4f(event.getMatrix4f()).mul(event.getMatrix4f2());
+      Vec3 camPos = event.getVec3();
+      long now = System.currentTimeMillis();
+
+      Iterator<RenderMarker> it = this.activeMarkers.iterator();
+      while (it.hasNext()) {
+         RenderMarker marker = it.next();
+         float lifeProgress = (float) (now - marker.createdAtMs) / 320.0F;
+         if (lifeProgress >= 1.0F) {
+            it.remove();
+         } else {
+            float scale = 0.45F + 0.55F * lifeProgress;
+            float alpha = (1.0F - lifeProgress) * 0.42F;
+            int color = switch (marker.kind) {
+               case CRYSTAL -> 0xFFB432FF;
+               case OBSIDIAN -> 0xFF2D8CFF;
+               case DIG -> 0xFFFF5533;
+            };
+            drawBox(matrix, camPos, createCenteredBox(marker.pos, scale), color, alpha);
+         }
+      }
+
+      if (this.renderDigPos != null) {
+         long elapsed = now - this.renderDigTimestamp;
+         if (elapsed > 350L) {
+            this.renderDigPos = null;
+         } else {
+            float fade = elapsed <= 180L ? 1.0F : 1.0F - ((float) (elapsed - 180L) / 170.0F);
+            float prog = Mth.clamp(this.renderDigProgress, 0.05F, 1.0F);
+            drawBox(matrix, camPos, createCenteredBox(this.renderDigPos, 0.35F + 0.65F * prog), 0xFFFF781F, (0.35F + 0.45F * prog) * fade);
          }
       }
    }
 
-   private void renderPlacement(Matrix4f matrix4f, Vec3 vec32, long longValue2) {
-      if (this.blockPos9 != null) {
-         long longValue3 = longValue2 - this.longValue;
-         float floatValue7;
-         if (longValue3 <= 140L) {
-            floatValue7 = 1.0F;
-         } else {
-            float floatValue8 = (float)(longValue3 - 140L) / 160.0F;
-            if (floatValue8 >= 1.0F) {
-               this.blockPos9 = null;
+   // =========================================================================
+   // ЯДРО ПЛАНИРОВАНИЯ (TARGETING + DAMAGE + PLACE + BREAK + DIG)
+   // =========================================================================
+
+   private void runCombatPlanner() {
+      Minecraft mc = MinecraftAccess.MINECRAFT;
+      LocalPlayer player = mc.player;
+      ClientLevel level = mc.level;
+
+      if (player == null || level == null || mc.gameMode == null || player.isSpectator()) {
+         this.resetAllState();
+         return;
+      }
+
+      if (this.lastLevel != level || player.tickCount < this.lastPlayerTick) {
+         this.resetAllState();
+         this.lastLevel = level;
+      }
+
+      this.lastPlayerTick = player.tickCount;
+      this.sharedAnchorLock = null;
+
+      if (this.isExternalCombatModuleBusy() || player.isUsingItem()) {
+         this.abortCurrentExecution();
+         return;
+      }
+
+      this.cleanupExpiredEntries(level, player.tickCount);
+
+      // 1. Сбор и предикт целей
+      long targetTimer = System.nanoTime();
+      this.refreshTargetsAndEntities(mc, player, level);
+      STAT_TARGETS.recordSince(targetTimer);
+
+      List<TargetProfile> targets = this.activeTargets;
+      if (targets.isEmpty()) {
+         this.abortCurrentExecution();
+         this.currentAnchorBase = null;
+         this.forcedRePlacePos = null;
+         debugStatusText = "NO_TARGET";
+         return;
+      }
+
+      long searchTimer = System.nanoTime();
+      try {
+         Vec3 eyePos = player.getEyePosition();
+         float selfMaxDmg = this.getSafeSelfDamageLimit(player);
+         float minEnemyDmg = this.minEnemyDamage.getFloat();
+
+         // Проверяем активную задачу: если она ещё актуальна и не просрочена — продолжаем её
+         CombatTask existing = this.currentTask;
+         if (existing != null) {
+            if (player.tickCount - existing.createdTick <= 3 && this.isTaskStillValid(mc, existing)) {
+               if (existing.aimPoint != null) {
+                  this.requestRotationTo(player, existing.aimPoint);
+               }
+               return;
+            } else {
+               this.currentTask = null;
+            }
+         }
+
+         // 2. ПРИОРИТЕТ №1: ВЗРЫВ УЖЕ СУЩЕСТВУЮЩЕГО ВЫГОДНОГО КРИСТАЛЛА
+         if (this.autoBreak.getValue()) {
+            CrystalCandidate bestCrystal = this.findBestCrystalToBreak(mc, player, level, eyePos, targets, minEnemyDmg, selfMaxDmg);
+            if (bestCrystal != null) {
+               this.stopActiveDigging(mc);
+               this.sharedAnchorLock = AutoAnchor.DataRecord.f_1;
+
+               if (this.canBreakNow(player.tickCount)) {
+                  this.currentTask = new CombatTask(
+                     TaskType.BREAK_CRYSTAL,
+                     bestCrystal.crystal.blockPosition(),
+                     bestCrystal.hitVec,
+                     null,
+                     bestCrystal.crystal,
+                     bestCrystal.enemyDamage,
+                     bestCrystal.selfDamage,
+                     player.tickCount
+                  );
+                  this.requestRotationTo(player, bestCrystal.hitVec);
+                  debugStatusText = String.format("BREAK (%.1f dmg)", bestCrystal.enemyDamage);
+                  return;
+               } else {
+                  // Заранее наводимся на кристалл, пока тикает задержка
+                  this.requestRotationTo(player, bestCrystal.hitVec);
+                  debugStatusText = "AIM_BREAK";
+                  return;
+               }
+            }
+         }
+
+         // 3. ПРИОРИТЕТ №2: МГНОВЕННЫЙ РЕ-ПЛЕЙС ПОСЛЕ ВЗРЫВА (ЕСЛИ ПОЗИЦИЯ ГОТОВА)
+         BlockPos rePlace = this.forcedRePlacePos;
+         if (rePlace != null && this.autoPlace.getValue() && this.hasCrystalInHotbar(player)) {
+            this.forcedRePlacePos = null;
+            PlaceCandidate quickCandidate = this.evaluateSinglePosition(
+               mc, player, level, eyePos, rePlace, targets, minEnemyDmg, selfMaxDmg, false, false
+            );
+            if (quickCandidate != null && !quickCandidate.needsObsidian && !quickCandidate.needsDig) {
+               this.stopActiveDigging(mc);
+               this.currentAnchorBase = quickCandidate.obsidianPos;
+               this.currentTask = new CombatTask(
+                  TaskType.PLACE_CRYSTAL,
+                  quickCandidate.obsidianPos,
+                  quickCandidate.aimVec,
+                  quickCandidate.hitResult,
+                  null,
+                  quickCandidate.enemyDamage,
+                  quickCandidate.selfDamage,
+                  player.tickCount
+               );
+               this.requestRotationTo(player, quickCandidate.aimVec);
+               debugStatusText = String.format("RE-PLACE (%.1f dmg)", quickCandidate.enemyDamage);
+               return;
+            }
+         }
+
+         // 4. ПРИОРИТЕТ №3: ПОИСК ЛУЧШЕЙ ПОЗИЦИИ ДЛЯ КРИСТАЛЛА / ОБСИДИАНА
+         boolean hasCrystal = this.hasCrystalInHotbar(player);
+         boolean hasObsidian = this.autoObsidian.getValue() && this.hasObsidianInHotbar(player);
+
+         if (this.autoPlace.getValue() && hasCrystal) {
+            PlaceCandidate bestPlace = this.findBestPlacement(
+               mc, player, level, eyePos, targets, minEnemyDmg, selfMaxDmg, hasObsidian, false
+            );
+
+            if (bestPlace != null && !bestPlace.needsDig) {
+               this.stopActiveDigging(mc);
+               this.currentAnchorBase = bestPlace.obsidianPos;
+
+               if (bestPlace.needsObsidian) {
+                  if (player.tickCount - this.lastObsidianTick >= 1) {
+                     this.currentTask = new CombatTask(
+                        TaskType.PLACE_OBSIDIAN,
+                        bestPlace.obsidianPos,
+                        bestPlace.aimVec,
+                        bestPlace.hitResult,
+                        null,
+                        bestPlace.enemyDamage,
+                        bestPlace.selfDamage,
+                        player.tickCount
+                     );
+                     this.requestRotationTo(player, bestPlace.aimVec);
+                     debugStatusText = "PLACE_OBSI";
+                     return;
+                  }
+               } else if (this.canPlaceNow(player.tickCount)) {
+                  this.currentTask = new CombatTask(
+                     TaskType.PLACE_CRYSTAL,
+                     bestPlace.obsidianPos,
+                     bestPlace.aimVec,
+                     bestPlace.hitResult,
+                     null,
+                     bestPlace.enemyDamage,
+                     bestPlace.selfDamage,
+                     player.tickCount
+                  );
+                  this.requestRotationTo(player, bestPlace.aimVec);
+                  debugStatusText = String.format("PLACE (%.1f dmg)", bestPlace.enemyDamage);
+                  return;
+               } else {
+                  this.requestRotationTo(player, bestPlace.aimVec);
+                  debugStatusText = "AIM_PLACE";
+                  return;
+               }
+            }
+         }
+
+         // 5. ПРИОРИТЕТ №4: АВТО-ПОДКОП (КИРКА / ЛОПАТА / ТОПОР / МЕЧ)
+         if (this.autoDigUnder.getValue() && hasCrystal) {
+            DigTask digCandidate = this.findBestDigTarget(mc, player, level, eyePos, targets, minEnemyDmg, selfMaxDmg, hasObsidian);
+            if (digCandidate != null) {
+               this.activeDigTask = digCandidate;
+               this.currentAnchorBase = digCandidate.obsidianAnchor;
+               this.currentTask = new CombatTask(
+                  TaskType.DIG_BLOCK,
+                  digCandidate.targetBlock,
+                  digCandidate.hitVec,
+                  digCandidate.hitResult,
+                  null,
+                  digCandidate.potentialDamage,
+                  0.0F,
+                  player.tickCount
+               );
+               this.requestRotationTo(player, digCandidate.hitVec);
+               debugStatusText = "DIG_" + digCandidate.toolCategory.name();
+               return;
+            }
+         }
+
+         // Если ничего делать не нужно — останавливаем подкоп и сбрасываем ротацию
+         this.stopActiveDigging(mc);
+         if (this.rotationHoldTicks > 6) {
+            this.clearRotation();
+         }
+         debugStatusText = "SEARCHING";
+
+      } finally {
+         STAT_SEARCH.recordSince(searchTimer);
+      }
+   }
+
+   // =========================================================================
+   // ВЫПОЛНЕНИЕ ЗАДАЧ В ТИКЕ ИГРОКА (PRE-MOTION)
+   // =========================================================================
+
+   private void executeScheduledTask(Minecraft mc) {
+      LocalPlayer player = mc.player;
+      ClientLevel level = mc.level;
+      if (player == null || level == null || mc.gameMode == null) {
+         return;
+      }
+
+      CombatTask task = this.currentTask;
+      if (task == null) {
+         return;
+      }
+
+      // Проверка готовности ротации
+      if (this.rotateEnabled.getValue()) {
+         if (task.aimPoint != null) {
+            this.requestRotationTo(player, task.aimPoint);
+         }
+         if (!this.isRotationAligned(task.aimPoint)) {
+            return;
+         }
+      }
+
+      Vec3 eyePos = player.getEyePosition();
+
+      switch (task.type) {
+         case BREAK_CRYSTAL -> {
+            this.currentTask = null;
+            EndCrystal crystal = task.crystal;
+            if (crystal == null || !crystal.isAlive()) {
+               return;
+            }
+            if (eyePos.distanceToSqr(crystal.position().add(0.0, 1.0, 0.0)) > Mth.square(this.getEffectiveBreakRange(player))) {
+               return;
+            }
+            if (this.dontBlowItems.getValue() && this.isLootNearExplosion(crystal.position())) {
                return;
             }
 
-            floatValue7 = 1.0F - floatValue8;
+            // Если у игрока эффект Слабости — переключаемся на меч/топор
+            int weaponSlot = -1;
+            if (this.antiWeakness.getValue() && player.hasEffect(MobEffects.WEAKNESS)) {
+               weaponSlot = this.findBestWeaponSlot(player.getInventory());
+            }
+            if (weaponSlot >= 0) {
+               this.swapToHotbarSlot(player, weaponSlot);
+            }
+
+            mc.gameMode.attack(player, crystal);
+            player.swing(InteractionHand.MAIN_HAND);
+
+            this.attackedCrystals.put(crystal.getId(), player.tickCount + this.getPingTicks() + 3);
+            this.lastBreakTick = player.tickCount;
+
+            if (weaponSlot >= 0) {
+               this.restoreHotbarSlot();
+            }
+
+            // Мгновенно планируем ре-плейс на блок под взорванным кристаллом
+            if (this.predictPlace.getValue()) {
+               this.forcedRePlacePos = crystal.blockPosition().below();
+            }
          }
 
-         drawBox(matrix4f, vec32, getHighlightBox(this.blockPos9, 0.55F + 0.45F * this.floatValue2), -51401, (0.45F + 0.4F * this.floatValue2) * floatValue7 * 0.5F);
+         case PLACE_CRYSTAL -> {
+            this.currentTask = null;
+            BlockPos basePos = task.targetPos;
+            if (this.pendingCrystalPlaces.containsKey(basePos) || !this.canSupportCrystal(level, basePos, false)) {
+               return;
+            }
+
+            int crystalSlot = this.findItemInHotbar(player.getInventory(), Items.END_CRYSTAL);
+            if (crystalSlot < 0) {
+               return;
+            }
+
+            BlockHitResult hit = this.raycastBlockForPlacement(level, eyePos, basePos, this.placeRange.getFloat(), true);
+            if (hit == null) {
+               this.blacklistedBlocks.put(basePos, player.tickCount + 6);
+               return;
+            }
+
+            this.swapToHotbarSlot(player, crystalSlot);
+            InteractionResult result = mc.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, hit);
+            if (result.consumesAction()) {
+               player.swing(InteractionHand.MAIN_HAND);
+               this.pendingCrystalPlaces.put(basePos, player.tickCount);
+               this.lastPlaceTick = player.tickCount;
+               this.addRenderMarker(basePos.above(), RenderKind.CRYSTAL);
+            } else {
+               this.blacklistedBlocks.put(basePos, player.tickCount + 6);
+            }
+
+            if (this.silentSwitch.getValue()) {
+               this.restoreHotbarSlot();
+            }
+         }
+
+         case PLACE_OBSIDIAN -> {
+            this.currentTask = null;
+            BlockPos obsiPos = task.targetPos;
+            BlockState current = level.getBlockState(obsiPos);
+            if (!current.canBeReplaced() || !current.getFluidState().isEmpty()) {
+               return;
+            }
+
+            int obsiSlot = this.findItemInHotbar(player.getInventory(), Items.OBSIDIAN);
+            if (obsiSlot < 0) {
+               return;
+            }
+
+            BlockHitResult hit = this.findPlaceableNeighborFace(level, eyePos, obsiPos, this.placeRange.getFloat());
+            if (hit == null) {
+               this.blacklistedBlocks.put(obsiPos, player.tickCount + 8);
+               return;
+            }
+
+            this.swapToHotbarSlot(player, obsiSlot);
+            InteractionResult result = mc.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, hit);
+            if (result.consumesAction()) {
+               player.swing(InteractionHand.MAIN_HAND);
+               this.pendingObsidianPlaces.put(obsiPos, player.tickCount);
+               this.lastObsidianTick = player.tickCount;
+               this.addRenderMarker(obsiPos, RenderKind.OBSIDIAN);
+            } else {
+               this.blacklistedBlocks.put(obsiPos, player.tickCount + 6);
+            }
+
+            if (this.silentSwitch.getValue()) {
+               this.restoreHotbarSlot();
+            }
+         }
+
+         case DIG_BLOCK -> {
+            this.currentTask = null;
+            DigTask dig = this.activeDigTask;
+            if (dig == null) {
+               return;
+            }
+
+            BlockPos digPos = dig.targetBlock;
+            BlockState state = level.getBlockState(digPos);
+
+            // Если блок уже сломан или заменён воздухом — завершаем подкоп и готовим ре-плейс
+            if (state.isAir() || state.canBeReplaced()) {
+               this.activeDigTask = null;
+               this.forcedRePlacePos = dig.obsidianAnchor;
+               this.restoreHotbarSlot();
+               return;
+            }
+
+            // Проверка на неразрушимые блоки
+            if (state.getDestroySpeed(level, digPos) < 0.0F) {
+               this.blacklistedDigBlocks.put(digPos, player.tickCount + 100);
+               this.stopActiveDigging(mc);
+               return;
+            }
+
+            // Проверка дистанции
+            if (eyePos.distanceToSqr(Vec3.atCenterOf(digPos)) > Mth.square(this.digRange.getFloat())) {
+               this.stopActiveDigging(mc);
+               return;
+            }
+
+            // Умный выбор инструмента (кирка / лопата / топор / меч)
+            if (this.digSmartTool.getValue()) {
+               int bestToolSlot = this.findBestToolSlotForBlock(player.getInventory(), state);
+               if (bestToolSlot >= 0) {
+                  this.swapToHotbarSlot(player, bestToolSlot);
+               }
+            }
+
+            BlockHitResult hit = this.raycastBlockToBreak(level, eyePos, digPos, this.digRange.getFloat());
+            if (hit == null) {
+               this.blacklistedDigBlocks.put(digPos, player.tickCount + 10);
+               this.stopActiveDigging(mc);
+               return;
+            }
+
+            MultiPlayerGameModeAccessor gmAccessor = (MultiPlayerGameModeAccessor) mc.gameMode;
+            if (gmAccessor.onetap$getDestroyDelay() > 0) {
+               gmAccessor.onetap$setDestroyDelay(0);
+            }
+
+            if (mc.gameMode.continueDestroyBlock(digPos, hit.getDirection())) {
+               player.swing(InteractionHand.MAIN_HAND);
+            }
+
+            float progress = Mth.clamp(gmAccessor.onetap$getDestroyProgress(), 0.0F, 1.0F);
+            dig.lastProgress = progress;
+            dig.lastActiveTick = player.tickCount;
+
+            if (this.renderVisuals.getValue()) {
+               this.renderDigPos = digPos;
+               this.renderDigProgress = progress;
+               this.renderDigTimestamp = System.currentTimeMillis();
+            }
+
+            // Если блок доломался в этом же тике
+            if (level.getBlockState(digPos).isAir() || progress >= 1.0F) {
+               this.activeDigTask = null;
+               this.forcedRePlacePos = dig.obsidianAnchor;
+               this.addRenderMarker(digPos, RenderKind.DIG);
+               if (this.silentSwitch.getValue()) {
+                  this.restoreHotbarSlot();
+               }
+            }
+         }
       }
    }
 
-   public static void drawBox(Matrix4f matrix4f, Vec3 vec32, AABB aABB2, int value18, float floatValue7) {
-      Box3DRenderer.drawBox(
-         matrix4f,
-         (float)(aABB2.minX - vec32.x),
-         (float)(aABB2.minY - vec32.y),
-         (float)(aABB2.minZ - vec32.z),
-         (float)(aABB2.maxX - vec32.x),
-         (float)(aABB2.maxY - vec32.y),
-         (float)(aABB2.maxZ - vec32.z),
-         ColorUtil.withAlpha(value18, Mth.clamp((int)(floatValue7 * 255.0F), 0, 255))
+   // =========================================================================
+   // МОДУЛЬ АВТО-ПОДКОПА (AUTO-DIG: КИРКА / ЛОПАТА / ТОПОР / МЕЧ)
+   // =========================================================================
+
+   private DigTask findBestDigTarget(
+      Minecraft mc,
+      LocalPlayer player,
+      ClientLevel level,
+      Vec3 eyePos,
+      List<TargetProfile> targets,
+      float minEnemyDmg,
+      float maxSelfDmg,
+      boolean hasObsidian
+   ) {
+      DigTask currentDig = this.activeDigTask;
+      if (currentDig != null) {
+         BlockState st = level.getBlockState(currentDig.targetBlock);
+         boolean withinRange = eyePos.distanceToSqr(Vec3.atCenterOf(currentDig.targetBlock)) <= Mth.square(this.digRange.getFloat());
+         boolean notTimedOut = (player.tickCount - currentDig.lastActiveTick) <= 12;
+
+         if (!st.isAir() && !st.canBeReplaced() && st.getDestroySpeed(level, currentDig.targetBlock) >= 0.0F && withinRange && notTimedOut) {
+            BlockHitResult hit = this.raycastBlockToBreak(level, eyePos, currentDig.targetBlock, this.digRange.getFloat());
+            if (hit != null) {
+               currentDig.hitVec = hit.getLocation();
+               currentDig.hitResult = hit;
+               return currentDig;
+            }
+         }
+         this.stopActiveDigging(mc);
+      }
+
+      DigTask bestTask = null;
+      double bestScore = -1.0;
+      double maxDigDistSq = Mth.square(this.digRange.getFloat());
+
+      for (TargetProfile target : targets) {
+         BlockPos enemyFeet = BlockPos.containing(target.predictedBox.getCenter().x, target.predictedBox.minY + 0.1, target.predictedBox.getCenter().z);
+
+         // Кандидаты на раскопку вокруг врага:
+         // 1) Сурраунд (4 блока вокруг ног врага, мешающие поставить/взорвать кристалл рядом)
+         // 2) Пол под врагом (если враг стоит в яме или на блоке, который можно выкопать)
+         List<BlockPos> candidateBlocks = new ArrayList<>(12);
+
+         if (this.digSurround.getValue()) {
+            for (Direction dir : HORIZONTAL_DIRS) {
+               BlockPos sidePos = enemyFeet.relative(dir);
+               candidateBlocks.add(sidePos);
+               candidateBlocks.add(sidePos.below());
+            }
+         }
+
+         if (this.digFloor.getValue()) {
+            candidateBlocks.add(enemyFeet.below());
+            candidateBlocks.add(enemyFeet);
+         }
+
+         for (BlockPos blockToDig : candidateBlocks) {
+            if (this.blacklistedDigBlocks.containsKey(blockToDig)) {
+               continue;
+            }
+            if (eyePos.distanceToSqr(Vec3.atCenterOf(blockToDig)) > maxDigDistSq) {
+               continue;
+            }
+
+            BlockState state = level.getBlockState(blockToDig);
+            if (state.isAir() || state.canBeReplaced() || !state.getFluidState().isEmpty()) {
+               continue;
+            }
+
+            float hardness = state.getDestroySpeed(level, blockToDig);
+            if (hardness < 0.0F) {
+               continue; // Бедрок, барьер и т.д.
+            }
+
+            // Определяем, какой блок станет опорой для кристалла после выкапывания blockToDig
+            BlockPos anchorPos = this.resolveAnchorAfterDig(level, blockToDig, hasObsidian);
+            if (anchorPos == null) {
+               continue;
+            }
+
+            // Проверяем, сможем ли мы достать до опоры после раскопки
+            if (eyePos.distanceToSqr(Vec3.atCenterOf(anchorPos)) > Mth.square(this.placeRange.getFloat())) {
+               continue;
+            }
+
+            // Проверяем инструмент и скорость копания
+            ToolCategory category = this.classifyBlockTool(state);
+            int toolSlot = this.findBestToolSlotForBlock(player.getInventory(), state);
+            float digSpeedFactor = this.estimateDigEfficiency(player.getInventory(), toolSlot, state);
+
+            // Если блок слишком твёрдый (например, обсидиан без кирки), пропускаем
+            if (hardness >= 20.0F && digSpeedFactor < 4.0F) {
+               continue;
+            }
+
+            // Симулируем урон от кристалла на anchorPos, если blockToDig будет убран (игнорируем blockToDig в трассировке)
+            Vec3 crystalExplosionPos = new Vec3(anchorPos.getX() + 0.5, anchorPos.getY() + 1.0, anchorPos.getZ() + 0.5);
+            float selfDmg = this.calculateExplosionDamageIgnoringBlock(level, crystalExplosionPos, player, player.getBoundingBox(), blockToDig);
+            if (selfDmg > maxSelfDmg) {
+               continue;
+            }
+
+            float enemyDmg = this.calculateExplosionDamageIgnoringBlock(level, crystalExplosionPos, target.player, target.predictedBox, blockToDig);
+            boolean lethal = enemyDmg >= (target.effectiveHealth - 1.0F);
+            if (enemyDmg < minEnemyDmg && !lethal) {
+               continue;
+            }
+
+            BlockHitResult hit = this.raycastBlockToBreak(level, eyePos, blockToDig, this.digRange.getFloat());
+            if (hit == null) {
+               continue;
+            }
+
+            // Итоговый приоритет: урон * скорость копания - урон себе
+            double timePenalty = Math.max(0.2, hardness / Math.max(1.0F, digSpeedFactor));
+            double score = (enemyDmg * 2.5 - selfDmg * 1.1) / timePenalty + (lethal ? 35.0 : 0.0);
+
+            if (score > bestScore) {
+               bestScore = score;
+               bestTask = new DigTask(
+                  blockToDig.immutable(),
+                  anchorPos.immutable(),
+                  hit.getLocation(),
+                  hit,
+                  category,
+                  enemyDmg,
+                  player.tickCount
+               );
+            }
+         }
+      }
+
+      return bestTask;
+   }
+
+   /**
+    * Определяет, куда встанет кристалл после разрушения blockToDig.
+    */
+   private BlockPos resolveAnchorAfterDig(ClientLevel level, BlockPos blockToDig, boolean hasObsidian) {
+      // Вариант А: blockToDig закрывал пространство НАД обсидианом/бедроком (например, паутина, сундук, ступенька, полублок, камень на полу)
+      BlockPos below = blockToDig.below();
+      BlockState belowState = level.getBlockState(below);
+      if (belowState.is(Blocks.OBSIDIAN) || belowState.is(Blocks.BEDROCK)) {
+         // После слома blockToDig над below должно быть свободно 2 блока (включая сам blockToDig)
+         BlockState aboveDig = level.getBlockState(blockToDig.above());
+         if (aboveDig.isAir() || aboveDig.canBeReplaced()) {
+            return below;
+         }
+      }
+
+      // Вариант Б: мы выкапываем сам блок (например, землю/камень/доски), чтобы поставить на его место обсидиан, а сверху кристалл
+      if (hasObsidian) {
+         BlockState aboveDig = level.getBlockState(blockToDig.above());
+         BlockState aboveTwo = level.getBlockState(blockToDig.above(2));
+         boolean spaceClear = (aboveDig.isAir() || aboveDig.canBeReplaced()) && (aboveTwo.isAir() || aboveTwo.canBeReplaced());
+         if (spaceClear && !this.isEntityBlockingCrystal(level, blockToDig.above())) {
+            return blockToDig;
+         }
+      }
+
+      return null;
+   }
+
+   private ToolCategory classifyBlockTool(BlockState state) {
+      if (state.is(Blocks.COBWEB)) {
+         return ToolCategory.SWORD;
+      }
+      if (state.is(BlockTags.MINEABLE_WITH_PICKAXE)) {
+         return ToolCategory.PICKAXE;
+      }
+      if (state.is(BlockTags.MINEABLE_WITH_SHOVEL)) {
+         return ToolCategory.SHOVEL;
+      }
+      if (state.is(BlockTags.MINEABLE_WITH_AXE)) {
+         return ToolCategory.AXE;
+      }
+      return ToolCategory.OTHER;
+   }
+
+   private int findBestToolSlotForBlock(Inventory inv, BlockState state) {
+      int bestSlot = -1;
+      float bestSpeed = 1.0F;
+
+      for (int slot = 0; slot < 9; slot++) {
+         ItemStack stack = inv.getItem(slot);
+         if (stack.isEmpty()) {
+            continue;
+         }
+         float speed = stack.getDestroySpeed(state);
+         if (state.is(Blocks.COBWEB) && stack.getItem() instanceof SwordItem) {
+            speed += 15.0F;
+         }
+         if (speed > bestSpeed) {
+            bestSpeed = speed;
+            bestSlot = slot;
+         }
+      }
+
+      return bestSlot;
+   }
+
+   private float estimateDigEfficiency(Inventory inv, int slot, BlockState state) {
+      if (slot < 0) {
+         return 1.0F;
+      }
+      ItemStack stack = inv.getItem(slot);
+      return stack.isEmpty() ? 1.0F : stack.getDestroySpeed(state);
+   }
+
+   private int findBestWeaponSlot(Inventory inv) {
+      int bestSlot = -1;
+      float bestDamage = 0.0F;
+      for (int slot = 0; slot < 9; slot++) {
+         ItemStack stack = inv.getItem(slot);
+         if (stack.getItem() instanceof SwordItem) {
+            return slot;
+         }
+         if (stack.getItem() instanceof AxeItem && bestDamage < 5.0F) {
+            bestDamage = 5.0F;
+            bestSlot = slot;
+         }
+      }
+      return bestSlot;
+   }
+
+   // =========================================================================
+   // ПОИСК ЛУЧШЕГО КРИСТАЛЛА ДЛЯ ВЗРЫВА И ПОЗИЦИИ ДЛЯ УСТАНОВКИ
+   // =========================================================================
+
+   private CrystalCandidate findBestCrystalToBreak(
+      Minecraft mc,
+      LocalPlayer player,
+      ClientLevel level,
+      Vec3 eyePos,
+      List<TargetProfile> targets,
+      float minEnemyDmg,
+      float maxSelfDmg
+   ) {
+      double maxRange = this.getEffectiveBreakRange(player);
+      double maxRangeSq = maxRange * maxRange;
+      double wallRangeSq = Mth.square(this.wallRange.getFloat());
+
+      AABB searchBox = player.getBoundingBox().inflate(maxRange + 1.0);
+      List<EndCrystal> crystals = level.getEntitiesOfClass(EndCrystal.class, searchBox, EndCrystal::isAlive);
+
+      CrystalCandidate best = null;
+      double bestScore = -1.0;
+
+      for (EndCrystal crystal : crystals) {
+         int id = crystal.getId();
+         if (this.attackedCrystals.containsKey(id)) {
+            continue;
+         }
+         if (this.failedAttackAttempts.getOrDefault(id, 0) >= 3) {
+            continue;
+         }
+
+         Vec3 crystalCenter = crystal.position().add(0.0, 1.0, 0.0);
+         double distSq = eyePos.distanceToSqr(crystalCenter);
+         if (distSq > maxRangeSq) {
+            continue;
+         }
+
+         boolean visible = this.canSeePoint(level, eyePos, crystalCenter);
+         if (!visible && distSq > wallRangeSq) {
+            continue;
+         }
+
+         if (this.dontBlowItems.getValue() && this.isLootNearExplosion(crystal.position())) {
+            continue;
+         }
+
+         float selfDmg = this.calculateExplosionDamage(level, crystal.position(), player, player.getBoundingBox());
+         if (selfDmg > maxSelfDmg) {
+            continue;
+         }
+
+         // Не взрываем союзников
+         if (this.wouldHurtFriends(level, crystal.position(), maxSelfDmg)) {
+            continue;
+         }
+
+         float maxEnemyDmg = 0.0F;
+         boolean isLethal = false;
+
+         for (TargetProfile target : targets) {
+            float dmg = this.calculateExplosionDamage(level, crystal.position(), target.player, target.predictedBox);
+            if (dmg > maxEnemyDmg) {
+               maxEnemyDmg = dmg;
+            }
+            if (dmg >= target.effectiveHealth - 0.5F) {
+               isLethal = true;
+            }
+         }
+
+         if (maxEnemyDmg < minEnemyDmg && !isLethal) {
+            continue;
+         }
+
+         double score = maxEnemyDmg * 2.2 - selfDmg * 1.15 - Math.sqrt(distSq) * 0.25 + (isLethal ? 50.0 : 0.0);
+         if (score > bestScore) {
+            bestScore = score;
+            best = new CrystalCandidate(crystal, crystalCenter, maxEnemyDmg, selfDmg);
+         }
+      }
+
+      return best;
+   }
+
+   private PlaceCandidate findBestPlacement(
+      Minecraft mc,
+      LocalPlayer player,
+      ClientLevel level,
+      Vec3 eyePos,
+      List<TargetProfile> targets,
+      float minEnemyDmg,
+      float maxSelfDmg,
+      boolean allowObsidian,
+      boolean allowDig
+   ) {
+      float range = this.placeRange.getFloat();
+      int radius = Mth.ceil(range);
+      BlockPos center = BlockPos.containing(eyePos);
+
+      PlaceCandidate best = null;
+      double bestScore = -1.0;
+
+      for (int dx = -radius; dx <= radius; dx++) {
+         for (int dy = -radius; dy <= radius; dy++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+               BlockPos pos = center.offset(dx, dy, dz);
+               PlaceCandidate candidate = this.evaluateSinglePosition(
+                  mc, player, level, eyePos, pos, targets, minEnemyDmg, maxSelfDmg, allowObsidian, allowDig
+               );
+               if (candidate != null && candidate.score > bestScore) {
+                  bestScore = candidate.score;
+                  best = candidate;
+               }
+            }
+         }
+      }
+
+      return best;
+   }
+
+   private PlaceCandidate evaluateSinglePosition(
+      Minecraft mc,
+      LocalPlayer player,
+      ClientLevel level,
+      Vec3 eyePos,
+      BlockPos basePos,
+      List<TargetProfile> targets,
+      float minEnemyDmg,
+      float maxSelfDmg,
+      boolean allowObsidian,
+      boolean allowDig
+   ) {
+      if (this.blacklistedBlocks.containsKey(basePos) || this.pendingCrystalPlaces.containsKey(basePos)) {
+         return null;
+      }
+
+      double maxRangeSq = Mth.square(this.placeRange.getFloat());
+      Vec3 blockCenter = Vec3.atCenterOf(basePos);
+      if (eyePos.distanceToSqr(blockCenter) > maxRangeSq) {
+         return null;
+      }
+
+      BlockState baseState = level.getBlockState(basePos);
+      boolean isObsiOrBedrock = baseState.is(Blocks.OBSIDIAN) || baseState.is(Blocks.BEDROCK);
+      boolean needsObsidian = false;
+
+      if (!isObsiOrBedrock) {
+         if (!allowObsidian || !baseState.canBeReplaced() || !baseState.getFluidState().isEmpty()) {
+            return null;
+         }
+         if (this.pendingObsidianPlaces.containsKey(basePos)) {
+            return null;
+         }
+         needsObsidian = true;
+      }
+
+      // Проверяем свободное место над опорой (2 блока для EndCrystal)
+      BlockPos above1 = basePos.above();
+      BlockPos above2 = basePos.above(2);
+      if (!level.getBlockState(above1).isAir() || !level.getBlockState(above2).isAir()) {
+         return null;
+      }
+
+      // Проверяем, не мешают ли сущности (игроки, предметы, другие кристаллы)
+      if (this.isEntityBlockingCrystal(level, above1)) {
+         return null;
+      }
+
+      Vec3 explosionOrigin = new Vec3(basePos.getX() + 0.5, basePos.getY() + 1.0, basePos.getZ() + 0.5);
+      if (eyePos.distanceToSqr(explosionOrigin.add(0.0, 1.0, 0.0)) > Mth.square(this.getEffectiveBreakRange(player))) {
+         return null;
+      }
+
+      if (this.dontBlowItems.getValue() && this.isLootNearExplosion(explosionOrigin)) {
+         return null;
+      }
+
+      // Расчёт само-урона (с игнорированием basePos, если мы его только собираемся поставить)
+      float selfDmg = needsObsidian
+         ? this.calculateExplosionDamageWithVirtualObsidian(level, explosionOrigin, player, player.getBoundingBox(), basePos)
+         : this.calculateExplosionDamage(level, explosionOrigin, player, player.getBoundingBox());
+
+      if (selfDmg > maxSelfDmg) {
+         return null;
+      }
+
+      if (this.wouldHurtFriends(level, explosionOrigin, maxSelfDmg)) {
+         return null;
+      }
+
+      // Расчёт урона по врагам
+      float maxEnemyDmg = 0.0F;
+      boolean isLethal = false;
+      double closestTargetDistSq = Double.MAX_VALUE;
+
+      for (TargetProfile target : targets) {
+         float dmg = needsObsidian
+            ? this.calculateExplosionDamageWithVirtualObsidian(level, explosionOrigin, target.player, target.predictedBox, basePos)
+            : this.calculateExplosionDamage(level, explosionOrigin, target.player, target.predictedBox);
+
+         if (dmg > maxEnemyDmg) {
+            maxEnemyDmg = dmg;
+         }
+         if (dmg >= target.effectiveHealth - 0.5F) {
+            isLethal = true;
+         }
+         double dSq = explosionOrigin.distanceToSqr(target.predictedBox.getCenter());
+         if (dSq < closestTargetDistSq) {
+            closestTargetDistSq = dSq;
+         }
+      }
+
+      if (maxEnemyDmg < minEnemyDmg && !isLethal) {
+         return null;
+      }
+
+      BlockHitResult hitResult = needsObsidian
+         ? this.findPlaceableNeighborFace(level, eyePos, basePos, this.placeRange.getFloat())
+         : this.raycastBlockForPlacement(level, eyePos, basePos, this.placeRange.getFloat(), true);
+
+      if (hitResult == null) {
+         return null;
+      }
+
+      // Формула оценки позиции: баланс урона по врагу, безопасности для себя и скорости цикла
+      double score = maxEnemyDmg * 2.4
+         - selfDmg * 1.2
+         - Math.sqrt(closestTargetDistSq) * 0.35
+         - (needsObsidian ? 1.8 : 0.0)
+         + (isLethal ? 60.0 : 0.0);
+
+      return new PlaceCandidate(
+         basePos.immutable(),
+         hitResult.getLocation(),
+         hitResult,
+         maxEnemyDmg,
+         selfDmg,
+         needsObsidian,
+         false,
+         score
       );
    }
 
-   public static AABB getHighlightBox(BlockPos blockPos10, float floatValue7) {
-      double doubleValue = 0.5 * Mth.clamp(floatValue7, 0.05F, 1.0F);
-      Vec3 vec32 = Vec3.atCenterOf(blockPos10);
-      return new AABB(vec32.x - doubleValue, vec32.y - doubleValue, vec32.z - doubleValue, vec32.x + doubleValue, vec32.y + doubleValue, vec32.z + doubleValue);
-   }
-
-   private boolean isOtherModuleBusy() {
-      AutoWeb autoWeb2 = Onetap.MODULE_MANAGER.get(AutoWeb.class);
-      AutoAnchor autoAnchor = Onetap.MODULE_MANAGER.get(AutoAnchor.class);
-      return autoWeb2 != null && autoWeb2.isFlag() || autoAnchor != null && autoAnchor.m_6_boolean();
-   }
-
-   private boolean m_7(CrystalPlacer.DataRecord2 c2) {
-      this.c4 = AutoAnchor.DataRecord.m_2(c2);
-      AutoAnchor autoAnchor = Onetap.MODULE_MANAGER.get(AutoAnchor.class);
-      AutoAnchor.DataRecord c42 = autoAnchor == null ? null : autoAnchor.m_5_C4();
-      if (c42 != null && c42.m_1(this.c4)) {
-         this.stopMining();
-         this.hotbarSwitcher.m_8_void();
-         this.reset();
-         return true;
-      } else {
-         return false;
+   private void evaluatePacketCrystal(Minecraft mc, int entityId, Vec3 crystalPos) {
+      LocalPlayer player = mc.player;
+      ClientLevel level = mc.level;
+      if (player == null || level == null || mc.gameMode == null) {
+         return;
       }
-   }
+      if (this.attackedCrystals.containsKey(entityId)) {
+         return;
+      }
+      if (this.dontBlowItems.getValue() && this.isLootNearExplosion(crystalPos)) {
+         return;
+      }
 
-   public static List<Player> getEnemies(float floatValue7) {
-      ArrayList<Player> list = new ArrayList<>();
-      if (MinecraftAccess.MINECRAFT.level != null && MinecraftAccess.MINECRAFT.player != null) {
-         AntiBot antiBot = Onetap.MODULE_MANAGER.get(AntiBot.class);
-         Vec3 eye = MinecraftAccess.MINECRAFT.player.getEyePosition();
-         double maxDistSq = floatValue7 * floatValue7;
+      float maxSelf = this.getSafeSelfDamageLimit(player);
+      float selfDmg = this.calculateExplosionDamage(level, crystalPos, player, player.getBoundingBox());
+      if (selfDmg > maxSelf) {
+         return;
+      }
 
-         for (Player player : MinecraftAccess.MINECRAFT.level.players()) {
-            if (player != MinecraftAccess.MINECRAFT.player
-               && player.isAlive()
-               && !player.isSpectator()
-               && CrystalPlacer.distanceSqToBox(eye, player.getBoundingBox()) <= maxDistSq
-               && !Onetap.FRIEND_MANAGER.isFriend(player.getName().getString())
-               && (antiBot == null || !antiBot.isBot(player))) {
-               list.add(player);
+      List<TargetProfile> targets = this.activeTargets;
+      if (targets.isEmpty()) {
+         return;
+      }
+
+      float maxEnemyDmg = 0.0F;
+      boolean lethal = false;
+      for (TargetProfile target : targets) {
+         float dmg = this.calculateExplosionDamage(level, crystalPos, target.player, target.predictedBox);
+         if (dmg > maxEnemyDmg) {
+            maxEnemyDmg = dmg;
+         }
+         if (dmg >= target.effectiveHealth - 0.5F) {
+            lethal = true;
+         }
+      }
+
+      if (maxEnemyDmg < this.minEnemyDamage.getFloat() && !lethal) {
+         return;
+      }
+
+      // Создаём временную обёртку или атакуем если ротация уже наведена
+      Vec3 aimVec = crystalPos.add(0.0, 1.0, 0.0);
+      if (!this.rotateEnabled.getValue() || this.isRotationAligned(aimVec)) {
+         Entity entity = level.getEntity(entityId);
+         if (entity instanceof EndCrystal crystal && crystal.isAlive()) {
+            mc.gameMode.attack(player, crystal);
+            player.swing(InteractionHand.MAIN_HAND);
+            this.attackedCrystals.put(entityId, player.tickCount + this.getPingTicks() + 3);
+            this.lastBreakTick = player.tickCount;
+            if (this.predictPlace.getValue()) {
+               this.forcedRePlacePos = BlockPos.containing(crystalPos).below();
             }
          }
       }
-      return list;
    }
 
-   public static List<Player> getNearbyPlayers(float floatValue7) {
-      ArrayList<Player> playerList3 = new ArrayList<>();
-      if (MinecraftAccess.MINECRAFT.level != null && MinecraftAccess.MINECRAFT.player != null) {
-         AntiBot antiBot = Onetap.MODULE_MANAGER.get(AntiBot.class);
-         Vec3 vec32 = MinecraftAccess.MINECRAFT.player.getEyePosition();
-         double maxDistSq = floatValue7 * floatValue7;
+   // =========================================================================
+   // ТОЧНЫЙ РАСЧЁТ УРОНА ОТ ВЗРЫВА (VANILLA EXPLOSION + RAYCAST EXPOSURE)
+   // =========================================================================
 
-         for (Player player : MinecraftAccess.MINECRAFT.level.players()) {
-            if (player != MinecraftAccess.MINECRAFT.player
-               && player.isAlive()
-               && !player.isSpectator()
-               && !player.isCreative()
-               && CrystalPlacer.distanceSqToBox(vec32, player.getBoundingBox()) <= maxDistSq
-               && !Onetap.FRIEND_MANAGER.isFriend(player.getName().getString())
-               && (antiBot == null || !antiBot.isBot(player))) {
-               playerList3.add(player);
+   private float calculateExplosionDamage(ClientLevel level, Vec3 explosionPos, LivingEntity target, AABB targetBox) {
+      return this.computeExplosionInternal(level, explosionPos, target, targetBox, null, null);
+   }
+
+   private float calculateExplosionDamageIgnoringBlock(ClientLevel level, Vec3 explosionPos, LivingEntity target, AABB targetBox, BlockPos ignoredAirBlock) {
+      return this.computeExplosionInternal(level, explosionPos, target, targetBox, ignoredAirBlock, null);
+   }
+
+   private float calculateExplosionDamageWithVirtualObsidian(ClientLevel level, Vec3 explosionPos, LivingEntity target, AABB targetBox, BlockPos virtualObsidianBlock) {
+      return this.computeExplosionInternal(level, explosionPos, target, targetBox, null, virtualObsidianBlock);
+   }
+
+   private float computeExplosionInternal(
+      ClientLevel level,
+      Vec3 explosionPos,
+      LivingEntity target,
+      AABB box,
+      BlockPos ignoredAirBlock,
+      BlockPos virtualObsidianBlock
+   ) {
+      double explosionRadius = 12.0; // Сила взрыва EndCrystal = 6.0F -> радиус = 12.0
+      double dist = explosionPos.distanceTo(box.getCenter());
+      if (dist > explosionRadius) {
+         return 0.0F;
+      }
+
+      double exposure = this.calculateExposure(level, explosionPos, box, ignoredAirBlock, virtualObsidianBlock);
+      double impact = (1.0 - (dist / explosionRadius)) * exposure;
+      float rawDamage = (float) ((impact * impact + impact) / 2.0 * 7.0 * explosionRadius + 1.0);
+
+      if (rawDamage <= 0.0F) {
+         return 0.0F;
+      }
+
+      return this.applyArmorAndResistance(level, target, rawDamage);
+   }
+
+   private double calculateExposure(
+      ClientLevel level,
+      Vec3 source,
+      AABB box,
+      BlockPos ignoredAirBlock,
+      BlockPos virtualObsidianBlock
+   ) {
+      double stepX = 1.0 / ((box.maxX - box.minX) * 2.0 + 1.0);
+      double stepY = 1.0 / ((box.maxY - box.minY) * 2.0 + 1.0);
+      double stepZ = 1.0 / ((box.maxZ - box.minZ) * 2.0 + 1.0);
+
+      double offsetX = (1.0 - Math.floor(1.0 / stepX) * stepX) / 2.0;
+      double offsetZ = (1.0 - Math.floor(1.0 / stepZ) * stepZ) / 2.0;
+
+      if (stepX < 0.0 || stepY < 0.0 || stepZ < 0.0) {
+         return 0.0;
+      }
+
+      int unblockedRays = 0;
+      int totalRays = 0;
+
+      for (double rx = 0.0; rx <= 1.0; rx += stepX) {
+         for (double ry = 0.0; ry <= 1.0; ry += stepY) {
+            for (double rz = 0.0; rz <= 1.0; rz += stepZ) {
+               double px = Mth.lerp(rx, box.minX, box.maxX) + offsetX;
+               double py = Mth.lerp(ry, box.minY, box.maxY);
+               double pz = Mth.lerp(rz, box.minZ, box.maxZ) + offsetZ;
+               Vec3 samplePoint = new Vec3(px, py, pz);
+
+               if (!this.isRayObstructed(level, samplePoint, source, ignoredAirBlock, virtualObsidianBlock)) {
+                  unblockedRays++;
+               }
+               totalRays++;
             }
          }
-
-         playerList3.sort(Comparator.comparingDouble(player2 -> CrystalPlacer.distanceSqToBox(vec32, player2.getBoundingBox())));
       }
-      return playerList3;
+
+      return totalRays == 0 ? 0.0 : (double) unblockedRays / (double) totalRays;
    }
 
-   private List<Player> getPlayers() {
-      this.updatePlayers();
-      return this.playerList;
-   }
-
-   private List<Player> getFarPlayers() {
-      this.updatePlayers();
-      return this.playerList2;
-   }
-
-   private void updatePlayers() {
-      if (this.value14 != MinecraftAccess.MINECRAFT.player.tickCount) {
-         long longValue2 = System.nanoTime();
-         this.playerList = getNearbyPlayers(8.0F);
-         this.playerList2 = getEnemies(18.0F);
-         C0.recordSince(longValue2);
-         this.value14 = MinecraftAccess.MINECRAFT.player.tickCount;
+   private boolean isRayObstructed(
+      ClientLevel level,
+      Vec3 start,
+      Vec3 end,
+      BlockPos ignoredAirBlock,
+      BlockPos virtualObsidianBlock
+   ) {
+      if (ignoredAirBlock == null && virtualObsidianBlock == null) {
+         BlockHitResult hit = level.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, MinecraftAccess.MINECRAFT.player));
+         return hit.getType() != HitResult.Type.MISS;
       }
-   }
 
-   private int m_5(CrystalAura.DataRecord3 c92) {
-      return switch (c92.m_4f().ordinal()) {
-         case 0 -> InventoryUtil.findHotbarSlot(Items.OBSIDIAN);
-         case 1 -> InventoryUtil.findHotbarSlot(Items.END_CRYSTAL);
-         case 2 -> CrystalMining.m_2_int();
-         case 3 -> {
-            int value18 = CrystalMining.m_5(MinecraftAccess.MINECRAFT.level.getBlockState(c92.m_4_t_BlockPos()));
-            yield value18 >= 0 ? value18 : MinecraftAccess.MINECRAFT.player.getInventory().getSelectedSlot();
+      // Кастомный DDA-обход блоков для симуляции подкопа или виртуального обсидиана
+      return BlockGetter.traverseBlocks(start, end, null, (ctx, pos) -> {
+         if (pos.equals(ignoredAirBlock)) {
+            return null;
          }
-         case 4 -> InventoryUtil.findHotbarSlot(Items.COBWEB);
-         default -> throw new MatchException(null, null);
-      };
+         if (pos.equals(virtualObsidianBlock)) {
+            return Boolean.TRUE;
+         }
+         BlockState state = level.getBlockState(pos);
+         if (state.isAir() || state.getCollisionShape(level, pos).isEmpty()) {
+            return null;
+         }
+         VoxelShape shape = state.getCollisionShape(level, pos);
+         BlockHitResult hit = shape.clip(start, end, pos);
+         return hit != null ? Boolean.TRUE : null;
+      }, ctx -> Boolean.FALSE);
    }
 
-   private boolean tryPlaceCrystal(BlockPos blockPos10) {
-      return !this.blockPosMap3.containsKey(blockPos10) && CrystalPlacer.m_7_boolean(blockPos10, this.integerMap.keySet())
-         && this.queueAction(CrystalAura.ModeKind.CRYSTAL, blockPos10, CrystalInteraction.m_6(blockPos10, MinecraftAccess.MINECRAFT.player.getEyePosition(), this.placeRange.getFloat()), null);
-   }
-
-   private boolean tryPlaceObsidian(BlockPos blockPos10) {
-      return this.queueAction(CrystalAura.ModeKind.OBSIDIAN, blockPos10, CrystalInteraction.m_6(blockPos10, MinecraftAccess.MINECRAFT.player.getEyePosition(), this.placeRange.getFloat(), false), null);
-   }
-
-   private boolean m_7_boolean(EndCrystal endCrystal) {
-      if (endCrystal != null && endCrystal.isAlive()) {
-         this.stopMining();
-         this.c4 = AutoAnchor.DataRecord.f_1;
-         return this.queueAction(CrystalAura.ModeKind.ATTACK, endCrystal.blockPosition(), null, endCrystal);
-      } else {
-         return false;
-      }
-   }
-
-   private Vec3 m_7(EndCrystal endCrystal, Vec3 vec32) {
-      Vec3 vec33 = CrystalPlacer.m_4(endCrystal, vec32, this.getExplosionRange());
-      CrystalInteraction.DataRecord c2 = vec33 == null ? null : CrystalInteraction.m_6(endCrystal.blockPosition().below(), vec32, this.placeRange.getFloat());
-      if (c2 == null) {
-         return vec33;
+   private float applyArmorAndResistance(ClientLevel level, LivingEntity entity, float damage) {
+      // Учёт сложности мира
+      switch (level.getDifficulty()) {
+         case PEACEFUL -> {
+            return 0.0F;
+         }
+         case EASY -> damage = Math.min(damage / 2.0F + 1.0F, damage);
+         case HARD -> damage = damage * 1.5F;
+         default -> {
+         }
       }
 
-      AABB aABB2 = endCrystal.getBoundingBox();
-      double doubleValue = this.getExplosionRange();
-      return !aABB2.contains(vec32) && !aABB2.clip(vec32, c2.m_7a()).filter(vec34 -> vec32.distanceToSqr(vec34) <= doubleValue * doubleValue).isPresent() ? vec33 : c2.m_7a();
+      // Учёт брони (упрощённая формула CombatRules Minecraft 1.21)
+      float armor = entity.getArmorValue();
+      float toughness = 4.0F; // Средняя твёрдость для алмазки/незеритки
+      float f = 2.0F + toughness / 4.0F;
+      float f1 = Mth.clamp(armor - damage / f, armor * 0.2F, 20.0F);
+      damage *= (1.0F - f1 / 25.0F);
+
+      // Учёт эффекта Сопротивления (Resistance)
+      if (entity.hasEffect(MobEffects.DAMAGE_RESISTANCE)) {
+         int amp = (entity.getEffect(MobEffects.DAMAGE_RESISTANCE).getAmplifier() + 1) * 5;
+         float j = Math.max(0.0F, 25.0F - amp);
+         damage = damage * j / 25.0F;
+      }
+
+      return Math.max(0.0F, damage);
    }
 
-   private void tryPlaceOnCrystal(EndCrystal endCrystal, Vec3 vec32) {
-      BlockPos blockPos10 = endCrystal.blockPosition().below();
-      if (InventoryUtil.findHotbarSlot(Items.END_CRYSTAL) >= 0
-         && !this.blockPosMap3.containsKey(blockPos10)
-         && !this.blockPosMap2.containsKey(blockPos10)
-         && CrystalPlacer.m_7_boolean(blockPos10, this.integerMap.keySet())
-         && CrystalInteraction.m_6(blockPos10, vec32, this.placeRange.getFloat()) != null) {
-         CrystalPlacer.DataRecord2 c2 = CrystalPlacer.m_7(
-            this.m_2(this.getPlayers(), 0),
-            vec32,
-            (float)CrystalInteraction.clampInteractionRange(this.placeRange.getFloat()),
-            this.getExplosionRange(),
-            this.maxSelfDamage.getFloat(),
-            this.m_9_float(),
-            false,
-            false,
-            this.m_4_float(),
-            this.getFarPlayers(),
-            blockPos10,
-            this.getBlockedPositions(),
-            this.integerMap.keySet(),
-            this::hasNearbyItems
+   // =========================================================================
+   // ТРАССИРОВКА БЛОКОВ ДЛЯ УСТАНОВКИ И РАЗРУШЕНИЯ
+   // =========================================================================
+
+   private BlockHitResult raycastBlockForPlacement(ClientLevel level, Vec3 eyePos, BlockPos pos, float maxRange, boolean strictTopFace) {
+      double maxSq = maxRange * maxRange;
+      Direction[] dirs = strictTopFace ? new Direction[]{Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST} : ALL_DIRS;
+
+      BlockHitResult bestHit = null;
+      double bestDistSq = Double.MAX_VALUE;
+
+      for (Direction dir : dirs) {
+         Vec3 facePoint = Vec3.atCenterOf(pos).add(
+            dir.getStepX() * 0.5,
+            dir.getStepY() * 0.5,
+            dir.getStepZ() * 0.5
          );
-         if (c2 != null && c2.m_7_i().equals(blockPos10)) {
-            this.blockPos7 = blockPos10;
+
+         double dSq = eyePos.distanceToSqr(facePoint);
+         if (dSq > maxSq) {
+            continue;
          }
+
+         BlockHitResult clip = level.clip(new ClipContext(eyePos, facePoint, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, MinecraftAccess.MINECRAFT.player));
+         if (clip.getType() == HitResult.Type.BLOCK && clip.getBlockPos().equals(pos)) {
+            if (dSq < bestDistSq) {
+               bestDistSq = dSq;
+               bestHit = new BlockHitResult(clip.getLocation(), dir, pos, false);
+            }
+         } else if (dSq <= Mth.square(this.wallRange.getFloat()) && dSq < bestDistSq) {
+            bestDistSq = dSq;
+            bestHit = new BlockHitResult(facePoint, dir, pos, false);
+         }
+      }
+
+      return bestHit;
+   }
+
+   private BlockHitResult findPlaceableNeighborFace(ClientLevel level, Vec3 eyePos, BlockPos targetAirPos, float maxRange) {
+      double maxSq = maxRange * maxRange;
+      BlockHitResult best = null;
+      double bestDistSq = Double.MAX_VALUE;
+
+      for (Direction dir : ALL_DIRS) {
+         BlockPos neighbor = targetAirPos.relative(dir);
+         BlockState neighborState = level.getBlockState(neighbor);
+         if (neighborState.isAir() || neighborState.canBeReplaced() || !neighborState.getFluidState().isEmpty()) {
+            continue;
+         }
+
+         Direction clickFace = dir.getOpposite();
+         Vec3 hitVec = Vec3.atCenterOf(neighbor).add(
+            clickFace.getStepX() * 0.5,
+            clickFace.getStepY() * 0.5,
+            clickFace.getStepZ() * 0.5
+         );
+
+         double dSq = eyePos.distanceToSqr(hitVec);
+         if (dSq > maxSq) {
+            continue;
+         }
+
+         BlockHitResult clip = level.clip(new ClipContext(eyePos, hitVec, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, MinecraftAccess.MINECRAFT.player));
+         if (clip.getType() == HitResult.Type.BLOCK && clip.getBlockPos().equals(neighbor) && dSq < bestDistSq) {
+            bestDistSq = dSq;
+            best = new BlockHitResult(clip.getLocation(), clickFace, neighbor, false);
+         }
+      }
+
+      return best;
+   }
+
+   private BlockHitResult raycastBlockToBreak(ClientLevel level, Vec3 eyePos, BlockPos digPos, float maxRange) {
+      double maxSq = maxRange * maxRange;
+      BlockHitResult best = null;
+      double bestDistSq = Double.MAX_VALUE;
+
+      for (Direction dir : ALL_DIRS) {
+         Vec3 faceVec = Vec3.atCenterOf(digPos).add(
+            dir.getStepX() * 0.48,
+            dir.getStepY() * 0.48,
+            dir.getStepZ() * 0.48
+         );
+         double dSq = eyePos.distanceToSqr(faceVec);
+         if (dSq > maxSq) {
+            continue;
+         }
+
+         BlockHitResult clip = level.clip(new ClipContext(eyePos, faceVec, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, MinecraftAccess.MINECRAFT.player));
+         if (clip.getType() == HitResult.Type.BLOCK && clip.getBlockPos().equals(digPos) && dSq < bestDistSq) {
+            bestDistSq = dSq;
+            best = new BlockHitResult(clip.getLocation(), dir, digPos, false);
+         }
+      }
+
+      // Фоллбэк через стены в пределах wallRange
+      if (best == null) {
+         Vec3 center = Vec3.atCenterOf(digPos);
+         if (eyePos.distanceToSqr(center) <= Mth.square(this.wallRange.getFloat())) {
+            Direction closestDir = Direction.getApproximateNearest(eyePos.x - center.x, eyePos.y - center.y, eyePos.z - center.z);
+            best = new BlockHitResult(center, closestDir, digPos, false);
+         }
+      }
+
+      return best;
+   }
+
+   private boolean canSeePoint(ClientLevel level, Vec3 from, Vec3 to) {
+      BlockHitResult hit = level.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, MinecraftAccess.MINECRAFT.player));
+      return hit.getType() == HitResult.Type.MISS;
+   }
+
+   // =========================================================================
+   // УПРАВЛЕНИЕ ЦЕЛЯМИ И ПРЕДИКТ ХИТБОКСОВ
+   // =========================================================================
+
+   private void refreshTargetsAndEntities(Minecraft mc, LocalPlayer self, ClientLevel level) {
+      AntiBot antiBot = Onetap.MODULE_MANAGER.get(AntiBot.class);
+      Vec3 eyePos = self.getEyePosition();
+      double targetMaxSq = Mth.square(this.targetRange.getFloat());
+      double friendMaxSq = 18.0 * 18.0;
+
+      List<TargetProfile> enemies = new ArrayList<>();
+      List<Player> friends = new ArrayList<>();
+
+      int pTicks = this.predictTicks.getInt();
+
+      for (Player p : level.players()) {
+         if (p == self || !p.isAlive() || p.isSpectator()) {
+            continue;
+         }
+         if (antiBot != null && antiBot.isBot(p)) {
+            continue;
+         }
+
+         double distSq = eyePos.distanceToSqr(p.getBoundingBox().getCenter());
+         if (Onetap.FRIEND_MANAGER.isFriend(p.getName().getString())) {
+            if (distSq <= friendMaxSq) {
+               friends.add(p);
+            }
+            continue;
+         }
+
+         if (p.isCreative() || distSq > targetMaxSq) {
+            continue;
+         }
+
+         AABB predicted = this.predictPlayerBox(level, p, pTicks);
+         float effHp = p.getHealth() + p.getAbsorptionAmount();
+         enemies.add(new TargetProfile(p, predicted, effHp, distSq));
+      }
+
+      enemies.sort(Comparator.comparingDouble(t -> t.distSq));
+      if (enemies.size() > 4) {
+         enemies = enemies.subList(0, 4);
+      }
+
+      this.activeTargets = enemies;
+      this.friendPlayers = friends;
+
+      if (this.dontBlowItems.getValue()) {
+         AABB lootArea = self.getBoundingBox().inflate(this.targetRange.getFloat() + 6.0);
+         this.nearbyLoot = level.getEntitiesOfClass(ItemEntity.class, lootArea, ItemEntity::isAlive);
+      } else {
+         this.nearbyLoot = List.of();
       }
    }
 
-   private boolean queueAction(CrystalAura.ModeKind c42, BlockPos blockPos10, CrystalInteraction.DataRecord c2, EndCrystal endCrystal) {
-      if (c42 != CrystalAura.ModeKind.ATTACK && c2 == null) {
-         this.blockPosMap2.put(blockPos10.immutable(), MinecraftAccess.MINECRAFT.player.tickCount + 5);
-         return false;
+   private AABB predictPlayerBox(ClientLevel level, Player target, int ticks) {
+      AABB baseBox = target.getBoundingBox();
+      if (ticks <= 0) {
+         return baseBox;
+      }
+
+      Vec3 vel = target.getDeltaMovement();
+      MotionHistory history = this.entityMotionMap.get(target.getId());
+      if (history != null && (MinecraftAccess.MINECRAFT.player.tickCount - history.tick) <= 4) {
+         vel = history.velocity;
+      }
+
+      double dx = vel.x * ticks;
+      double dy = target.onGround() ? 0.0 : vel.y * ticks;
+      double dz = vel.z * ticks;
+
+      // Проверяем коллизии, чтобы предикт не загонял хитбокс внутрь стен
+      AABB moved = baseBox.move(dx, dy, dz);
+      if (!level.noCollision(target, moved)) {
+         AABB horizOnly = baseBox.move(dx, 0.0, dz);
+         return level.noCollision(target, horizOnly) ? horizOnly : baseBox;
+      }
+      return moved;
+   }
+
+   // =========================================================================
+   // УПРАВЛЕНИЕ РОТАЦИЯМИ И ИНВЕНТАРЁМ
+   // =========================================================================
+
+   private void requestRotationTo(LocalPlayer player, Vec3 point) {
+      if (!this.rotateEnabled.getValue() || point == null) {
+         return;
+      }
+      long aimTimer = System.nanoTime();
+      try {
+         this.targetRotation = new Rotations(player.getEyePosition(), point);
+         this.rotationHoldTicks = 0;
+         this.applyRotationStep();
+      } finally {
+         STAT_AIM.recordSince(aimTimer);
+      }
+   }
+
+   private void maintainRotation() {
+      if (this.targetRotation == null || MinecraftAccess.MINECRAFT.player == null) {
+         return;
+      }
+      if (this.rotationAppliedTick == MinecraftAccess.MINECRAFT.player.tickCount) {
+         return;
+      }
+      if (++this.rotationHoldTicks > 10) {
+         this.clearRotation();
       } else {
-         this.c9 = new CrystalAura.DataRecord3(c42, blockPos10.immutable(), c2, endCrystal, MinecraftAccess.MINECRAFT.player.tickCount);
-         this.m_6g_void();
+         this.applyRotationStep();
+      }
+   }
+
+   private void applyRotationStep() {
+      Rotations current = Onetap.ROTATION_MODES.toRotations();
+      Rotations next = computeSmoothRotation(current, this.targetRotation);
+      Onetap.ROTATION_MODES.rotate(next, false, 15);
+      this.appliedRotation = next;
+      this.rotationAppliedTick = MinecraftAccess.MINECRAFT.player.tickCount;
+   }
+
+   private boolean isRotationAligned(Vec3 aimPoint) {
+      if (!this.rotateEnabled.getValue() || aimPoint == null || MinecraftAccess.MINECRAFT.player == null) {
          return true;
       }
+      Rotations current = Onetap.ROTATION_MODES.toRotations();
+      Rotations desired = new Rotations(MinecraftAccess.MINECRAFT.player.getEyePosition(), aimPoint);
+      float yawDiff = Math.abs(Mth.wrapDegrees(desired.getFloatValue() - current.getFloatValue()));
+      float pitchDiff = Math.abs(desired.getFloatValue2() - current.getFloatValue2());
+      return yawDiff <= 22.0F && pitchDiff <= 22.0F;
    }
 
-   private void m_6g_void() {
-      if (this.c9 != null) {
-         Vec3 vec32 = this.c9.m_4f() == CrystalAura.ModeKind.ATTACK ? this.m_7(this.c9.m_5h(), MinecraftAccess.MINECRAFT.player.getEyePosition()) : this.c9.m_1w_C2().m_7a();
-         if (vec32 == null) {
-            this.cancelCurrentAction();
-         } else if (!this.aimAt(vec32)) {
-            this.hotbarSwitcher.m_8_void();
-         }
-      }
+   private void clearRotation() {
+      this.targetRotation = null;
+      this.appliedRotation = null;
+      this.rotationAppliedTick = -1;
+      this.rotationHoldTicks = 0;
    }
 
-   private boolean aimAt(Vec3 vec32) {
-      this.rotations = new Rotations(MinecraftAccess.MINECRAFT.player.getEyePosition(), vec32);
-      this.value13 = 0;
-      this.m_64_void();
-      return this.isRotationReady();
-   }
+   public static Rotations computeSmoothRotation(Rotations from, Rotations to) {
+      double[] scratch = ROTATION_SCRATCH;
+      scratch[0] = 1.0;
+      scratch[1] = from.getFloatValue();
+      scratch[2] = from.getFloatValue2();
+      scratch[3] = to.getFloatValue();
+      scratch[4] = to.getFloatValue2();
+      scratch[5] = getMouseSensitivityFactor();
 
-   private void tickRotation() {
-      if (this.rotations != null && MinecraftAccess.MINECRAFT.player != null && this.value12 != MinecraftAccess.MINECRAFT.player.tickCount) {
-         if (++this.value13 > 10) {
-            this.reset();
-         } else {
-            this.m_64_void();
-         }
-      }
-   }
-
-   private void m_64_void() {
-      Rotations rotations3 = m_7(Onetap.ROTATION_MODES.toRotations(), this.rotations);
-      if (this.c9 != null && this.c9.m_4f() != CrystalAura.ModeKind.ATTACK && this.c9.m_4f() != CrystalAura.ModeKind.DIG && LegacyCrystalAura.m_8_boolean(rotations3)) {
-         rotations3 = new Rotations(rotations3.getFloatValue() + getMouseSensitivityFactor(), rotations3.getFloatValue2());
+      if (C9_q.m_7(8, scratch)) {
+         return new Rotations((float) scratch[0], (float) scratch[1]);
       }
 
-      Onetap.ROTATION_MODES.rotate(rotations3, false, 15);
-      this.rotations2 = rotations3;
-      this.value12 = MinecraftAccess.MINECRAFT.player.tickCount;
-   }
-
-   private boolean isRotationReady() {
-      if (this.rotations2 != null && MinecraftAccess.MINECRAFT.player != null && this.value12 == MinecraftAccess.MINECRAFT.player.tickCount) {
-         Rotations rotations3 = Onetap.ROTATION_MODES.toRotations();
-         return rotations3.getFloatValue() == this.rotations2.getFloatValue() && rotations3.getFloatValue2() == this.rotations2.getFloatValue2();
-      } else {
-         return false;
-      }
-   }
-
-   private void reset() {
-      this.rotations = null;
-      this.rotations2 = null;
-      this.value12 = -1;
-      this.value13 = 0;
-   }
-
-   public static Rotations smoothRotation(Rotations rotations3, Rotations rotations4) {
-      double[] doubleArray = C9_q.m_3(8, 0.0, rotations3.getFloatValue(), rotations3.getFloatValue2(), rotations4.getFloatValue(), rotations4.getFloatValue2(), getMouseSensitivityFactor());
-      return new Rotations((float)doubleArray[0], (float)doubleArray[1]);
-   }
-
-   public static Rotations m_7(Rotations rotations3, Rotations rotations4) {
-      double[] doubleArray = DOUBLE_VALUE_ARRAY;
-      doubleArray[0] = 1.0;
-      doubleArray[1] = rotations3.getFloatValue();
-      doubleArray[2] = rotations3.getFloatValue2();
-      doubleArray[3] = rotations4.getFloatValue();
-      doubleArray[4] = rotations4.getFloatValue2();
-      doubleArray[5] = getMouseSensitivityFactor();
-      return C9_q.m_7(8, doubleArray) ? new Rotations((float)doubleArray[0], (float)doubleArray[1]) : smoothRotation(smoothRotation(rotations3, rotations4), rotations4);
+      double[] step1 = C9_q.m_3(8, 0.0, from.getFloatValue(), from.getFloatValue2(), to.getFloatValue(), to.getFloatValue2(), getMouseSensitivityFactor());
+      double[] step2 = C9_q.m_3(8, 0.0, step1[0], step1[1], to.getFloatValue(), to.getFloatValue2(), getMouseSensitivityFactor());
+      return new Rotations((float) step2[0], (float) step2[1]);
    }
 
    public static float getMouseSensitivityFactor() {
-      boolean flag4 = !MinecraftAccess.MINECRAFT.options.smoothCamera && MinecraftAccess.MINECRAFT.options.getCameraType().isFirstPerson() && MinecraftAccess.MINECRAFT.player.isScoping();
-      double doubleValue = MinecraftAccess.MINECRAFT.options.sensitivity().get() * 0.6 + 0.2;
-      return (float)(doubleValue * doubleValue * doubleValue * (flag4 ? 1.0 : 8.0)) * 0.15F;
+      Minecraft mc = MinecraftAccess.MINECRAFT;
+      boolean scoping = !mc.options.smoothCamera && mc.options.getCameraType().isFirstPerson() && mc.player.isScoping();
+      double sens = mc.options.sensitivity().get() * 0.6 + 0.2;
+      return (float) (sens * sens * sens * (scoping ? 1.0 : 8.0)) * 0.15F;
    }
 
-   private void cancelCurrentAction() {
-      if (this.c9 != null) {
-         if (this.c9.m_4f() == CrystalAura.ModeKind.DIG) {
-            this.blockPosMap.put(this.c9.m_4_t_BlockPos(), MinecraftAccess.MINECRAFT.player.tickCount + 30);
-            this.stopMining();
-         } else if (this.c9.m_4f() != CrystalAura.ModeKind.ATTACK) {
-            this.blockPosMap2.put(this.c9.m_4_t_BlockPos(), MinecraftAccess.MINECRAFT.player.tickCount + 8);
-         }
+   private void swapToHotbarSlot(LocalPlayer player, int targetSlot) {
+      if (targetSlot < 0 || targetSlot > 8) {
+         return;
+      }
+      Inventory inv = player.getInventory();
+      int currentSlot = inv.getSelectedSlot();
+      if (currentSlot == targetSlot) {
+         return;
+      }
+      if (!this.isSilentlySwapped) {
+         this.savedSlotBeforeAction = currentSlot;
+         this.isSilentlySwapped = true;
+      }
+      inv.setSelectedSlot(targetSlot);
+   }
 
-         this.c9 = null;
-         this.hotbarSwitcher.m_8_void();
-         this.reset();
+   private void restoreHotbarSlot() {
+      if (this.isSilentlySwapped && this.savedSlotBeforeAction >= 0 && this.savedSlotBeforeAction <= 8) {
+         LocalPlayer player = MinecraftAccess.MINECRAFT.player;
+         if (player != null) {
+            player.getInventory().setSelectedSlot(this.savedSlotBeforeAction);
+         }
+      }
+      this.isSilentlySwapped = false;
+      this.savedSlotBeforeAction = -1;
+   }
+
+   private int findItemInHotbar(Inventory inv, net.minecraft.world.item.Item item) {
+      for (int i = 0; i < 9; i++) {
+         if (inv.getItem(i).is(item)) {
+            return i;
+         }
+      }
+      return -1;
+   }
+
+   private boolean hasCrystalInHotbar(LocalPlayer player) {
+      return player.getOffhandItem().is(Items.END_CRYSTAL) || this.findItemInHotbar(player.getInventory(), Items.END_CRYSTAL) >= 0;
+   }
+
+   private boolean hasObsidianInHotbar(LocalPlayer player) {
+      return player.getOffhandItem().is(Items.OBSIDIAN) || this.findItemInHotbar(player.getInventory(), Items.OBSIDIAN) >= 0;
+   }
+
+   // =========================================================================
+   // ВСПОМОГАТЕЛЬНЫЕ ПРОВЕРКИ И ОЧИСТКА
+   // =========================================================================
+
+   private boolean isTaskStillValid(Minecraft mc, CombatTask task) {
+      return switch (task.type) {
+         case BREAK_CRYSTAL -> task.crystal != null && task.crystal.isAlive() && !this.attackedCrystals.containsKey(task.crystal.getId());
+         case PLACE_CRYSTAL -> this.canSupportCrystal(mc.level, task.targetPos, false) && !this.pendingCrystalPlaces.containsKey(task.targetPos);
+         case PLACE_OBSIDIAN -> mc.level.getBlockState(task.targetPos).canBeReplaced();
+         case DIG_BLOCK -> this.activeDigTask != null && !mc.level.getBlockState(task.targetPos).isAir();
+      };
+   }
+
+   private boolean canSupportCrystal(ClientLevel level, BlockPos basePos, boolean allowReplaceableBase) {
+      BlockState base = level.getBlockState(basePos);
+      if (!base.is(Blocks.OBSIDIAN) && !base.is(Blocks.BEDROCK)) {
+         if (!allowReplaceableBase || !base.canBeReplaced()) {
+            return false;
+         }
+      }
+      return level.getBlockState(basePos.above()).isAir()
+         && level.getBlockState(basePos.above(2)).isAir()
+         && !this.isEntityBlockingCrystal(level, basePos.above());
+   }
+
+   private boolean isEntityBlockingCrystal(ClientLevel level, BlockPos crystalPos) {
+      AABB crystalBox = new AABB(
+         crystalPos.getX(), crystalPos.getY(), crystalPos.getZ(),
+         crystalPos.getX() + 1.0, crystalPos.getY() + 2.0, crystalPos.getZ() + 1.0
+      );
+      for (Entity entity : level.getEntities(null, crystalBox)) {
+         if (!entity.isAlive() || entity.isSpectator()) {
+            continue;
+         }
+         if (entity instanceof EndCrystal crystal && this.attackedCrystals.containsKey(crystal.getId())) {
+            continue;
+         }
+         return true;
+      }
+      return false;
+   }
+
+   private boolean isLootNearExplosion(Vec3 explosionPos) {
+      if (this.nearbyLoot.isEmpty()) {
+         return false;
+      }
+      double safeDistSq = 6.5 * 6.5;
+      for (ItemEntity item : this.nearbyLoot) {
+         if (item.isAlive() && item.position().distanceToSqr(explosionPos) <= safeDistSq) {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   private boolean wouldHurtFriends(ClientLevel level, Vec3 explosionPos, float maxAllowedDmg) {
+      for (Player friend : this.friendPlayers) {
+         float dmg = this.calculateExplosionDamage(level, explosionPos, friend, friend.getBoundingBox());
+         if (dmg > maxAllowedDmg) {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   private float getSafeSelfDamageLimit(LocalPlayer player) {
+      float currentHp = player.getHealth() + player.getAbsorptionAmount();
+      float antiSuicideCap = Math.max(0.0F, currentHp - this.antiSuicideMargin.getFloat());
+      return Math.min(this.maxSelfDamage.getFloat(), antiSuicideCap);
+   }
+
+   private double getEffectiveBreakRange(LocalPlayer player) {
+      return Math.min(this.breakRange.getFloat(), player.entityInteractionRange());
+   }
+
+   private boolean canPlaceNow(int currentTick) {
+      return (currentTick - this.lastPlaceTick) >= this.placeDelayTicks.getInt();
+   }
+
+   private boolean canBreakNow(int currentTick) {
+      return (currentTick - this.lastBreakTick) >= this.breakDelayTicks.getInt();
+   }
+
+   private int getPingTicks() {
+      Minecraft mc = MinecraftAccess.MINECRAFT;
+      if (mc.player != null && mc.getConnection() != null) {
+         var info = mc.getConnection().getPlayerInfo(mc.player.getUUID());
+         if (info != null) {
+            return Mth.clamp(info.getLatency() / 50, 1, 10);
+         }
+      }
+      return 2;
+   }
+
+   private boolean isExternalCombatModuleBusy() {
+      AutoWeb autoWeb = Onetap.MODULE_MANAGER.get(AutoWeb.class);
+      AutoAnchor autoAnchor = Onetap.MODULE_MANAGER.get(AutoAnchor.class);
+      return (autoWeb != null && autoWeb.isFlag()) || (autoAnchor != null && autoAnchor.m_6_boolean());
+   }
+
+   private void stopActiveDigging(Minecraft mc) {
+      if (this.activeDigTask != null) {
+         if (mc.gameMode != null && mc.gameMode.isDestroying()) {
+            mc.gameMode.stopDestroyBlock();
+         }
+         this.activeDigTask = null;
+         this.restoreHotbarSlot();
       }
    }
 
-   private void purgeExpired() {
-      int value18 = MinecraftAccess.MINECRAFT.player.tickCount;
-      this.blockPosMap.values().removeIf(integer -> value18 >= integer);
-      this.blockPosMap2.values().removeIf(integer2 -> value18 >= integer2);
-      this.integerMap2.keySet().removeIf(integer3 -> MinecraftAccess.MINECRAFT.level.getEntity(integer3) == null);
-      this.integerMap.entrySet().removeIf(entry -> {
-         if (value18 < entry.getValue()) {
+   private void abortCurrentExecution() {
+      this.currentTask = null;
+      this.stopActiveDigging(MinecraftAccess.MINECRAFT);
+      this.clearRotation();
+   }
+
+   private void cleanupExpiredEntries(ClientLevel level, int currentTick) {
+      int ping = this.getPingTicks();
+      this.blacklistedBlocks.values().removeIf(expire -> currentTick >= expire);
+      this.blacklistedDigBlocks.values().removeIf(expire -> currentTick >= expire);
+      this.pendingObsidianPlaces.entrySet().removeIf(e -> (currentTick - e.getValue()) > (ping + 4) || level.getBlockState(e.getKey()).is(Blocks.OBSIDIAN));
+      this.pendingCrystalPlaces.entrySet().removeIf(e -> (currentTick - e.getValue()) > (ping + 3));
+      this.attackedCrystals.entrySet().removeIf(e -> {
+         if (currentTick < e.getValue()) {
             return false;
          }
-
-         Entity entity = MinecraftAccess.MINECRAFT.level.getEntity(entry.getKey());
+         Entity entity = level.getEntity(e.getKey());
          if (entity != null && entity.isAlive()) {
-            this.integerMap2.merge(entry.getKey(), 1, Integer::sum);
+            this.failedAttackAttempts.merge(e.getKey(), 1, Integer::sum);
          }
-
          return true;
       });
    }
 
-   private void m_6w_void() {
-      int value18 = MinecraftAccess.MINECRAFT.player.tickCount;
-      Iterator<Entry<BlockPos, Integer>> iterator = this.blockPosMap4.entrySet().iterator();
-
-      while (iterator.hasNext()) {
-         Entry<BlockPos, Integer> entry = iterator.next();
-         BlockPos blockPos10 = entry.getKey();
-         int value19 = value18 - entry.getValue();
-         if (!CrystalInteraction.m_5_boolean(blockPos10) && MinecraftAccess.MINECRAFT.level.getBlockState(blockPos10).is(Blocks.OBSIDIAN)) {
-            this.blockPos2 = blockPos10;
-            this.value3 = value18;
-            this.addRenderPos(blockPos10, false);
-            iterator.remove();
-         } else if (value19 > CrystalInteraction.getTimeoutTicks() || value19 >= 2 && !CrystalInteraction.m_5_boolean(blockPos10)) {
-            this.blockPosMap2.put(blockPos10, value18 + 4);
-            iterator.remove();
-         }
-      }
-
-      Iterator<Entry<BlockPos, Integer>> iterator2 = this.blockPosMap3.entrySet().iterator();
-
-      while (iterator2.hasNext()) {
-         Entry<BlockPos, Integer> entry2 = iterator2.next();
-         BlockPos blockPos11 = entry2.getKey();
-         int value20 = value18 - entry2.getValue();
-         if (this.findCrystalAt(blockPos11.above()) != null) {
-            this.addRenderPos(blockPos11.above(), true);
-            iterator2.remove();
-         } else if (value20 > getPingDelay()) {
-            if (CrystalPlacer.m_8(blockPos11, this.integerMap.keySet())) {
-               this.blockPos3 = blockPos11;
-            } else {
-               this.blockPosMap2.put(blockPos11, value18 + 8);
-            }
-
-            iterator2.remove();
-         }
+   private void flushRenderQueue() {
+      RenderMarker marker;
+      while ((marker = this.renderQueue.poll()) != null) {
+         this.activeMarkers.add(marker);
       }
    }
 
-   private EndCrystal findCrystalAt(BlockPos blockPos10) {
-      AABB aABB2 = new AABB(blockPos10.getX(), blockPos10.getY(), blockPos10.getZ(), blockPos10.getX() + 1, blockPos10.getY() + 2, blockPos10.getZ() + 1);
-      List<EndCrystal> list = MinecraftAccess.MINECRAFT
-         .level
-         .getEntitiesOfClass(EndCrystal.class, aABB2, endCrystal -> endCrystal.isAlive() && !this.integerMap.containsKey(endCrystal.getId()) && endCrystal.blockPosition().equals(blockPos10));
-      return list.isEmpty() ? null : list.getFirst();
-   }
-
-   private void addRenderPos(BlockPos blockPos10, boolean flag4) {
-      if ((Boolean)this.renderPosition.getValue()) {
-         this.queue.add(new CrystalAura.DataRecord2(blockPos10, flag4, System.currentTimeMillis()));
+   private void addRenderMarker(BlockPos pos, RenderKind kind) {
+      if (this.renderVisuals.getValue()) {
+         this.renderQueue.add(new RenderMarker(pos.immutable(), kind, System.currentTimeMillis()));
       }
    }
 
-   private void m_0_void(Vec3 vec32) {
-      if (this.blockPos != null) {
-         BlockPos blockPos10 = this.blockPos;
-         BlockState blockState = MinecraftAccess.MINECRAFT.level.getBlockState(blockPos10);
-         if (!blockState.isAir() && !blockState.canBeReplaced()) {
-            double doubleValue = CrystalInteraction.clampInteractionRange(this.placeRange.getFloat());
-            boolean flag4 = CrystalPlacer.distanceSqToBlock(vec32, blockPos10) <= doubleValue * doubleValue;
-            boolean flag5 = MinecraftAccess.MINECRAFT.player.tickCount - this.value2 <= 10;
-            if (!CrystalPlacer.m_8_boolean(blockState) || !flag4 || !flag5) {
-               this.blockPosMap.put(blockPos10, MinecraftAccess.MINECRAFT.player.tickCount + 30);
-               this.stopMining();
-            }
-         } else {
-            this.stopMining();
-         }
-      }
+   private void resetAllState() {
+      this.currentTask = null;
+      this.activeDigTask = null;
+      this.currentAnchorBase = null;
+      this.forcedRePlacePos = null;
+      this.sharedAnchorLock = null;
+      this.clearRotation();
+
+      this.activeTargets = List.of();
+      this.friendPlayers = List.of();
+      this.nearbyLoot = List.of();
+
+      this.entityMotionMap.clear();
+      this.attackedCrystals.clear();
+      this.failedAttackAttempts.clear();
+      this.pendingCrystalPlaces.clear();
+      this.pendingObsidianPlaces.clear();
+      this.blacklistedBlocks.clear();
+      this.blacklistedDigBlocks.clear();
+
+      this.renderQueue.clear();
+      this.activeMarkers.clear();
+      this.renderDigPos = null;
+      this.lastPlayerTick = -1;
+      debugStatusText = "IDLE";
    }
 
-   private void m_1_void(BlockPos blockPos10) {
-      if (!this.blockPosMap.containsKey(blockPos10) && CrystalPlacer.m_8_boolean(MinecraftAccess.MINECRAFT.level.getBlockState(blockPos10))) {
-         CrystalInteraction.DataRecord c2 = CrystalInteraction.m_9(blockPos10, MinecraftAccess.MINECRAFT.player.getEyePosition(), this.placeRange.getFloat());
-         if (c2 == null) {
-            if (!blockPos10.equals(this.blockPos)) {
-               this.blockPosMap.put(blockPos10.immutable(), MinecraftAccess.MINECRAFT.player.tickCount + 8);
-               this.stopMining();
-            }
-         } else {
-            if (!blockPos10.equals(this.blockPos)) {
-               this.stopMining();
-               this.blockPos = blockPos10.immutable();
-               this.value2 = MinecraftAccess.MINECRAFT.player.tickCount;
-               this.floatValue = 0.0F;
-            }
+   // =========================================================================
+   // МЕТОДЫ 3D-РЕНДЕРА (СОВМЕСТИМЫЕ С ДВИЖКОМ КЛИЕНТА)
+   // =========================================================================
 
-            this.queueAction(CrystalAura.ModeKind.DIG, blockPos10, c2, null);
-         }
-      } else {
-         this.stopMining();
-      }
+   public static void drawBox(Matrix4f matrix, Vec3 camPos, AABB box, int color, float alpha) {
+      Box3DRenderer.drawBox(
+         matrix,
+         (float) (box.minX - camPos.x),
+         (float) (box.minY - camPos.y),
+         (float) (box.minZ - camPos.z),
+         (float) (box.maxX - camPos.x),
+         (float) (box.maxY - camPos.y),
+         (float) (box.maxZ - camPos.z),
+         ColorUtil.withAlpha(color, Mth.clamp((int) (alpha * 255.0F), 0, 255))
+      );
    }
 
-   private void breakBlock(BlockPos blockPos10, BlockHitResult blockHitResult) {
-      MultiPlayerGameModeAccessor multiPlayerGameModeAccessor = (MultiPlayerGameModeAccessor)MinecraftAccess.MINECRAFT.gameMode;
-      if (multiPlayerGameModeAccessor.onetap$getDestroyDelay() > 0) {
-         multiPlayerGameModeAccessor.onetap$setDestroyDelay(0);
-      }
-
-      BlockState blockState = MinecraftAccess.MINECRAFT.level.getBlockState(blockPos10);
-      if (MinecraftAccess.MINECRAFT.gameMode.continueDestroyBlock(blockPos10, blockHitResult.getDirection())) {
-         MinecraftAccess.MINECRAFT.player.swing(InteractionHand.MAIN_HAND);
-      }
-
-      if (this.blockPos4 != null
-         && blockPos10.equals(this.blockPos4.above())
-         && CrystalPlacer.isObsidianOrBedrock(this.blockPos4)
-         && MinecraftAccess.MINECRAFT.level.getBlockState(blockPos10).isAir()
-         && (!blockState.requiresCorrectToolForDrops() || MinecraftAccess.MINECRAFT.player.getMainHandItem().isCorrectToolForDrops(blockState))) {
-         this.blockPos6 = this.blockPos4;
-         this.value5 = MinecraftAccess.MINECRAFT.player.tickCount;
-         this.blockPos3 = this.blockPos4;
-      }
-
-      float floatValue7 = Mth.clamp(multiPlayerGameModeAccessor.onetap$getDestroyProgress(), 0.0F, 1.0F);
-      if (floatValue7 > this.floatValue + 1.0E-5F) {
-         this.floatValue = floatValue7;
-         this.value2 = MinecraftAccess.MINECRAFT.player.tickCount;
-      }
-
-      if ((Boolean)this.renderPosition.getValue()) {
-         this.blockPos9 = blockPos10;
-         this.floatValue2 = floatValue7;
-         this.longValue = System.currentTimeMillis();
-      }
+   public static AABB createCenteredBox(BlockPos pos, float scale) {
+      double half = 0.5 * Mth.clamp(scale, 0.05F, 1.0F);
+      Vec3 center = Vec3.atCenterOf(pos);
+      return new AABB(
+         center.x - half, center.y - half, center.z - half,
+         center.x + half, center.y + half, center.z + half
+      );
    }
 
-   private void stopMining() {
-      if (this.blockPos != null) {
-         if (MinecraftAccess.MINECRAFT.gameMode != null && MinecraftAccess.MINECRAFT.gameMode.isDestroying()) {
-            MinecraftAccess.MINECRAFT.gameMode.stopDestroyBlock();
-         }
+   // =========================================================================
+   // СТРУКТУРЫ ДАННЫХ И ПЕРЕЧИСЛЕНИЯ
+   // =========================================================================
 
-         if (this.c9 != null && this.c9.m_4f() == CrystalAura.ModeKind.DIG) {
-            this.c9 = null;
-         }
-
-         this.blockPos = null;
-         this.hotbarSwitcher.m_8_void();
-      }
+   private enum TaskType {
+      BREAK_CRYSTAL,
+      PLACE_CRYSTAL,
+      PLACE_OBSIDIAN,
+      DIG_BLOCK
    }
 
-   private void cancelAndReset() {
-      this.c9 = null;
-      this.stopMining();
-      this.hotbarSwitcher.m_8_void();
-      this.reset();
+   private enum ToolCategory {
+      PICKAXE,
+      SHOVEL,
+      AXE,
+      SWORD,
+      OTHER
    }
 
-   private void m_2(List<Player> playerList3) {
-      int value18 = MinecraftAccess.MINECRAFT.player.tickCount;
-      HashSet<Integer> set = new HashSet<>();
-
-      for (Player player : playerList3) {
-         int value19 = Mth.floor(player.getX());
-         int value20 = Mth.floor(player.getZ());
-         CrystalAura.DataRecord c2 = this.integerMap3.get(player.getId());
-         if (c2 == null || c2.m_95() != value19 || c2.m_99() != value20) {
-            this.integerMap3.put(player.getId(), new CrystalAura.DataRecord(value19, value20, value18));
-         }
-
-         set.add(player.getId());
-      }
-
-      this.integerMap3.keySet().retainAll(set);
-   }
-
-   private boolean m_5_boolean(List<CrystalPlacer.DataRecord4> c5List2) {
-      for (CrystalPlacer.DataRecord4 c5 : c5List2) {
-         if (!this.m_5_boolean(c5.m_1n()) && !this.m_3_boolean(c5.m_1n().getBoundingBox())) {
-            CrystalAura.DataRecord c2 = this.integerMap3.get(c5.m_1n().getId());
-            if (c2 == null || MinecraftAccess.MINECRAFT.player.tickCount - c2.m_9b() < 1) {
-               return false;
-            }
-         }
-      }
-
-      return true;
-   }
-
-   private boolean m_5_boolean(Player player) {
-      return this.blockPos8 != null && player.getId() == this.value8 && !this.m_3_boolean(player.getBoundingBox());
-   }
-
-   private boolean tryPlaceWeb(List<Player> playerList3, List<Player> playerList4, Vec3 vec32) {
-      if ((Boolean)this.autoWeb.getValue() && this.blockPos8 == null && InventoryUtil.findHotbarSlot(Items.COBWEB) >= 0) {
-         AABB aABB2 = MinecraftAccess.MINECRAFT.player.getBoundingBox().minmax(PlayerUtil.predictLocal(2).aABB).inflate(0.05, 0.0, 0.05);
-         int value18 = CrystalInteraction.getPing() + 1;
-
-         for (Player player : playerList3) {
-            if (!this.m_3_boolean(player.getBoundingBox())) {
-               AABB aABB3 = PlayerUtil.predict(player, value18).aABB;
-               if (!this.m_3_boolean(aABB3)) {
-                  int value19 = Mth.floor(aABB3.minY + 1.0E-5);
-                  BlockPos blockPos10 = null;
-                  CrystalInteraction.DataRecord c2 = null;
-                  double doubleValue = 0.0;
-
-                  for (BlockPos blockPos11 : BlockPos.betweenClosed(
-                     Mth.floor(aABB3.minX), value19, Mth.floor(aABB3.minZ), Mth.floor(aABB3.maxX), value19, Mth.floor(aABB3.maxZ)
-                  )) {
-                     AABB aABB4 = new AABB(blockPos11);
-                     double doubleValue2 = (Math.min(aABB4.maxX, aABB3.maxX) - Math.max(aABB4.minX, aABB3.minX))
-                        * (Math.min(aABB4.maxZ, aABB3.maxZ) - Math.max(aABB4.minZ, aABB3.minZ));
-                     if (!(doubleValue2 <= doubleValue)
-                        && !aABB4.intersects(aABB2)
-                        && !this.blockPosMap2.containsKey(blockPos11)
-                        && !playerList4.stream().anyMatch(player2 -> aABB4.intersects(player2.getBoundingBox()))) {
-                        BlockState blockState = MinecraftAccess.MINECRAFT.level.getBlockState(blockPos11);
-                        if (blockState.canBeReplaced() && blockState.getFluidState().isEmpty()) {
-                           CrystalInteraction.DataRecord c22 = CrystalInteraction.m_6(blockPos11, vec32, this.placeRange.getFloat(), true);
-                           if (c22 != null) {
-                              blockPos10 = blockPos11.immutable();
-                              c2 = c22;
-                              doubleValue = doubleValue2;
-                           }
-                        }
-                     }
-                  }
-
-                  if (blockPos10 != null && this.queueAction(CrystalAura.ModeKind.WEB, blockPos10, c2, null)) {
-                     this.value8 = player.getId();
-                     this.aABB = aABB3;
-                     return true;
-                  }
-               }
-            }
-         }
-      }
-      return false;
-   }
-
-   private Set<BlockPos> getBlockedPositions() {
-      HashSet<BlockPos> set = new HashSet<>(this.blockPosMap.keySet());
-      set.addAll(this.blockPosMap2.keySet());
-      if (this.blockPos6 != null) {
-         set.add(this.blockPos6);
-      }
-
-      for (BlockPos blockPos10 : this.blockPosMap3.keySet()) {
-         set.add(blockPos10);
-         set.add(blockPos10.above());
-      }
-
-      return set;
-   }
-
-   private boolean isDelayElapsed() {
-      if (!(Boolean)this.crystalDelay.getValue()) {
-         return true;
-      }
-      int minTicks = (Boolean)this.fastBreak.getValue() ? 1 : 2;
-      return MinecraftAccess.MINECRAFT.player.tickCount - this.value6 >= minTicks;
-   }
-
-   private boolean hasNearbyItems(Vec3 vec32) {
-      return !this.itemEntityList.isEmpty() && LegacyCrystalAura.isItemNearby(vec32, this.itemEntityList);
-   }
-
-   private float m_9_float() {
-      this.m_1_void();
-      return this.floatValue4;
-   }
-
-   private float m_3_float() {
-      this.m_1_void();
-      return this.floatValue5;
-   }
-
-   private void m_1_void() {
-      float floatValue7 = this.minEnemyDamage.getFloat();
-      if (floatValue7 != this.floatValue3) {
-         this.floatValue3 = floatValue7;
-         this.floatValue4 = CrystalPlacer.m_1_float(floatValue7);
-         this.floatValue5 = CrystalPlacer.m_6_float(floatValue7);
-      }
-   }
-
-   private static int getPingDelay() {
-      return Math.max(1, CrystalInteraction.getPing() + 3);
-   }
-
-   private float getExplosionRange() {
-      return (float)Math.min(this.explosionRange.getFloat(), MinecraftAccess.MINECRAFT.player.entityInteractionRange());
-   }
-
-   private boolean m_0(EndCrystal endCrystal) {
-      if (endCrystal != null && this.vec3 != null) {
-         AABB aABB2 = endCrystal.getBoundingBox();
-         if (aABB2.contains(this.vec3)) {
-            return true;
-         }
-
-         Rotations rotations3 = Onetap.ROTATION_MODES.toRotations();
-         Vec3 vec32 = Vec3.directionFromRotation(rotations3.getFloatValue2(), rotations3.getFloatValue());
-         return aABB2.clip(this.vec3, this.vec3.add(vec32.scale(this.getExplosionRange()))).isPresent();
-      } else {
-         return false;
-      }
-   }
-
-   private float m_4_float() {
-      if (this.value17 != MinecraftAccess.MINECRAFT.player.tickCount) {
-         this.value17 = MinecraftAccess.MINECRAFT.player.tickCount;
-         this.floatValue6 = CrystalPlacer.m_2_float(MinecraftAccess.MINECRAFT.player);
-      }
-
-      return this.floatValue6;
-   }
-
-   private boolean m_3_boolean(AABB aABB2) {
-      for (BlockPos blockPos10 : BlockPos.betweenClosed(
-         Mth.floor(aABB2.minX), Mth.floor(aABB2.minY), Mth.floor(aABB2.minZ), Mth.floor(aABB2.maxX), Mth.floor(aABB2.maxY), Mth.floor(aABB2.maxZ)
-      )) {
-         if (MinecraftAccess.MINECRAFT.level.getBlockState(blockPos10).is(Blocks.COBWEB)) {
-            return true;
-         }
-      }
-
-      return false;
-   }
-
-   private List<CrystalPlacer.DataRecord4> m_2(List<Player> playerList3, int value18) {
-      if (this.c5List != null && this.value15 == MinecraftAccess.MINECRAFT.player.tickCount && this.value16 == value18) {
-         return this.c5List;
-      }
-
-      long longValue2 = System.nanoTime();
-
-      try {
-         int value19 = this.predictTickCount.getInt();
-         ArrayList<Player> playerList4 = new ArrayList<>(playerList3);
-         playerList4.sort(Comparator.comparingDouble(player -> CrystalPlacer.distanceSqToBox(MinecraftAccess.MINECRAFT.player.getEyePosition(), player.getBoundingBox())));
-         ArrayList<CrystalPlacer.DataRecord4> list = new ArrayList<>();
-
-         for (int i = 0; i < Math.min(playerList4.size(), 3); i++) {
-            Player player2 = playerList4.get(i);
-            AABB aABB2 = player2.getBoundingBox();
-            if (this.m_5_boolean(player2)) {
-               list.add(new CrystalPlacer.DataRecord4(player2, this.aABB, true));
-            } else {
-               boolean flag4 = !player2.onGround() || CrystalTargeting.isRecentlyTracked(player2);
-               if (value19 > 0 && !this.m_3_boolean(aABB2)) {
-                  AABB aABB3 = CrystalTargeting.m_3(player2, value19 + (flag4 ? Math.max(value18, CrystalInteraction.getPing() + 2) : value18));
-                  if (aABB3 != null && aABB3.getXsize() >= 0.1 && aABB3.getYsize() >= 0.1 && aABB3.getZsize() >= 0.1) {
-                     aABB2 = aABB3;
-                  }
-               }
-
-               list.add(new CrystalPlacer.DataRecord4(player2, aABB2, flag4));
-            }
-         }
-
-         this.c5List = list;
-         this.value15 = MinecraftAccess.MINECRAFT.player.tickCount;
-         this.value16 = value18;
-         return list;
-      } finally {
-         C02.recordSince(longValue2);
-      }
-   }
-
-   private void resetAll() {
-      this.c9 = null;
-      this.stopMining();
-      this.hotbarSwitcher.m_8_void();
-      this.reset();
-      this.blockPosMap4.clear();
-      this.blockPosMap3.clear();
-      this.blockPos2 = null;
-      this.blockPos3 = null;
-      this.blockPos4 = null;
-      this.blockPos5 = null;
-      this.blockPos6 = null;
-      this.blockPos7 = null;
-      this.blockPos8 = null;
-      this.value6 = -2;
-      this.itemEntityList = List.of();
-      this.value10 = 0;
-      this.value11 = 0;
-      this.integerMap2.clear();
-      this.integerMap3.clear();
-      this.blockPosMap.clear();
-      this.blockPosMap2.clear();
-      this.integerMap.clear();
-      this.value4 = -1;
-      if (MinecraftAccess.MINECRAFT.isSameThread()) {
-         this.c6List.clear();
-      } else {
-         this.flag3 = true;
-      }
-
-      this.blockPos9 = null;
-      this.value14 = -1;
-      this.playerList = List.of();
-      this.playerList2 = List.of();
-      this.value17 = -1;
-      this.value15 = -1;
-      this.value16 = Integer.MIN_VALUE;
-      this.c5List = null;
-      this.queue.clear();
-   }
-
-   static {
-      m_9_void(null);
-   }
-
-   public static void m_9_void(String text2) {
-      text = text2;
-   }
-
-   public static String m_1_String() {
-      return text;
-   }
-
-   private record DataRecord(int f_95, int f_99, int f_9b) {
-      public int m_95() { return this.f_95; }
-      public int m_99() { return this.f_99; }
-      public int m_9b() { return this.f_9b; }
-   }
-
-   private enum ModeKind {
-      OBSIDIAN,
+   private enum RenderKind {
       CRYSTAL,
-      ATTACK,
-      DIG,
-      WEB;
+      OBSIDIAN,
+      DIG
    }
 
-   private record DataRecord2(BlockPos f_6_s, boolean f_1i, long f_5j) {
-      public BlockPos m_6_s() { return this.f_6_s; }
-      public boolean m_1i_boolean() { return this.f_1i; }
-      public long m_5j() { return this.f_5j; }
+   private record TargetProfile(Player player, AABB predictedBox, float effectiveHealth, double distSq) {}
+
+   private record MotionHistory(Vec3 velocity, int tick) {}
+
+   private record CrystalCandidate(EndCrystal crystal, Vec3 hitVec, float enemyDamage, float selfDamage) {}
+
+   private record PlaceCandidate(
+      BlockPos obsidianPos,
+      Vec3 aimVec,
+      BlockHitResult hitResult,
+      float enemyDamage,
+      float selfDamage,
+      boolean needsObsidian,
+      boolean needsDig,
+      double score
+   ) {}
+
+   private record CombatTask(
+      TaskType type,
+      BlockPos targetPos,
+      Vec3 aimPoint,
+      BlockHitResult hitResult,
+      EndCrystal crystal,
+      float expectedEnemyDamage,
+      float expectedSelfDamage,
+      int createdTick
+   ) {}
+
+   private static final class DigTask {
+      final BlockPos targetBlock;
+      final BlockPos obsidianAnchor;
+      Vec3 hitVec;
+      BlockHitResult hitResult;
+      final ToolCategory toolCategory;
+      final float potentialDamage;
+      int lastActiveTick;
+      float lastProgress;
+
+      DigTask(
+         BlockPos targetBlock,
+         BlockPos obsidianAnchor,
+         Vec3 hitVec,
+         BlockHitResult hitResult,
+         ToolCategory toolCategory,
+         float potentialDamage,
+         int createdTick
+      ) {
+         this.targetBlock = targetBlock;
+         this.obsidianAnchor = obsidianAnchor;
+         this.hitVec = hitVec;
+         this.hitResult = hitResult;
+         this.toolCategory = toolCategory;
+         this.potentialDamage = potentialDamage;
+         this.lastActiveTick = createdTick;
+         this.lastProgress = 0.0F;
+      }
    }
 
-   private record DataRecord3(CrystalAura.ModeKind f_4f, BlockPos f_4_t, CrystalInteraction.DataRecord f_1w, EndCrystal f_5h, int f_2b) {
-      public CrystalAura.ModeKind m_4f() { return this.f_4f; }
-      public BlockPos m_4_t_BlockPos() { return this.f_4_t; }
-      public CrystalInteraction.DataRecord m_1w_C2() { return this.f_1w; }
-      public EndCrystal m_5h() { return this.f_5h; }
-      public int m_2b() { return this.f_2b; }
-   }
+   private record RenderMarker(BlockPos pos, RenderKind kind, long createdAtMs) {}
 }
