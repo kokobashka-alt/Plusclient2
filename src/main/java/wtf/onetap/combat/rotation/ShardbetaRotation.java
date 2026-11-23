@@ -145,29 +145,11 @@ public final class ShardbetaRotation {
         driftIn = 0;
     }
 
-    // Следующая точка: случайный порядок, каждая по разу за круг.
-    private int next(LivingEntity t, Vec3 eye, Vec3 vel, double range) {
-        for (int pass = 0; pass < 2; pass++) {
-            while (!bag.isEmpty()) {
-                int i = bag.poll();
-                if (i != id && visible(eye, at(t, i, vel), range)) {
-                    return i;
-                }
-            }
-            List<Integer> all = new ArrayList<>();
-            for (int i = 0; i < P.length; i++) {
-                if (P[i][0] < MIN_Y || P[i][0] > MAX_Y) continue;
-                if (visible(eye, at(t, i, vel), range)) {
-                    all.add(i);
-                }
-            }
-            Collections.shuffle(all, ThreadLocalRandom.current());
-            bag.addAll(all);
-        }
-        return id >= 0 && visible(eye, at(t, id, vel), range) ? id : -1;
+    public Rotation update(LivingEntity target, float yaw, float pitch, double range) {
+        return update(target, null, yaw, pitch, range);
     }
 
-    public Rotation update(LivingEntity target, float yaw, float pitch, double range) {
+    public Rotation update(LivingEntity target, AABB customBox, float yaw, float pitch, double range) {
         Minecraft mc = MinecraftAccess.MINECRAFT;
         LocalPlayer player = mc.player;
         if (player == null || mc.level == null || target == null) {
@@ -186,17 +168,18 @@ public final class ShardbetaRotation {
 
         Vec3 eye = player.getEyePosition();
         Vec3 vel = new Vec3(target.getX() - target.xo, 0.0, target.getZ() - target.zo).scale(predict);
+        AABB box = customBox != null ? customBox : target.getBoundingBox();
 
-        if (id >= 0 && !visible(player, eye, at(target, id, vel), range)) {
+        if (id >= 0 && !visible(player, eye, at(target, box, id, vel), range)) {
             id = -1;
         }
-        if (id >= 0 && hold <= 0 && error(eye, target, vel, yaw, pitch) > HOLD_ANGLE) {
+        if (id >= 0 && hold <= 0 && error(eye, target, box, vel, yaw, pitch) > HOLD_ANGLE) {
             hold = 1;
         }
 
         boolean switched = id < 0 || hold <= 0;
         if (switched) {
-            id = next(player, target, eye, vel, range);
+            id = next(player, target, box, eye, vel, range);
             hold = r.nextInt(HOLD_MIN, HOLD_MAX + 1);
             age = 0;
         }
@@ -208,7 +191,7 @@ public final class ShardbetaRotation {
         age++;
         drift(r);
 
-        float[] aim = ang(eye, at(target, id, vel));
+        float[] aim = ang(eye, at(target, box, id, vel));
         float dy = Mth.wrapDegrees(aim[0] + driftYaw - yaw);
         float dp = aim[1] + OFF_PITCH + driftPitch - pitch;
 
@@ -262,30 +245,30 @@ public final class ShardbetaRotation {
         return new Rotation(yaw + sy, Mth.clamp(pitch + sp, -90.0f, 90.0f));
     }
 
-    public Rotations updateAsRotations(LivingEntity target, float yaw, float pitch, double range) {
-        Rotation r = update(target, yaw, pitch, range);
+    public Rotations updateAsRotations(LivingEntity target, AABB customBox, float yaw, float pitch, double range) {
+        Rotation r = update(target, customBox, yaw, pitch, range);
         return new Rotations(r.yaw(), r.pitch());
     }
 
-    private int next(LocalPlayer player, LivingEntity t, Vec3 eye, Vec3 vel, double range) {
+    private int next(LocalPlayer player, LivingEntity t, AABB box, Vec3 eye, Vec3 vel, double range) {
         for (int pass = 0; pass < 2; pass++) {
             while (!bag.isEmpty()) {
                 int i = bag.poll();
-                if (i != id && visible(player, eye, at(t, i, vel), range)) {
+                if (i != id && visible(player, eye, at(t, box, i, vel), range)) {
                     return i;
                 }
             }
             List<Integer> all = new ArrayList<>();
             for (int i = 0; i < P.length; i++) {
                 if (P[i][0] < MIN_Y || P[i][0] > MAX_Y) continue;
-                if (visible(player, eye, at(t, i, vel), range)) {
+                if (visible(player, eye, at(t, box, i, vel), range)) {
                     all.add(i);
                 }
             }
             Collections.shuffle(all, ThreadLocalRandom.current());
             bag.addAll(all);
         }
-        return id >= 0 && visible(player, eye, at(t, id, vel), range) ? id : -1;
+        return id >= 0 && visible(player, eye, at(t, box, id, vel), range) ? id : -1;
     }
 
     private static float rand(ThreadLocalRandom r, double range) {
@@ -302,8 +285,8 @@ public final class ShardbetaRotation {
         driftPitch += (driftPitchTo - driftPitch) * 0.08f;
     }
 
-    private double error(Vec3 eye, LivingEntity t, Vec3 vel, float yaw, float pitch) {
-        float[] aim = ang(eye, at(t, id, vel));
+    private double error(Vec3 eye, LivingEntity t, AABB box, Vec3 vel, float yaw, float pitch) {
+        float[] aim = ang(eye, at(t, box, id, vel));
         return Math.hypot(Mth.wrapDegrees(aim[0] - yaw), aim[1] - pitch);
     }
 
@@ -314,8 +297,7 @@ public final class ShardbetaRotation {
         return Math.abs(s) < MIN_STEP ? Math.copySign(MIN_STEP, d) : s;
     }
 
-    private Vec3 at(LivingEntity t, int i, Vec3 vel) {
-        AABB b = t.getBoundingBox();
+    private Vec3 at(LivingEntity t, AABB b, int i, Vec3 vel) {
         double half = b.getXsize() * 0.5 * edge;
         double yawRad = Math.toRadians(t.yBodyRot);
         Vec3 center = b.getCenter();

@@ -77,7 +77,7 @@ public final class ShardbetaAuraPipeline {
 
         LivingEntity found = findTarget(player, level);
         if (found != target) {
-            reaction = found == null ? 0 : msToTicks(mode.p().reactionMinMs(), mode.p().reactionMaxMs());
+            reaction = found == null ? 0 : msToTicks(mode.p.reactionMinMs(), mode.p.reactionMaxMs());
             target = found;
             rot.reset();
         }
@@ -94,20 +94,20 @@ public final class ShardbetaAuraPipeline {
             return;
         }
 
-        rot.setAggression(mode.p().aggression());
+        rot.setAggression(mode.p.aggression());
         ShardbetaRotation.Rotation r = rot.update(target, player.getYRot(), player.getXRot(), 3.0);
         ShardbetaRotationStorage.begin(r.yaw(), r.pitch());
         if (ready(player)) {
             attack(mc, player, gameMode);
         }
-        if (!mode.p().silent()) {
+        if (!mode.p.silent()) {
             ShardbetaRotationStorage.clear();
         }
     }
 
     public static void applyMoveFix() {
         LocalPlayer player = MinecraftAccess.MINECRAFT.player;
-        if (player == null || !mode.p().moveFix() || !ShardbetaRotationStorage.active()) return;
+        if (player == null || !mode.p.moveFix() || !ShardbetaRotationStorage.active()) return;
         float d = ShardbetaRotationStorage.yaw() - player.getYRot();
         if (Math.abs(d) < 0.01f) return;
         double rad = Math.toRadians(d);
@@ -145,8 +145,8 @@ public final class ShardbetaAuraPipeline {
         if (target == null || attackCd > 0) return false;
         if (player.distanceToSqr(target) > 9.0) return false;
         if (player.getAttackStrengthScale(0.5f) < 0.92f) return false;
-        if (mode.p().crit() && !canCrit(player)) return false;
-        if (mode.p().tpsSync() && tps < 19.0f) {
+        if (mode.p.crit() && !canCrit(player)) return false;
+        if (mode.p.tpsSync() && tps < 19.0f) {
             int every = Math.max(1, Math.round(20.0f / tps));
             if (player.tickCount % every != 0) return false;
         }
@@ -165,18 +165,18 @@ public final class ShardbetaAuraPipeline {
     }
 
     private static void attack(Minecraft mc, LocalPlayer player, MultiPlayerGameMode gameMode) {
-        if (mode.p().shieldBreak()) {
+        if (mode.p.shieldBreak()) {
             shieldBreak(player);
         }
-        if (mode.p().sprintReset() && player.isSprinting()) {
+        if (mode.p.sprintReset() && player.isSprinting()) {
             player.setSprinting(false);
-            if (mode.p().packetSprint() && player.connection != null) {
+            if (mode.p.packetSprint() && player.connection != null) {
                 player.connection.send(new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.STOP_SPRINTING));
                 sprintSent = true;
             }
             sprintCd = 2;
         }
-        if (mode.p().wtap()) {
+        if (mode.p.wtap()) {
             mc.options.keyUp.setDown(false);
         }
         ShardbetaRotationStorage.sendLook();
@@ -211,7 +211,7 @@ public final class ShardbetaAuraPipeline {
             player.getInventory().setSelectedSlot(shieldSlot);
             shieldSlot = -1;
         }
-        if (mode.p().wtap() && mc.options != null) {
+        if (mode.p.wtap() && mc.options != null) {
             mc.options.keyUp.setDown(true);
         }
     }
