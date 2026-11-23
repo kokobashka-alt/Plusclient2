@@ -709,13 +709,8 @@ public class RotationModes implements MinecraftAccess {
         private final RotationEngine engine = new RotationEngine();
 
         @Override
-        public RotationMode.Info getInfo() {
-            return new RotationMode.Info() {
-                @Override
-                public String name() {
-                    return "STtest";
-                }
-            };
+        public Info getInfo() {
+            return new Info("STtest");
         }
 
         @Override
