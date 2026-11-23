@@ -13,7 +13,8 @@ import wtf.onetap.util.Rotations;
  * Per frame it measures the angle from the current view to the target, skips the frame when the
  * target is outside the FOV cone, otherwise moves the view by AimAssistMath.smoothStep with the
  * four AimAssist settings (FOV, strength, speed, vertical), which KillAura exposes under the same names.
- * Works on the camera (client look), like AimAssist.
+ * Silent: only the server-side rotation is changed, the camera stays under the player's control (no client look).
+ * KillAura attacks in this mode only once the current rotation actually hits the target's hitbox.
  */
 @RotationInfo(name = "Legit", fps = 240)
 public class LegitRotation implements MinecraftAccess, RotationMode {
@@ -24,8 +25,9 @@ public class LegitRotation implements MinecraftAccess, RotationMode {
          return new Rotations(lastYaw, lastPitch);
       }
 
-      float yaw = MinecraftAccess.MINECRAFT.player.getYRot();
-      float pitch = MinecraftAccess.MINECRAFT.player.getXRot();
+      // Base is the previous (silent) rotation, not the camera: the camera is not touched.
+      float yaw = lastYaw;
+      float pitch = lastPitch;
       if (dtSeconds <= 0.0F) {
          return new Rotations(yaw, pitch);
       }
@@ -45,10 +47,10 @@ public class LegitRotation implements MinecraftAccess, RotationMode {
 
    @Override
    public boolean m_2_boolean() {
-      return Onetap.ROTATION_MODES.isFlag4();
+      return false;
    }
 
-   /** The result is used as is, without snapping to the mouse-sensitivity grid, exactly like AimAssist. */
+   /** The result is used as is, without snapping to the mouse-sensitivity grid. */
    @Override
    public boolean m_6_boolean() {
       return true;
