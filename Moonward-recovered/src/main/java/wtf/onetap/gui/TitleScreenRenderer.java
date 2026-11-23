@@ -898,7 +898,7 @@ public class TitleScreenRenderer {
       float floatValue13 = floatValue8 + floatValue7 + 8.0F;
       float floatValue14 = Draw2D.getTextBaseline(Fonts.SUPPLIER18, 16.0F, floatValue5, 32.0F);
       float floatValue15 = (float)(System.currentTimeMillis() % 4000L) / 4000.0F;
-      Draw2D.m_9("Moonward", Fonts.SUPPLIER18, floatValue13, floatValue14, ColorUtil.withAlpha(ColorUtil.primaryColor(), (int)(255.0F * floatValue6)), ColorUtil.withAlpha(ColorUtil.secondaryColor(), (int)(255.0F * floatValue6)), 16.0F, floatValue15);
+      Draw2D.m_9("PlusClient", Fonts.SUPPLIER18, floatValue13, floatValue14, ColorUtil.withAlpha(ColorUtil.primaryColor(), (int)(255.0F * floatValue6)), ColorUtil.withAlpha(ColorUtil.secondaryColor(), (int)(255.0F * floatValue6)), 16.0F, floatValue15);
    }
 
    private void m_7(float floatValue4, float floatValue5, int value4, float floatValue6, float floatValue7) {
