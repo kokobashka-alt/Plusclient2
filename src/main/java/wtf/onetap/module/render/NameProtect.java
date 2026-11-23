@@ -26,9 +26,9 @@ public class NameProtect extends Module {
       if (this.isEnabled() && text != null && !text.isEmpty()) {
          String text2 = this.getPlayerName();
          if (text2 != null && text2.equalsIgnoreCase(text)) {
-            return "Moonward";
+            return "PlusClient";
          } else {
-            return this.workOnFriends.getValue() && Onetap.FRIEND_MANAGER.isFriend(text) ? "Moonward" : text;
+            return this.workOnFriends.getValue() && Onetap.FRIEND_MANAGER.isFriend(text) ? "PlusClient" : text;
          }
       } else {
          return text;
@@ -76,7 +76,7 @@ public class NameProtect extends Module {
          while (value < text.length()) {
             String text2 = this.findMatch(text, value, stringList);
             if (text2 != null) {
-               stringBuilder.append("Moonward");
+               stringBuilder.append("PlusClient");
                value += text2.length();
             } else {
                stringBuilder.append(text.charAt(value));
