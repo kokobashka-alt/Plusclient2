@@ -11,6 +11,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import wtf.onetap.annotation.RotationInfo;
 import wtf.onetap.pve.CombatPlanner;
 import wtf.onetap.util.LatencyStats;
 import wtf.onetap.util.MinecraftAccess;
@@ -705,13 +706,9 @@ public class RotationModes implements MinecraftAccess {
     // Реализация STtestRotationEngine в виде RotationMode
     // ------------------------------------------------------------------
 
+    @RotationInfo(name = "STtest")
     public static class STtestRotation implements RotationMode {
         private final RotationEngine engine = new RotationEngine();
-
-        @Override
-        public Info getInfo() {
-            return new Info("STtest");
-        }
 
         @Override
         public int m_6_int() {
