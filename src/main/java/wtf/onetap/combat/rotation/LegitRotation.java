@@ -18,6 +18,13 @@ import wtf.onetap.util.Rotations;
  */
 @RotationInfo(name = "Legit", fps = 240)
 public class LegitRotation implements MinecraftAccess, RotationMode {
+   /** The target leaves the aim cone only when it is this much wider than the cone that engaged it (no edge flicker). */
+   private static final float RELEASE_FACTOR = 1.2F;
+   /** Minimum speed (deg/s) used to drift the silent rotation back to the camera when nothing is aimed at. */
+   private static final float RETURN_SPEED = 180.0F;
+
+   private boolean engaged;
+
    @Override
    public Rotations m_5(float lastYaw, float lastPitch, Rotations target, AABB box, boolean flag, float attackReadiness, float dtSeconds) {
       KillAura killAura = Onetap.MODULE_MANAGER.get(KillAura.class);
@@ -25,24 +32,41 @@ public class LegitRotation implements MinecraftAccess, RotationMode {
          return new Rotations(lastYaw, lastPitch);
       }
 
-      // Base is the previous (silent) rotation, not the camera: the camera is not touched.
-      float yaw = lastYaw;
-      float pitch = lastPitch;
       if (dtSeconds <= 0.0F) {
-         return new Rotations(yaw, pitch);
+         return new Rotations(lastYaw, lastPitch);
       }
+
+      // The real camera (the player's own look). In silent mode it is NOT the rotation sent to the server.
+      float camYaw = Onetap.ROTATION_MODES.getRenderYaw();
+      float camPitch = Onetap.ROTATION_MODES.getRenderPitch();
 
       float targetYaw = target.getFloatValue();
       float targetPitch = target.getFloatValue2();
-      if (AimAssistMath.fovDistance(yaw, pitch, targetYaw, targetPitch) > killAura.getLegitFov() / 2.0F) {
-         return new Rotations(yaw, pitch);
+
+      // The FOV gate is measured from the camera, with hysteresis.
+      float half = killAura.getLegitFov() / 2.0F;
+      float distance = AimAssistMath.fovDistance(camYaw, camPitch, targetYaw, targetPitch);
+      this.engaged = distance <= (this.engaged ? half * RELEASE_FACTOR : half);
+
+      if (!this.engaged) {
+         // Not aiming: the silent rotation drifts back to the camera instead of freezing where it was.
+         float[] back = AimAssistMath.smoothStep(
+            lastYaw, lastPitch, camYaw, camPitch,
+            1.0F, Math.max(killAura.getLegitSpeed(), RETURN_SPEED), 1.0F, dtSeconds
+         );
+         return new Rotations(lastYaw + back[0], AimAssistMath.clampPitch(lastPitch + back[1]));
       }
 
       float[] step = AimAssistMath.smoothStep(
-         yaw, pitch, targetYaw, targetPitch,
+         lastYaw, lastPitch, targetYaw, targetPitch,
          killAura.getLegitStrength(), killAura.getLegitSpeed(), killAura.getLegitVertical(), dtSeconds
       );
-      return new Rotations(yaw + step[0], AimAssistMath.clampPitch(pitch + step[1]));
+      return new Rotations(lastYaw + step[0], AimAssistMath.clampPitch(lastPitch + step[1]));
+   }
+
+   @Override
+   public void m_1_void() {
+      this.engaged = false;
    }
 
    @Override
