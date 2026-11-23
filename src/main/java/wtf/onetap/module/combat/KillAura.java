@@ -69,11 +69,15 @@ public class KillAura extends Module {
    private final FloatSetting responseMs = new FloatSetting("Отклик (мс)", 40.0F, 0.0F, 200.0F, 5.0F).visibleWhen(() -> ((String)this.rotation.getValue()).equals("Assist")).build();
    private final FloatSetting verticalAssist = new FloatSetting("Помощь по вертикали", 0.6, 0.0, 1.0, 0.05).visibleWhen(() -> ((String)this.rotation.getValue()).equals("Assist")).build();
    private final FloatSetting hitAssist = new FloatSetting("Доводка к удару", 0.4, 0.0, 1.0, 0.05).visibleWhen(() -> ((String)this.rotation.getValue()).equals("Assist")).build();
+   private final FloatSetting legitFov = new FloatSetting("Угол FOV", 90.0F, 10.0F, 180.0F, 1.0F).visibleWhen(() -> ((String)this.rotation.getValue()).equals("Legit")).build();
+   private final FloatSetting legitStrength = new FloatSetting("Сила доводки", 0.5F, 0.0F, 1.0F, 0.05F).visibleWhen(() -> ((String)this.rotation.getValue()).equals("Legit")).build();
+   private final FloatSetting legitSpeed = new FloatSetting("Скорость (град/с)", 60.0F, 5.0F, 300.0F, 5.0F).visibleWhen(() -> ((String)this.rotation.getValue()).equals("Legit")).build();
+   private final FloatSetting legitVertical = new FloatSetting("Вертикаль", 0.6F, 0.0F, 1.0F, 0.05F).visibleWhen(() -> ((String)this.rotation.getValue()).equals("Legit")).build();
    private final MultiModeSetting targets = new MultiModeSetting("Цели", "Игроки", "Игроки", "Голые", "Мобы", "Животные").build();
    private final ModeSetting priority = new ModeSetting("Приоритет", "Дистанция", "Дистанция", "ФОВ", "Здоровье").build();
    private final ModeSetting correction = new ModeSetting("Коррекция", "Полная", "Полная", "Прямая", "Таргетированная", "Незаметная").build();
    private final BooleanSetting humanClicks = new BooleanSetting("Человечные клики", false).build();
-   private final BooleanSetting clientLook = new BooleanSetting("ClientLook", false).visibleWhen(() -> !((String)this.rotation.getValue()).equals("Assist")).build();
+   private final BooleanSetting clientLook = new BooleanSetting("ClientLook", false).visibleWhen(() -> !((String)this.rotation.getValue()).equals("Assist") && !((String)this.rotation.getValue()).equals("Legit")).build();
    private final BooleanSetting aimBackDelay = new BooleanSetting("Задержка отводки", false).build();
    private final BooleanSetting rayTrace = new BooleanSetting("RayTrace", false).build();
    private final BooleanSetting breakShield = new BooleanSetting("Ломать щит", true).build();
@@ -874,8 +878,24 @@ public class KillAura extends Module {
       return this.hitAssist.getFloat();
    }
 
+   public float getLegitFov() {
+      return this.legitFov.getFloat();
+   }
+
+   public float getLegitStrength() {
+      return this.legitStrength.getFloat();
+   }
+
+   public float getLegitSpeed() {
+      return this.legitSpeed.getFloat();
+   }
+
+   public float getLegitVertical() {
+      return this.legitVertical.getFloat();
+   }
+
    private boolean shouldUseClientLook() {
-      return (Boolean)this.clientLook.getValue() || ((String)this.rotation.getValue()).equals("Assist");
+      return (Boolean)this.clientLook.getValue() || ((String)this.rotation.getValue()).equals("Assist") || ((String)this.rotation.getValue()).equals("Legit");
    }
 
    public static boolean isCooldownReady(float floatValue, boolean flag13) {
