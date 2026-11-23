@@ -10,8 +10,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec2;
 
+import wtf.onetap.combat.rotation.mixin.MixinClientInput;
 import wtf.onetap.util.MinecraftAccess;
 
 public final class ShardbetaAuraPipeline {
@@ -108,18 +108,8 @@ public final class ShardbetaAuraPipeline {
 
     public static void applyMoveFix() {
         LocalPlayer player = MinecraftAccess.MINECRAFT.player;
-        if (player == null || !mode.p.moveFix() || !ShardbetaRotationStorage.active()) return;
-        float d = ShardbetaRotationStorage.yaw() - player.getYRot();
-        if (Math.abs(d) < 0.01f) return;
-        double rad = Math.toRadians(d);
-        double co = Math.cos(rad);
-        double si = Math.sin(rad);
-        Vec2 move = player.input.moveVector;
-        float f = move.y;
-        float side = move.x;
-        float nf = (float) (f * co - side * si);
-        float nside = (float) (side * co + f * si);
-        player.input.moveVector = new Vec2(nside, nf);
+        if (player == null) return;
+        MixinClientInput.applyMoveFix(player.input, mode.p.moveFix());
     }
 
     private static LivingEntity findTarget(LocalPlayer player, ClientLevel level) {
