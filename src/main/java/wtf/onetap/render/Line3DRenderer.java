@@ -423,16 +423,16 @@ public class Line3DRenderer {
       float floatValue2 = Math.max(1.0F, floatValue) / mc.getWindow().getWidth() * 2.0F;
       float floatValue3 = Math.max(1.0F, floatValue) / mc.getWindow().getHeight() * 2.0F;
       int value3 = 0;
-      byte byteValue = 0;
+      int vertexIndex = 0;
 
-      for (int i = 0; byteValue + 1 < vec3List.size(); i++) {
+      for (int i = 0; vertexIndex + 1 < vec3List.size(); i++) {
          int value4 = intArray != null ? intArray[i] : value2;
          int value5 = value4 >> 16 & 0xFF;
          int value6 = value4 >> 8 & 0xFF;
          int value7 = value4 & 0xFF;
          int value8 = value4 >> 24 & 0xFF;
-         Vector4f vector4f = project(matrix4f, (Vec3)vec3List.get(byteValue), vec3);
-         Vector4f vector4f2 = project(matrix4f, (Vec3)vec3List.get(byteValue + 1), vec3);
+         Vector4f vector4f = project(matrix4f, (Vec3)vec3List.get(vertexIndex), vec3);
+         Vector4f vector4f2 = project(matrix4f, (Vec3)vec3List.get(vertexIndex + 1), vec3);
          if (clipLine(vector4f, vector4f2)) {
             vector4f.div(vector4f.w);
             vector4f2.div(vector4f2.w);
@@ -450,7 +450,7 @@ public class Line3DRenderer {
             }
          }
 
-         byteValue += 2;
+         vertexIndex += 2;
       }
 
       return value3;
