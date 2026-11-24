@@ -25,6 +25,10 @@ import wtf.onetap.combat.AimUtil;
 import wtf.onetap.combat.EntityPrediction;
 import wtf.onetap.combat.ShieldBreaker;
 import wtf.onetap.combat.rotation.RotationModes;
+import wtf.onetap.combat.rotation.ShardbetaAuraMode;
+import wtf.onetap.combat.rotation.ShardbetaAuraPipeline;
+import wtf.onetap.combat.rotation.ShardbetaRotation;
+import wtf.onetap.combat.rotation.ShardbetaRotationStorage;
 import wtf.onetap.event.ConnectedEvent;
 import wtf.onetap.event.MovementInputEvent;
 import wtf.onetap.event.PostMotionEvent;
@@ -92,6 +96,7 @@ public class KillAura extends Module {
    private final ShieldBreaker shieldBreaker = new ShieldBreaker();
    private final C9j c9j = new C9j();
    private final TimeHelper timeHelper = new TimeHelper();
+   private final ShardbetaRotation shardbetaRotation = new ShardbetaRotation();
    private int value;
    private JsonObject jsonObject;
    private boolean flag;
@@ -173,7 +178,10 @@ public class KillAura extends Module {
          this.handleChorus();
          if (this.flag3 || this.isOtherAuraBusy()) {
             CombatPlanner.COMBAT_PLANNER.setPlan(null);
+            ShardbetaRotationStorage.clear();
          } else if (this.livingEntity2 == null) {
+            this.shardbetaRotation.reset();
+            ShardbetaRotationStorage.clear();
             if (Onetap.ROTATION_MODES.isFlag()) {
                if (this.shouldUseClientLook()) {
                   Onetap.ROTATION_MODES.applyAndFinish();
@@ -250,8 +258,28 @@ public class KillAura extends Module {
             if (flag22) {
                long longValue4 = System.nanoTime();
                String text2 = flag13 && this.getElytraResolver() != null ? "Vanilla" : text;
-               Onetap.ROTATION_MODES.rotateByModeFull(vec32, aABB, text2, this.shouldUseClientLook(), 10, flag21, flag14, floatValue8, this.livingEntity2);
+               if (RotationModes.isShardMode(text2)) {
+                  ShardbetaAuraMode shardMode = RotationModes.parseShardMode(text2);
+                  ShardbetaAuraPipeline.setMode(shardMode);
+                  this.shardbetaRotation.setAggression(shardMode.p.aggression());
+                  ShardbetaRotation.Rotation sbRot = this.shardbetaRotation.update(
+                     this.livingEntity2,
+                     aABB2,
+                     MinecraftAccess.MINECRAFT.player.getYRot(),
+                     MinecraftAccess.MINECRAFT.player.getXRot(),
+                     floatValue2
+                  );
+                  ShardbetaRotationStorage.begin(sbRot.yaw(), sbRot.pitch());
+                  Onetap.ROTATION_MODES.rotateWithSensitivity(new Rotations(sbRot.yaw(), sbRot.pitch()), this.shouldUseClientLook(), 10);
+               } else {
+                  this.shardbetaRotation.reset();
+                  ShardbetaRotationStorage.clear();
+                  Onetap.ROTATION_MODES.rotateByModeFull(vec32, aABB, text2, this.shouldUseClientLook(), 10, flag21, flag14, floatValue8, this.livingEntity2);
+               }
                C03.recordSince(longValue4);
+            } else {
+               this.shardbetaRotation.reset();
+               ShardbetaRotationStorage.clear();
             }
 
             boolean flag23 = ((String)this.sprintReset.getValue()).equals("W-тап") && !C6_f.m_4_boolean();
@@ -798,6 +826,12 @@ public class KillAura extends Module {
       } else {
          flag11 = false;
       }
+
+      if (ShardbetaRotationStorage.active() && RotationModes.isShardMode((String)this.rotation.getValue())) {
+         Vec2 fixed = ShardbetaAuraPipeline.fixMoveInput(event.getForward(), event.getStrafe());
+         event.setForward(fixed.y);
+         event.setStrafe(fixed.x);
+      }
    }
 
    private Vec3 m_5(LivingEntity livingEntity5, ElytraTarget elytraTarget) {
@@ -1066,6 +1100,8 @@ public class KillAura extends Module {
       this.livingEntity3 = null;
       this.value8 = -1;
       this.flag6 = false;
+      this.shardbetaRotation.reset();
+      ShardbetaRotationStorage.clear();
    }
 
    @Override
@@ -1075,6 +1111,8 @@ public class KillAura extends Module {
       this.livingEntity3 = null;
       this.value8 = -1;
       this.flag6 = false;
+      this.shardbetaRotation.reset();
+      ShardbetaRotationStorage.clear();
       this.shieldBreaker.m_2_void(null);
       this.restoreUseKey();
       this.releaseUseKey();
