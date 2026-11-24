@@ -49,7 +49,7 @@ public class RotationModes implements MinecraftAccess {
 
     private static final List<String> STRING_LIST = List.of(
             "Vanilla", "SP (old)", "Snap", "Snap2", "Рывки", "Shakal",
-            "LegitSnap", "Assist", "Legit", "HolyWorld", "STtest", "shardbeta", "NoRot"
+            "LegitSnap", "Assist", "Legit", "HolyWorld", "STtest", "shardbeta", "TestRot", "NoRot"
     );
 
     private static final Set<String> STRING_SET = Set.copyOf(STRING_LIST);
@@ -78,7 +78,8 @@ public class RotationModes implements MinecraftAccess {
                 new LegitRotation(),
                 new HolyWorldRotation(),
                 new STtestRotation(),
-                new ShardbetaRotationMode()
+                new ShardbetaRotationMode(),
+                new TestRotMode()
         );
 
         this.rotationModeMap = new IdentityHashMap<>();
@@ -903,6 +904,96 @@ public class RotationModes implements MinecraftAccess {
             float yawDiff = Mth.wrapDegrees(targetCamera.getFloatValue() - currentYaw);
             float pitchDiff = Mth.clamp(targetCamera.getFloatValue2() - currentPitch, -90.0F, 90.0F);
             return new Rotations(currentYaw + Mth.clamp(yawDiff, -step, step), Mth.clamp(currentPitch + Mth.clamp(pitchDiff, -step, step), -90.0F, 90.0F));
+        }
+
+        @Override
+        public boolean isCloseTo(float currentYaw, float currentPitch, Rotations target) {
+            return Math.abs(Mth.wrapDegrees(target.getFloatValue() - currentYaw)) <= 1.0F
+                    && Math.abs(target.getFloatValue2() - currentPitch) <= 1.0F;
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Реализация TestRot в виде RotationMode
+    // ------------------------------------------------------------------
+
+    @RotationInfo(name = "TestRot")
+    public static class TestRotMode implements RotationMode {
+        private final TestRot engine = new TestRot();
+        private float lastYaw;
+        private float lastPitch;
+        private boolean initialized;
+
+        @Override
+        public int m_6_int() {
+            return 0;
+        }
+
+        @Override
+        public boolean m_6_boolean() {
+            return false;
+        }
+
+        @Override
+        public boolean m_2_boolean() {
+            return false;
+        }
+
+        @Override
+        public Vec3 m_1_Vec3() {
+            return Vec3.ZERO;
+        }
+
+        @Override
+        public void m_1_void() {
+            this.engine.reset();
+            this.initialized = false;
+        }
+
+        @Override
+        public void m_8_void() {
+            this.engine.reset();
+            this.initialized = false;
+        }
+
+        @Override
+        public Rotations m_8_C3b() {
+            if (!this.initialized && MinecraftAccess.MINECRAFT.player != null) {
+                this.lastYaw = MinecraftAccess.MINECRAFT.player.getYRot();
+                this.lastPitch = MinecraftAccess.MINECRAFT.player.getXRot();
+                this.initialized = true;
+            }
+            return new Rotations(this.lastYaw, this.lastPitch);
+        }
+
+        @Override
+        public Rotations m_5(float currentYaw, float currentPitch, Rotations targetRot, AABB aabb, boolean flag10, float floatValue11, float floatValue12) {
+            return this.m_9(currentYaw, currentPitch, targetRot, aabb, flag10, floatValue11, floatValue12, null, null, false);
+        }
+
+        @Override
+        public Rotations m_9(float currentYaw, float currentPitch, Rotations targetRot, AABB aabb, boolean flag10, float floatValue11, float floatValue12, LivingEntity target, Vec3 vec3, boolean flag11) {
+            if (MinecraftAccess.MINECRAFT.player == null) {
+                return new Rotations(currentYaw, currentPitch);
+            }
+            double range = MinecraftAccess.MINECRAFT.player.getEyePosition().distanceTo(
+                    vec3 != null ? vec3 : (target != null ? target.position() : MinecraftAccess.MINECRAFT.player.getEyePosition())
+            ) + 2.0;
+            TestRot.Rotation updated = this.engine.update(target, aabb, currentYaw, currentPitch, Math.max(3.0, range));
+            this.lastYaw = updated.yaw();
+            this.lastPitch = updated.pitch();
+            this.initialized = true;
+            return new Rotations(this.lastYaw, this.lastPitch);
+        }
+
+        @Override
+        public Rotations m_8(float currentYaw, float currentPitch, Rotations targetCamera, float step) {
+            float yawDiff = Mth.wrapDegrees(targetCamera.getFloatValue() - currentYaw);
+            float pitchDiff = Mth.clamp(targetCamera.getFloatValue2() - currentPitch, -90.0F, 90.0F);
+            return new Rotations(
+                    currentYaw + Mth.clamp(yawDiff, -step, step),
+                    Mth.clamp(currentPitch + Mth.clamp(pitchDiff, -step, step), -90.0F, 90.0F)
+            );
         }
 
         @Override
