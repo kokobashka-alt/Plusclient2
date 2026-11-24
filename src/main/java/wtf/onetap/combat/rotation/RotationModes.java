@@ -788,15 +788,6 @@ public class RotationModes implements MinecraftAccess {
             ShardbetaRotationStorage.clear();
         }
 
-        @Override
-        public Rotations m_8_C3b() {
-            if (!this.initialized && MinecraftAccess.MINECRAFT.player != null) {
-                this.lastYaw = MinecraftAccess.MINECRAFT.player.getYRot();
-                this.lastPitch = MinecraftAccess.MINECRAFT.player.getXRot();
-                this.initialized = true;
-            }
-            return new Rotations(this.lastYaw, this.lastPitch);
-        }
 
         @Override
         public Rotations m_5(float currentYaw, float currentPitch, Rotations targetRot, AABB aabb, boolean flag10, float floatValue11, float floatValue12) {
@@ -821,15 +812,6 @@ public class RotationModes implements MinecraftAccess {
             return new Rotations(this.lastYaw, this.lastPitch);
         }
 
-        @Override
-        public Rotations m_8(float currentYaw, float currentPitch, Rotations targetCamera, float step) {
-            float yawDiff = Mth.wrapDegrees(targetCamera.getFloatValue() - currentYaw);
-            float pitchDiff = Mth.clamp(targetCamera.getFloatValue2() - currentPitch, -90.0F, 90.0F);
-            return new Rotations(
-                    currentYaw + Mth.clamp(yawDiff, -step, step),
-                    Mth.clamp(currentPitch + Mth.clamp(pitchDiff, -step, step), -90.0F, 90.0F)
-            );
-        }
 
         @Override
         public boolean isCloseTo(float currentYaw, float currentPitch, Rotations target) {
@@ -956,15 +938,6 @@ public class RotationModes implements MinecraftAccess {
             this.initialized = false;
         }
 
-        @Override
-        public Rotations m_8_C3b() {
-            if (!this.initialized && MinecraftAccess.MINECRAFT.player != null) {
-                this.lastYaw = MinecraftAccess.MINECRAFT.player.getYRot();
-                this.lastPitch = MinecraftAccess.MINECRAFT.player.getXRot();
-                this.initialized = true;
-            }
-            return new Rotations(this.lastYaw, this.lastPitch);
-        }
 
         @Override
         public Rotations m_5(float currentYaw, float currentPitch, Rotations targetRot, AABB aabb, boolean flag10, float floatValue11, float floatValue12) {
@@ -986,15 +959,6 @@ public class RotationModes implements MinecraftAccess {
             return new Rotations(this.lastYaw, this.lastPitch);
         }
 
-        @Override
-        public Rotations m_8(float currentYaw, float currentPitch, Rotations targetCamera, float step) {
-            float yawDiff = Mth.wrapDegrees(targetCamera.getFloatValue() - currentYaw);
-            float pitchDiff = Mth.clamp(targetCamera.getFloatValue2() - currentPitch, -90.0F, 90.0F);
-            return new Rotations(
-                    currentYaw + Mth.clamp(yawDiff, -step, step),
-                    Mth.clamp(currentPitch + Mth.clamp(pitchDiff, -step, step), -90.0F, 90.0F)
-            );
-        }
 
         @Override
         public boolean isCloseTo(float currentYaw, float currentPitch, Rotations target) {
