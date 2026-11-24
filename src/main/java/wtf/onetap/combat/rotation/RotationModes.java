@@ -2,6 +2,7 @@ package wtf.onetap.combat.rotation;
 
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,7 +49,7 @@ public class RotationModes implements MinecraftAccess {
 
     private static final List<String> STRING_LIST = List.of(
             "Vanilla", "SP (old)", "Snap", "Snap2", "Рывки", "Shakal",
-            "LegitSnap", "Assist", "Legit", "HolyWorld", "STtest", "NoRot"
+            "LegitSnap", "Assist", "Legit", "HolyWorld", "STtest", "shardbeta", "NoRot"
     );
 
     private static final Set<String> STRING_SET = Set.copyOf(STRING_LIST);
@@ -76,7 +77,8 @@ public class RotationModes implements MinecraftAccess {
                 new AssistRotation(),
                 new LegitRotation(),
                 new HolyWorldRotation(),
-                new STtestRotation()
+                new STtestRotation(),
+                new ShardbetaRotationMode()
         );
 
         this.rotationModeMap = new IdentityHashMap<>();
@@ -86,6 +88,43 @@ public class RotationModes implements MinecraftAccess {
             this.rotationModeMap.put(rotationMode2, LatencyStats.getOrCreate("rotation " + rotationMode2.getInfo().name()));
             this.rotationModeMap2.put(rotationMode2, LatencyStats.getOrCreate("rotation " + rotationMode2.getInfo().name() + " return"));
         }
+    }
+
+    public static boolean isShardMode(String modeName) {
+        if (modeName == null) {
+            return false;
+        }
+        String normalized = modeName.trim().toLowerCase(Locale.ROOT);
+        return normalized.equals("shardbeta")
+                || normalized.equals("shard")
+                || normalized.startsWith("shard");
+    }
+
+    public static ShardbetaAuraMode parseShardMode(String modeName) {
+        if (modeName == null) {
+            return ShardbetaAuraMode.SHARD;
+        }
+        String normalized = modeName.trim().toUpperCase(Locale.ROOT).replace(' ', '_').replace('-', '_');
+        for (ShardbetaAuraMode m : ShardbetaAuraMode.values()) {
+            if (m.name().equals(normalized)) {
+                return m;
+            }
+        }
+        if (normalized.contains("LEGIT")) {
+            for (ShardbetaAuraMode m : ShardbetaAuraMode.values()) {
+                if (m.name().contains("LEGIT")) {
+                    return m;
+                }
+            }
+        }
+        if (normalized.contains("SNAP")) {
+            for (ShardbetaAuraMode m : ShardbetaAuraMode.values()) {
+                if (m.name().contains("SNAP")) {
+                    return m;
+                }
+            }
+        }
+        return ShardbetaAuraMode.values().length > 0 ? ShardbetaAuraMode.values()[0] : ShardbetaAuraMode.SHARD;
     }
 
     public void setSpoofedRotation(float floatValue11, float floatValue12) {
@@ -181,6 +220,7 @@ public class RotationModes implements MinecraftAccess {
         this.rotationMode = null;
         this.text = null;
         this.resetSmoothing();
+        ShardbetaRotationStorage.clear();
         if (MinecraftAccess.MINECRAFT.player != null) {
             this.floatValue = MinecraftAccess.MINECRAFT.player.getYRot();
             this.floatValue2 = MinecraftAccess.MINECRAFT.player.getXRot();
@@ -700,6 +740,101 @@ public class RotationModes implements MinecraftAccess {
 
     public static int m_7_int() {
         return 0;
+    }
+
+    // ------------------------------------------------------------------
+    // Реализация ShardbetaRotation в виде RotationMode
+    // ------------------------------------------------------------------
+
+    @RotationInfo(name = "shardbeta")
+    public static class ShardbetaRotationMode implements RotationMode {
+        private final ShardbetaRotation engine = new ShardbetaRotation();
+        private float lastYaw;
+        private float lastPitch;
+        private boolean initialized;
+
+        @Override
+        public int m_6_int() {
+            return 0;
+        }
+
+        @Override
+        public boolean m_6_boolean() {
+            return false;
+        }
+
+        @Override
+        public boolean m_2_boolean() {
+            return false;
+        }
+
+        @Override
+        public Vec3 m_1_Vec3() {
+            return Vec3.ZERO;
+        }
+
+        @Override
+        public void m_1_void() {
+            this.engine.reset();
+            this.initialized = false;
+            ShardbetaRotationStorage.clear();
+        }
+
+        @Override
+        public void m_8_void() {
+            this.engine.reset();
+            this.initialized = false;
+            ShardbetaRotationStorage.clear();
+        }
+
+        @Override
+        public Rotations m_8_C3b() {
+            if (!this.initialized && MinecraftAccess.MINECRAFT.player != null) {
+                this.lastYaw = MinecraftAccess.MINECRAFT.player.getYRot();
+                this.lastPitch = MinecraftAccess.MINECRAFT.player.getXRot();
+                this.initialized = true;
+            }
+            return new Rotations(this.lastYaw, this.lastPitch);
+        }
+
+        @Override
+        public Rotations m_5(float currentYaw, float currentPitch, Rotations targetRot, AABB aabb, boolean flag10, float floatValue11, float floatValue12) {
+            return this.m_9(currentYaw, currentPitch, targetRot, aabb, flag10, floatValue11, floatValue12, null, null, false);
+        }
+
+        @Override
+        public Rotations m_9(float currentYaw, float currentPitch, Rotations targetRot, AABB aabb, boolean flag10, float floatValue11, float floatValue12, LivingEntity target, Vec3 vec3, boolean flag11) {
+            if (MinecraftAccess.MINECRAFT.player == null) {
+                return new Rotations(currentYaw, currentPitch);
+            }
+            ShardbetaAuraMode mode = ShardbetaAuraPipeline.getMode();
+            this.engine.setAggression(mode != null && mode.p != null ? mode.p.aggression() : 1.0);
+            double range = MinecraftAccess.MINECRAFT.player.getEyePosition().distanceTo(
+                    vec3 != null ? vec3 : (target != null ? target.position() : MinecraftAccess.MINECRAFT.player.getEyePosition())
+            ) + 2.0;
+            ShardbetaRotation.Rotation updated = this.engine.update(target, aabb, currentYaw, currentPitch, Math.max(3.0, range));
+            this.lastYaw = updated.yaw();
+            this.lastPitch = updated.pitch();
+            this.initialized = true;
+            ShardbetaRotationStorage.begin(this.lastYaw, this.lastPitch);
+            return new Rotations(this.lastYaw, this.lastPitch);
+        }
+
+        @Override
+        public Rotations m_8(float currentYaw, float currentPitch, Rotations targetCamera, float step) {
+            float yawDiff = Mth.wrapDegrees(targetCamera.getFloatValue() - currentYaw);
+            float pitchDiff = Mth.clamp(targetCamera.getFloatValue2() - currentPitch, -90.0F, 90.0F);
+            return new Rotations(
+                    currentYaw + Mth.clamp(yawDiff, -step, step),
+                    Mth.clamp(currentPitch + Mth.clamp(pitchDiff, -step, step), -90.0F, 90.0F)
+            );
+        }
+
+        @Override
+        public boolean isCloseTo(float currentYaw, float currentPitch, Rotations target) {
+            return Math.abs(Mth.wrapDegrees(target.getFloatValue() - currentYaw)) <= 1.0F
+                    && Math.abs(target.getFloatValue2() - currentPitch) <= 1.0F;
+        }
     }
 
     // ------------------------------------------------------------------
