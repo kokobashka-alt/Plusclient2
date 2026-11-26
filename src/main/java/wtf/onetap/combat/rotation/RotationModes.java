@@ -11,6 +11,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import wtf.onetap.pve.CombatPlanner;
 import wtf.onetap.util.LatencyStats;
+import wtf.onetap.combat.rotation.lopata.LopataRotation;
 import wtf.onetap.util.MinecraftAccess;
 import wtf.onetap.util.Rotations;
 
@@ -40,7 +41,7 @@ public class RotationModes implements MinecraftAccess {
    private int value2;
    private final Map<RotationMode, LatencyStats.StateHolder> rotationModeMap;
    private final Map<RotationMode, LatencyStats.StateHolder> rotationModeMap2;
-   private static final List<String> BASE_MODES = List.of("Vanilla", "SP (old)", "Snap", "Snap2", "Рывки", "Shakal", "LegitSnap", "Assist", "Legit", "Wander", "HolyWorld", "SpookyTime", "NoRot");
+   private static final List<String> BASE_MODES = List.of("Vanilla", "SP (old)", "Snap", "Snap2", "Рывки", "Shakal", "LegitSnap", "Assist", "Legit", "Wander", "HolyWorld", "SpookyTime", "lopata", "NoRot");
    private static final List<String> SHARD_MODES = List.of("Shard", "Shard AI");
    private static final List<String> STRING_LIST = java.util.stream.Stream.concat(BASE_MODES.stream(), SHARD_MODES.stream()).toList();
    private static final Set<String> STRING_SET = Set.copyOf(STRING_LIST);
@@ -57,7 +58,7 @@ public class RotationModes implements MinecraftAccess {
 
    public RotationModes() {
       this.value = Integer.MIN_VALUE;
-      this.rotationModeList = List.of(new SpOldRotation(), new SnapRotation(), new Snap2Rotation(), new DashRotation(), new ShakalRotation(), new LegitSnapRotation(), new AssistRotation(), new LegitRotation(), new WanderRotation(), new HolyWorldRotation(), new SpookyTimeRotation());
+      this.rotationModeList = List.of(new SpOldRotation(), new SnapRotation(), new Snap2Rotation(), new DashRotation(), new ShakalRotation(), new LegitSnapRotation(), new AssistRotation(), new LegitRotation(), new WanderRotation(), new HolyWorldRotation(), new SpookyTimeRotation(), new LopataRotation());
       this.rotationModeMap = new IdentityHashMap<>();
       this.rotationModeMap2 = new IdentityHashMap<>();
 
