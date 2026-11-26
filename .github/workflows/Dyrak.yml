@@ -1,0 +1,30 @@
+
+name: Create Lopata Folder
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  create-folder:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create lopata folder
+        run: |
+          mkdir -p src/main/java/wtf/onetap/combat/rotation/lopata
+          touch src/main/java/wtf/onetap/combat/rotation/lopata/.gitkeep
+
+      - name: Commit folder
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/main/java/wtf/onetap/combat/rotation/lopata/.gitkeep
+          git commit -m "Create lopata folder" || echo "Folder already exists"
+          git push
+          
