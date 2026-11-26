@@ -240,11 +240,17 @@ public class SpookyTimeRotation implements MinecraftAccess, RotationMode {
       }
 
       int index = SpookyTimeMath.pick(scores, profile.temperature(), random.nextDouble());
+      if (index < 0) {
+         return -1;
+      }
       return index == this.pointIndex && this.points.length > 1 ? this.pickOther(scores, index, profile, random) : index;
    }
 
    /** The same point twice in a row is allowed only when no other point is visible. */
    private int pickOther(double[] scores, int same, SpookyTimeProfile profile, ThreadLocalRandom random) {
+      if (same < 0 || same >= scores.length) {
+         return same;
+      }
       double saved = scores[same];
       scores[same] = Double.NEGATIVE_INFINITY;
       int other = SpookyTimeMath.pick(scores, profile.temperature(), random.nextDouble());
