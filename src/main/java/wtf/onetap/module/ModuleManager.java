@@ -21,6 +21,7 @@ import wtf.onetap.module.combat.BackTrack;
 import wtf.onetap.module.combat.CrystalAura;
 import wtf.onetap.module.combat.ElytraTarget;
 import wtf.onetap.module.combat.KillAura;
+import wtf.onetap.module.combat.LopataRecorder;
 import wtf.onetap.module.combat.NoEntityTrace;
 import wtf.onetap.module.combat.NoFriendDamage;
 import wtf.onetap.module.combat.NoVelocity;
@@ -235,6 +236,7 @@ public class ModuleManager {
          new PacketCriticals(),
          new NoFriendDamage(),
          new NoEntityTrace(),
+         new LopataRecorder(),
          new ElytraTarget(),
          new ProjectHelper(),
          new AutoExplosion(),
