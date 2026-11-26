@@ -21,86 +21,67 @@ import wtf.onetap.util.Rotations;
 public final class ShardbetaRotation {
     public record Rotation(float yaw, float pitch) {}
 
-    private static final double EDGE = 0.88;
-    private static final double EDGE_RAND = 0.03;
-    private static final double PREDICT = 0.7;
-    private static final double PREDICT_RAND = 0.08;
-    private static final double SPEED_RAND = 0.1;
+    private static final double EDGE = 0.78;
+    private static final double EDGE_RAND = 0.05;
+    private static final double PREDICT = 0.6;
+    private static final double PREDICT_RAND = 0.1;
+    private static final double SPEED_RAND = 0.16;
 
-    private static final float MAX_YAW = 30.0f;
-    private static final float MAX_PITCH = 15.0f;
-    private static final float MIN_STEP = 0.3f;
-    private static final double F_MIN = 0.25;
-    private static final double F_MAX = 0.55;
-    private static final float CAP_RAND = 0.12f;
-    private static final float EASE = 0.3f;
-    private static final float ACCEL = 12.0f;
-    private static final double SKIP_CHANCE = 0.03;
+    private static final float MAX_YAW = 15.0f;
+    private static final float MAX_PITCH = 9.0f;
+    private static final float MIN_STEP = 0.2f;
+    private static final double F_MIN = 0.15;
+    private static final double F_MAX = 0.5;
+    private static final float CAP_RAND = 0.15f;
+    private static final float EASE = 0.65f;
+    private static final float ACCEL = 7.0f;
+    private static final double SKIP_CHANCE = 0.05;
 
-    private static final float JIT_YAW = 0.2f;
-    private static final float JIT_PITCH = 0.15f;
-    private static final float JIT_FADE = 10.0f;
+    private static final float JIT_YAW = 0.26f;
+    private static final float JIT_PITCH = 0.16f;
+    private static final float JIT_FADE = 9.0f;
     private static final float BEZIER = 1.0f;
-    private static final float OFF_PITCH = -0.5f;
-    private static final float OFF_YAW_RAND = 4.9f;
-    private static final float OFF_PITCH_RAND = 0.5f;
-    private static final int OFF_EVERY = 60;
+    private static final float OFF_PITCH = -1.0f;
+    private static final float OFF_YAW_RAND = 1.2f;
+    private static final float OFF_PITCH_RAND = 0.8f;
+    private static final int OFF_EVERY = 69;
 
-    private static final int HOLD_MIN = 2;
+    private static final int HOLD_MIN = 3;
     private static final int HOLD_MAX = 6;
-    private static final float HOLD_ANGLE = 4.0f;
-    private static final double MIN_Y = 0.3;
-    private static final double MAX_Y = 0.97;
-    private static final double OV_CHANCE = 0.1;
-    private static final float OV_DEG = 1.0f;
+    private static final float HOLD_ANGLE = 8.0f;
+    private static final double MIN_Y = 0.45;
+    private static final double MAX_Y = 0.94;
+    private static final double OV_CHANCE = 0.24;
+    private static final float OV_DEG = 1.2f;
 
     // {yFrac, right, forward}
     private static final double[][] P = {
-        {0.727, -0.977, -0.369},
-        {0.907, -0.737, 0.161},
-        {0.562, -0.121, -0.369},
-        {0.631, -0.822, 0.369},
-        {0.573, -0.207, -0.369},
-        {0.886, -0.401, 0.737},
-        {0.588, 0.568, 0.369},
-        {0.691, 0.894, -0.369},
-        {0.847, 0.731, 0.737},
-        {0.916, -0.737, 0.046},
-        {0.938, -0.222, -0.737},
-        {0.607, 0.553, 0.17},
-        {0.651, -0.381, 0.369},
-        {0.574, -0.994, 0.157},
-        {0.892, -0.737, -0.444},
-        {0.794, 0.487, -0.737},
-        {0.666, -0.503, 0.369},
-        {0.709, -0.449, -0.369},
-        {0.489, 0.434, -0.369},
-        {0.54, -0.374, 0.369},
-        {0.506, -0.708, 0.369},
-        {0.538, 0.673, 0.369},
-        {0.747, -0.397, 0.369},
-        {0.921, -0.588, 0.737},
-        {0.673, 0.274, -0.369},
-        {0.669, 0.994, -0.209},
-        {0.568, 0.553, -0.283},
-        {0.807, 0.737, -0.366},
-        {0.604, -0.41, 0.369},
-        {0.452, 0.154, -0.369},
-        {0.739, -0.907, 0.369},
-        {0.899, 0.456, 0.737},
-        {0.594, 0.553, -0.353},
-        {0.826, -0.608, 0.737},
-        {0.592, 0.553, -0.145},
-        {0.731, -0.994, -0.05},
-        {0.558, 0.029, 0.369},
-        {0.588, 0.994, 0.32},
-        {0.589, -0.992, 0.369},
-        {0.697, 0.553, -0.368},
-        {0.489, 0.101, 0.369},
-        {0.729, -0.483, 0.369},
-        {0.854, -0.056, 0.737},
-        {0.46, -0.553, 0.266},
-        {0.785, 0.242, -0.737}
+        {0.784, -0.375, 0.192},
+        {0.866, -0.201, -0.029},
+        {0.802, -0.473, -0.106},
+        {0.747, -0.07, 0.221},
+        {0.785, 0.539, -0.024},
+        {0.528, -0.3, 0.19},
+        {0.694, -0.123, 0.256},
+        {0.835, -0.407, 0.127},
+        {0.873, -0.084, 0.082},
+        {0.683, 0.081, 0.241},
+        {0.561, -0.035, 0.14},
+        {0.754, 0.257, -0.229},
+        {0.711, -0.006, -0.155},
+        {0.61, -0.176, -0.035},
+        {0.702, 0.148, -0.191},
+        {0.705, 0.343, -0.099},
+        {0.899, -0.044, 0.009},
+        {0.57, 0.185, 0.054},
+        {0.602, 0.113, 0.114},
+        {0.767, -0.254, -0.201},
+        {0.742, 0.326, 0.007},
+        {0.752, 0.498, -0.229},
+        {0.588, -0.006, 0.07},
+        {0.832, -0.289, 0.008},
+        {0.778, 0.182, -0.108},
+        {0.765, 0.087, -0.25}
     };
 
     private LivingEntity last;

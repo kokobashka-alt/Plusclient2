@@ -40,7 +40,9 @@ public class RotationModes implements MinecraftAccess {
    private int value2;
    private final Map<RotationMode, LatencyStats.StateHolder> rotationModeMap;
    private final Map<RotationMode, LatencyStats.StateHolder> rotationModeMap2;
-   private static final List<String> STRING_LIST = List.of("Vanilla", "SP (old)", "Snap", "Snap2", "Рывки", "Shakal", "LegitSnap", "Assist", "Legit", "Wander", "HolyWorld", "NoRot");
+   private static final List<String> BASE_MODES = List.of("Vanilla", "SP (old)", "Snap", "Snap2", "Рывки", "Shakal", "LegitSnap", "Assist", "Legit", "Wander", "HolyWorld", "NoRot");
+   private static final List<String> SHARD_MODES = List.of("Shard", "Shard AI");
+   private static final List<String> STRING_LIST = java.util.stream.Stream.concat(BASE_MODES.stream(), SHARD_MODES.stream()).toList();
    private static final Set<String> STRING_SET = Set.copyOf(STRING_LIST);
    private static final Set<String> STRING_SET2 = Set.of();
    private Vec3 vec3;
@@ -335,6 +337,14 @@ public class RotationModes implements MinecraftAccess {
 
    public static boolean isCustomMode(String text3) {
       return STRING_LIST.contains(text3) && !STRING_SET.contains(text3);
+   }
+
+   public static boolean isShardMode(String text3) {
+      return SHARD_MODES.contains(text3);
+   }
+
+   public static ShardbetaAuraMode parseShardMode(String text3) {
+      return "Shard AI".equals(text3) ? ShardbetaAuraMode.SHARD_AI : ShardbetaAuraMode.SHARD;
    }
 
    public Vec3 getModeAimOffset(String text3) {

@@ -112,15 +112,33 @@ public final class ShardbetaAuraPipeline {
         if (player == null || !mode.p.moveFix() || !ShardbetaRotationStorage.active()) {
             return new Vec2(strafe, forward);
         }
+        float scale = Math.max(Math.abs(forward), Math.abs(strafe));
+        if (scale < 1.0e-4f) {
+            return new Vec2(strafe, forward);
+        }
         float diffRad = (float) Math.toRadians(Mth.wrapDegrees(ShardbetaRotationStorage.yaw() - player.getYRot()));
         if (Math.abs(diffRad) < 1.0e-4f) {
             return new Vec2(strafe, forward);
         }
         float cos = Mth.cos(diffRad);
         float sin = Mth.sin(diffRad);
-        float newForward = forward * cos - strafe * sin;
-        float newStrafe = strafe * cos + forward * sin;
-        return new Vec2(newStrafe, newForward);
+        float rotForward = forward * cos - strafe * sin;
+        float rotStrafe = strafe * cos + forward * sin;
+        return snapToKeyDirection(rotForward, rotStrafe, scale);
+    }
+
+    // Vanilla input only ever produces one of eight directions, so the rotated vector is snapped back to them.
+    // 0.3827 is sin(22.5 degrees): the boundary between a pure axis and the diagonal next to it.
+    static Vec2 snapToKeyDirection(float forward, float strafe, float scale) {
+        float len = (float) Math.hypot(forward, strafe);
+        if (len < 1.0e-4f) {
+            return new Vec2(0.0f, 0.0f);
+        }
+        float uf = forward / len;
+        float us = strafe / len;
+        float f = Math.abs(uf) >= 0.3827f ? Math.signum(uf) * scale : 0.0f;
+        float s = Math.abs(us) >= 0.3827f ? Math.signum(us) * scale : 0.0f;
+        return new Vec2(s, f);
     }
 
     private static LivingEntity findTarget(LocalPlayer player, ClientLevel level) {
