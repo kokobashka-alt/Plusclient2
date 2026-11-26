@@ -160,6 +160,7 @@ import wtf.onetap.module.render.TotemAngel;
 import wtf.onetap.module.render.TotemPop;
 import wtf.onetap.module.render.Tracers;
 import wtf.onetap.module.render.Trajectories;
+import wtf.onetap.module.render.ClawdPet;
 import wtf.onetap.module.render.UseIndicator;
 import wtf.onetap.module.render.ViewModel;
 import wtf.onetap.module.render.WaterSplash;
@@ -254,6 +255,7 @@ public class ModuleManager {
          new Tags(),
          new TargetESP(),
          new UseIndicator(),
+         new ClawdPet(),
          new ClickPearl(),
          new AutoSwap(),
          new AutoTotem(),
