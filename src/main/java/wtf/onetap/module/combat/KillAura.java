@@ -61,6 +61,9 @@ public class KillAura extends Module {
    private static final LatencyStats.StateHolder C03 = LatencyStats.getOrCreate("KillAura rotation");
    public static LivingEntity livingEntity;
    private final ModeSetting rotation = new ModeSetting("Ротация", "Vanilla", Onetap.ROTATION_MODES.getModeNames()).build();
+   private final ModeSetting spookyProfile = new ModeSetting("SpookyTime профиль", "3 Баланс", "1 Агрессивная", "2 Рывок", "3 Баланс", "4 Тень", "5 Спокойная")
+      .visibleWhen(() -> "SpookyTime".equals(this.rotation.getValue()))
+      .build();
    private final FloatSetting hitDistance = new FloatSetting("Дистанция удара", 4.5, 1.0, 7.0, 0.1F).build();
    private final FloatSetting rotationDistance = new FloatSetting("Дистанция ротации", 2.0, 0.0, 6.0, 0.1F).build();
    private final FloatSetting aimBackAfterHitMs = new FloatSetting("Отвод после удара (мс)", 100.0F, 0.0F, 400.0F, 10.0F)
@@ -942,6 +945,13 @@ public class KillAura extends Module {
 
    public static boolean isCooldownReady(float floatValue, boolean flag13) {
       return flag13 ? floatValue >= 0.92F : floatValue > 0.9F;
+   }
+
+   /** Number of the SpookyTime profile, 1 (aggressive) to 5 (calm). */
+   public int getSpookyProfile() {
+      String value = this.spookyProfile.getValue();
+      int number = value == null || value.isEmpty() ? 3 : Character.digit(value.charAt(0), 10);
+      return number >= 1 && number <= 5 ? number : 3;
    }
 
    public float getRotationDistance() {
