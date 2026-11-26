@@ -413,6 +413,10 @@ public class ConfigManager {
                   if (text4.equals("Neuro") || text4.equals("Neuro2")) {
                      text4 = "Vanilla";
                   }
+
+                  if (text4.equals("shardbeta")) {
+                     text4 = "Shard";
+                  }
                }
 
                modeSetting.setValue(text4);
