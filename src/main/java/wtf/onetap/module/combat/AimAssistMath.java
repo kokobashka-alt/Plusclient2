@@ -59,6 +59,16 @@ public final class AimAssistMath {
       return low + Math.round(clampedUnit * (high - low));
    }
 
+   /** Exponential-decay smoothing factor for one frame: closes (1 - e^(-rate*dt)) of the remaining gap. */
+   public static float expSmoothingFactor(float ratePerSecond, float dtSeconds) {
+      return 1.0F - (float) Math.exp(-Math.max(0.001F, ratePerSecond) * Math.max(0.0F, dtSeconds));
+   }
+
+   /** Clamps a 0..1 fraction (used for the multipoint aim-point offsets inside a hitbox). */
+   public static double clampUnit(double value) {
+      return Math.max(0.001, Math.min(0.999, value));
+   }
+
    private static float clamp(float value, float limit) {
       return Math.max(-limit, Math.min(limit, value));
    }
