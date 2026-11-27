@@ -36,6 +36,11 @@ public final class ShardbetaRotation {
     private static final float EASE = 0.65f;
     private static final float ACCEL = 7.0f;
     private static final double SKIP_CHANCE = 0.05;
+    /** Targets further than this many degrees (horizontal) from the view are "behind": aim a little faster. */
+    private static final float BEHIND_ANGLE = 90.0f;
+    private static final double BEHIND_SPEED = 1.35;
+    private static final float BEHIND_CAP = 1.25f;
+    private static final float BEHIND_ACCEL = 9.0f;
 
     private static final float JIT_YAW = 0.26f;
     private static final float JIT_PITCH = 0.16f;
@@ -175,6 +180,7 @@ public final class ShardbetaRotation {
         float[] aim = ang(eye, at(target, box, id, vel));
         float dy = Mth.wrapDegrees(aim[0] + driftYaw - yaw);
         float dp = aim[1] + OFF_PITCH + driftPitch - pitch;
+        boolean behind = Math.abs(Mth.wrapDegrees(aim[0] - yaw)) > BEHIND_ANGLE;
 
         if (switched && r.nextDouble() < OV_CHANCE) {
             ovYaw = Math.signum(dy) * OV_DEG * (float) r.nextDouble(0.5, 1.0);
@@ -188,10 +194,14 @@ public final class ShardbetaRotation {
         double dist = Math.hypot(dy, dp);
         double f = F_MIN + (F_MAX - F_MIN) * Math.min(dist / 90.0, 1.0);
         f = Math.min(1.0, f * speed);
+        if (behind) {
+            f = Math.min(1.0, f * BEHIND_SPEED);
+        }
 
-        float sy = step(dy, f, MAX_YAW * (float) aggression, r);
+        float yawCap = MAX_YAW * (float) aggression * (behind ? BEHIND_CAP : 1.0f);
+        float sy = step(dy, f, yawCap, r);
         float sp = step(dp, f, MAX_PITCH * (float) aggression, r);
-        float ramp = 1.0f - EASE * Math.max(0.0f, 1.0f - age / 3.0f);
+        float ramp = behind ? 1.0f : 1.0f - EASE * Math.max(0.0f, 1.0f - age / 3.0f);
         sy *= ramp;
         sp *= ramp;
 
@@ -207,7 +217,8 @@ public final class ShardbetaRotation {
         sy += bz * bf * 2.0f;
         sp -= bz * bf;
 
-        sy = Mth.clamp(sy, prevYaw - ACCEL, prevYaw + ACCEL);
+        float accel = behind ? BEHIND_ACCEL : ACCEL;
+        sy = Mth.clamp(sy, prevYaw - accel, prevYaw + accel);
         sp = Mth.clamp(sp, prevPitch - ACCEL, prevPitch + ACCEL);
 
         if (r.nextDouble() < SKIP_CHANCE) {
