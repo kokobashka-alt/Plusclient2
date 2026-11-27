@@ -142,8 +142,12 @@ public class SidebarPanel {
          int value12 = (int)(175.0F + 55.0F * floatValue16);
          int value13 = ColorUtil.rgba(value11, value11, value11, (int)(value12 * floatValue4));
          float floatValue17 = floatValue + 6.0F;
-         float floatValue18 = Draw2D.getTextWidth(CATEGORY_ARRAY[i].getIcon(), Fonts.SUPPLIER7, 16.0F);
-         Draw2D.drawTextWithShadow(CATEGORY_ARRAY[i].getIcon(), Fonts.SUPPLIER7, floatValue17, floatValue14 - 1.25F + 6.0F, value13, 16.0F);
+         // Render category: plain "P" from the text font instead of the icon glyph (Divine Visuals style).
+         boolean pIcon = CATEGORY_ARRAY[i] == wtf.onetap.module.Category.RENDER;
+         String iconText = pIcon ? "P" : CATEGORY_ARRAY[i].getIcon();
+         var iconFont = pIcon ? Fonts.SUPPLIER : Fonts.SUPPLIER7;
+         float floatValue18 = Draw2D.getTextWidth(iconText, iconFont, 16.0F);
+         Draw2D.drawTextWithShadow(iconText, iconFont, floatValue17, floatValue14 - 1.25F + 6.0F, value13, 16.0F);
          Draw2D.drawTextWithShadow(CATEGORY_ARRAY[i].getDisplayName(), Fonts.SUPPLIER16, floatValue17 + floatValue18 + 1.0F, floatValue14 + 6.0F, value13, 12.0F);
       }
 

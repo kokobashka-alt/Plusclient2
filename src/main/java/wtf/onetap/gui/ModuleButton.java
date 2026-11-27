@@ -44,11 +44,9 @@ public class ModuleButton {
       ClickGUI.m_3_String();
       int value = ColorUtil.primaryColor();
       int value2 = ColorUtil.secondaryColor();
-      Draw2D.roundedRect(floatValue3, floatValue4, floatValue5, 26.0F, 8.0F, ColorUtil.rgba(0, 0, 0, (int)(35.0F * floatValue6)));
       float floatValue7 = this.animation.update(this.module.isEnabled() ? 1.0F : 0.0F);
-      if (floatValue7 > 0.01F) {
-         Draw2D.m_0(floatValue3, floatValue4, floatValue5, 26.0F, 8.0F, 0.0F, ColorUtil.withAlpha(value, (int)(175.0F * floatValue7 * floatValue6)), ColorUtil.withAlpha(value2, (int)(175.0F * floatValue7 * floatValue6)));
-      }
+      int buttonColor = ColorUtil.lerpColor(DivineStyle.BUTTON_INACTIVE, DivineStyle.BUTTON, floatValue7);
+      Draw2D.roundedRect(floatValue3, floatValue4, floatValue5, 26.0F, 8.0F, ColorUtil.withAlpha(buttonColor, (int)(255.0F * floatValue6)));
 
       Draw2D.m_4(floatValue3, floatValue4, floatValue5, 26.0F, 0.5F, 8.0F, ColorUtil.withAlpha(ColorUtil.rgba(190, 190, 190, 222), (int)(60.0F * floatValue6)));
       boolean flag2 = !this.module.getSettings().isEmpty();
@@ -70,7 +68,7 @@ public class ModuleButton {
          Fonts.SUPPLIER16,
          floatValue11,
          floatValue4 + 6.0F,
-         ColorUtil.withAlpha(ColorUtil.rgba(222, 222, 222, 255), (int)((130.0F + 125.0F * floatValue7) * floatValue6)),
+         ColorUtil.withAlpha(ColorUtil.lerpColor(DivineStyle.TEXT_INACTIVE, DivineStyle.TEXT, floatValue7), (int)(255.0F * floatValue6)),
          0.8F,
          1.0F,
          floatValue12 + 7.0F,

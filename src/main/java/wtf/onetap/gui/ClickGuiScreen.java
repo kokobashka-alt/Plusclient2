@@ -606,7 +606,7 @@ public class ClickGuiScreen {
 
          try {
             this.m_2_void(floatValue21);
-            Draw2D.m_1(0.0F, this.floatValue18, this.floatValue19, this.floatValue20, 8.0F, 4.0F * floatValue21, ColorUtil.rgba(12, 12, 12, (int)(95.0F * floatValue21)));
+            Draw2D.m_1(0.0F, this.floatValue18, this.floatValue19, this.floatValue20, 8.0F, 4.0F * floatValue21, ColorUtil.withAlpha(DivineStyle.MAIN, (int)(225.0F * floatValue21)));
             Draw2D.m_5(0.0F, this.floatValue18, this.floatValue19, this.floatValue20, 8.0F, 3.0F * floatValue21, ColorUtil.rgba(35, 35, 35, (int)(105.0F * floatValue21)), ClickGUI.getGlow() * floatValue21);
             this.floatValue14 = 8.0F;
             this.floatValue15 = this.floatValue18 + 8.0F;
