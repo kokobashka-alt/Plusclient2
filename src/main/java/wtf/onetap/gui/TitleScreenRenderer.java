@@ -234,6 +234,7 @@ public class TitleScreenRenderer {
             titleScreen2.height
          );
          DivineMainMenu.draw(titleScreen2.width, titleScreen2.height, value4, value5);
+         this.renderDivineOverlays(value4, value5);
          return;
       }
       Render2D.setTransform(1.0F, 0.0F, 0.0F);
@@ -326,15 +327,16 @@ public class TitleScreenRenderer {
    public boolean m_8(TitleScreen titleScreen2, MouseButtonEvent event, boolean flag6) {
       this.setTitleScreen(titleScreen2);
       if (DivineMainMenu.ENABLED) {
-         if (event.button() != 0) {
+         if (event.button() == 0) {
+            int button = DivineMainMenu.hitButton(event.x(), event.y(), titleScreen2.width, titleScreen2.height);
+            if (button >= 0) {
+               this.onDivineButton(titleScreen2, button);
+               return true;
+            }
+         }
+         if (!this.serverEntry.isVisible() && !this.flag2) {
             return false;
          }
-         int button = DivineMainMenu.hitButton(event.x(), event.y(), titleScreen2.width, titleScreen2.height);
-         if (button >= 0) {
-            this.onDivineButton(titleScreen2, button);
-            return true;
-         }
-         return false;
       }
       float floatValue4 = (float)event.x();
       float floatValue5 = (float)event.y();
@@ -616,6 +618,35 @@ public class TitleScreenRenderer {
          return this.serverEntry.isOpen() && !this.flag2 && !this.serverEditScreen.isVisible()
             ? this.mainMenu.m_4(doubleValue3, (float)doubleValue, (float)doubleValue2, this.titleScreen.width, this.titleScreen.height)
             : false;
+      }
+   }
+
+   /** Server/world list and account panel over the Divine layout. The old left-hand buttons are not drawn here. */
+   private void renderDivineOverlays(int mouseX, int mouseY) {
+      float accounts = this.animation.update(this.flag2 ? 1.0F : 0.0F);
+      float list = this.serverEntry.m_1_float();
+      if (!this.serverEntry.isOpen() || this.flag2 || this.serverEditScreen.isVisible()) {
+         this.mainMenu.m_3_void();
+      } else if (KeyNames.isLeftMouseDown() && this.mainMenu.isFlag()) {
+         this.mainMenu.m_7_boolean(mouseX, mouseY, this.titleScreen.width, this.titleScreen.height);
+      } else if (!KeyNames.isLeftMouseDown()) {
+         this.mainMenu.m_3_void();
+      }
+
+      if (this.serverStatusPinger != null) {
+         this.serverStatusPinger.tick();
+      }
+
+      if (list > 0.01F) {
+         this.mainMenu.m_2_float();
+         boolean flag6 = this.serverEditScreen.isVisible() || this.flag2;
+         this.m_8(flag6 ? -1000 : mouseX, flag6 ? -1000 : mouseY, list);
+      } else if (!this.serverEntry.isVisible()) {
+         this.stopPingerAndClearFavicons();
+      }
+
+      if (accounts > 0.01F) {
+         this.m_4(mouseX, mouseY, accounts);
       }
    }
 

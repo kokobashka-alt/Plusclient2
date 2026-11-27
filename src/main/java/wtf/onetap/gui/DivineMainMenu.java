@@ -1,8 +1,17 @@
 package wtf.onetap.gui;
 
+import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.Resource;
 import wtf.onetap.render.ColorUtil;
 import wtf.onetap.render.Draw2D;
 import wtf.onetap.render.Fonts;
@@ -19,6 +28,9 @@ public final class DivineMainMenu {
    public static final Identifier BACKGROUND = Identifier.fromNamespaceAndPath("onetap", "textures/gui/background.png");
    public static final Identifier BLACK_BACKGROUND = Identifier.fromNamespaceAndPath("onetap", "textures/gui/black_background.png");
    public static final Identifier BLUE_BACKGROUND = Identifier.fromNamespaceAndPath("onetap", "textures/gui/blue_background.png");
+   /** Used when BACKGROUND is not in the resources, so the screen shows a real picture instead of the missing-texture cube. */
+   private static final Identifier FALLBACK_BACKGROUND = Identifier.fromNamespaceAndPath("onetap", "textures/gui/main_menu_bg.png");
+   private static final Map<Identifier, GpuTextureView> VIEWS = new HashMap<>();
 
    public static final int BUTTON_SINGLEPLAYER = 0;
    public static final int BUTTON_MULTIPLAYER = 1;
@@ -67,7 +79,7 @@ public final class DivineMainMenu {
          int textColor = ColorUtil.rgba(255, 255, 255, hovered ? 255 : 140);
          String label = LABELS[i];
          float tx = Draw2D.getCenteredX(label, Fonts.SUPPLIER, BTN_TEXT_SIZE, btnX, BTN_W);
-         float ty = Draw2D.getCenteredY(label, Fonts.SUPPLIER, BTN_TEXT_SIZE, by, BTN_H);
+         float ty = Draw2D.getTextBaseline(Fonts.SUPPLIER, BTN_TEXT_SIZE, by, BTN_H);
          Draw2D.drawStyledText(label, Fonts.SUPPLIER, tx, ty, textColor, BTN_TEXT_SIZE);
       }
 
@@ -107,11 +119,48 @@ public final class DivineMainMenu {
       return mouseX >= x && mouseX <= x + BTN_W && mouseY >= y && mouseY <= y + BTN_H;
    }
 
+   /**
+    * View of a background image. The file is read from the resources once and registered with the texture manager,
+    * because an unregistered identifier resolves to the missing-texture cube. Returns null when the file is absent.
+    */
    public static GpuTextureView view(Identifier identifier) {
-      return Minecraft.getInstance().getTextureManager().getTexture(identifier).getTextureView();
+      if (VIEWS.containsKey(identifier)) {
+         return VIEWS.get(identifier);
+      }
+      GpuTextureView view = load(identifier);
+      if (view == null && identifier.equals(BACKGROUND)) {
+         view = load(FALLBACK_BACKGROUND);
+      }
+      VIEWS.put(identifier, view);
+      return view;
    }
 
+   private static GpuTextureView load(Identifier source) {
+      Minecraft minecraft = Minecraft.getInstance();
+      Optional<Resource> resource = minecraft.getResourceManager().getResource(source);
+      if (resource.isEmpty()) {
+         return null;
+      }
+      try (InputStream in = resource.get().open()) {
+         NativeImage image = NativeImage.read(in);
+         Identifier target = Identifier.fromNamespaceAndPath("onetap", "dynamic/" + source.getPath().replace('/', '_'));
+         DynamicTexture texture = new DynamicTexture(() -> "Onetap " + source.getPath(), image);
+         minecraft.getTextureManager().register(target, texture);
+         return texture.getTextureView();
+      } catch (IOException e) {
+         return null;
+      }
+   }
+
+   /** Covers the area with the picture without stretching it: the overflow is cropped from the sides or top and bottom. */
    private static void drawTexture(GpuTextureView view, float x, float y, float w, float h, int color) {
-      Render2D.m_4(x, y, w, h, 0.0F, color, view);
+      if (view == null || h <= 0.0F) {
+         return;
+      }
+      float texAspect = (float)view.texture().getWidth(0) / view.texture().getHeight(0);
+      float winAspect = w / h;
+      float u0 = winAspect < texAspect ? (1.0F - winAspect / texAspect) / 2.0F : 0.0F;
+      float v0 = winAspect > texAspect ? (1.0F - texAspect / winAspect) / 2.0F : 0.0F;
+      Render2D.m_4(x, y, w, h, 0.0F, color, view, u0, v0, 1.0F - u0, 1.0F - v0, FilterMode.LINEAR);
    }
 }
