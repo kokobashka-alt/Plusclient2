@@ -16,9 +16,9 @@ import wtf.onetap.render.Render2D;
 public final class DivineMainMenu {
    public static final boolean ENABLED = true;
 
-   public static final Identifier BACKGROUND = Identifier.fromNamespaceAndPath("onetap", "textures/gui/divine/background.png");
-   public static final Identifier BLACK_BACKGROUND = Identifier.fromNamespaceAndPath("onetap", "textures/gui/divine/black_background.png");
-   public static final Identifier BLUE_BACKGROUND = Identifier.fromNamespaceAndPath("onetap", "textures/gui/divine/blue_background.png");
+   public static final Identifier BACKGROUND = Identifier.fromNamespaceAndPath("onetap", "textures/gui/background.png");
+   public static final Identifier BLACK_BACKGROUND = Identifier.fromNamespaceAndPath("onetap", "textures/gui/black_background.png");
+   public static final Identifier BLUE_BACKGROUND = Identifier.fromNamespaceAndPath("onetap", "textures/gui/blue_background.png");
 
    public static final int BUTTON_SINGLEPLAYER = 0;
    public static final int BUTTON_MULTIPLAYER = 1;
