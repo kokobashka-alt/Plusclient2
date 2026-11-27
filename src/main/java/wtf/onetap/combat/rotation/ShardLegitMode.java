@@ -9,14 +9,14 @@ import wtf.onetap.util.MinecraftAccess;
 import wtf.onetap.util.Rotations;
 
 /**
- * KillAura rotation "ShardLegit": adapter that lets the engine drive {@link ShardLegitRotation}. The delegate
+ * KillAura rotation "ShardLegit": adapter that lets the engine drive {@link ShardbetaRotation}. The delegate
  * keeps its own state per target and already snaps its step to the mouse-sensitivity grid, so the engine must not
  * snap again. It is called at 20 Hz because its hold, drift and acceleration counters count calls and were written
  * for one call per game tick, like ShardbetaRotation.
  */
 @RotationInfo(name = "ShardLegit", fps = 20)
 public class ShardLegitMode implements MinecraftAccess, RotationMode {
-   private final ShardLegitRotation delegate = new ShardLegitRotation();
+   private final ShardbetaRotation delegate = new ShardbetaRotation();
 
    @Override
    public Rotations m_6(
@@ -28,7 +28,6 @@ public class ShardLegitMode implements MinecraftAccess, RotationMode {
          return new Rotations(lastYaw, lastPitch);
       }
 
-      this.delegate.setHitRange(killAura.getHitDistance());
       double range = killAura.getHitDistance() + killAura.getRotationDistance();
       return this.delegate.updateAsRotations(livingEntity, aABB, lastYaw, lastPitch, range);
    }
