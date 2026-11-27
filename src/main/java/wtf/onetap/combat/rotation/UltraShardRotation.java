@@ -3,11 +3,10 @@ package wtf.onetap.util.rotation;
 import java.util.ArrayDeque;
 import java.util.Random;
 
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import wtf.onetap.Onetap;
 import wtf.onetap.util.MinecraftAccess;
@@ -116,11 +115,11 @@ public final class UltraShardRotation {
     /** Знаковый случайный процесс для «минимального движения» [yaw, pitch]. */
     private final double[] brownian = new double[2];
 
-    private Vec3d focusTarget = Vec3d.ZERO;
-    private Vec3d focusCurrent = Vec3d.ZERO;
+    private Vec3 focusTarget = Vec3.ZERO;
+    private Vec3 focusCurrent = Vec3.ZERO;
     private int focusTimer = 20;
 
-    private Vec3d lastTargetCenter = Vec3d.ZERO;
+    private Vec3 lastTargetCenter = Vec3.ZERO;
     private long lastTargetNanos;
 
     private int lastTargetId = -1;
@@ -130,7 +129,7 @@ public final class UltraShardRotation {
 
     private boolean knockbackActive;
     private long knockbackStartNanos;
-    private Vec3d knockbackHoldPos = Vec3d.ZERO;
+    private Vec3 knockbackHoldPos = Vec3.ZERO;
 
     private int tickCounter;
 
@@ -159,10 +158,10 @@ public final class UltraShardRotation {
         history.clear();
         java.util.Arrays.fill(residual, 0.0);
         java.util.Arrays.fill(brownian, 0.0);
-        focusTarget = Vec3d.ZERO;
-        focusCurrent = Vec3d.ZERO;
+        focusTarget = Vec3.ZERO;
+        focusCurrent = Vec3.ZERO;
         focusTimer = 20;
-        lastTargetCenter = Vec3d.ZERO;
+        lastTargetCenter = Vec3.ZERO;
         lastTargetNanos = 0L;
         lastTargetId = -1;
         hasTarget = false;
@@ -170,7 +169,7 @@ public final class UltraShardRotation {
         acquireStartNanos = 0L;
         knockbackActive = false;
         knockbackStartNanos = 0L;
-        knockbackHoldPos = Vec3d.ZERO;
+        knockbackHoldPos = Vec3.ZERO;
         tickCounter = 0;
     }
 
@@ -183,21 +182,21 @@ public final class UltraShardRotation {
      * @return готовый {@link Rotations}, который нужно отдать в
      *         {@code Onetap.ROTATION_MODES.rotate(rot, false, 15)}
      */
-    public Rotations tick(ClientPlayerEntity player, LivingEntity target, long nanos) {
+    public Rotations tick(LocalPlayer player, LivingEntity target, long nanos) {
         tickCounter++;
 
-        Box box = target.getBoundingBox();
-        Vec3d center = box.getCenter();
-        Vec3d eye = player.getEyePos();
+        AABB box = target.getBoundingBox();
+        Vec3 center = box.getCenter();
+        Vec3 eye = player.getEyePosition();
 
         // --- Новая цель: сброс + acquisition phase ---
         if (!hasTarget || target.getId() != lastTargetId) {
             resetForNewTarget(target.getId(), center, nanos);
-            return new Rotations(player.getYaw(), player.getPitch());
+            return new Rotations(player.getYRot(), player.getXRot());
         }
 
         // --- Детект knockback ---
-        Vec3d delta = center.subtract(lastTargetCenter);
+        Vec3 delta = center.subtract(lastTargetCenter);
         double speed = delta.length();
         if (!knockbackActive && speed > knockbackVelocityThreshold) {
             knockbackActive = true;
@@ -217,13 +216,13 @@ public final class UltraShardRotation {
         // --- Acquisition: ждём реакционный лаг, потом резко поворачиваем ---
         if (acquiring) {
             if ((nanos - acquireStartNanos) < msToNanos(reactionDelayMs)) {
-                return new Rotations(player.getYaw(), player.getPitch());
+                return new Rotations(player.getYRot(), player.getXRot());
             }
             acquiring = false;
         }
 
         // --- Базовая позиция цели (с учётом lag / knockback) ---
-        Vec3d aimBase;
+        Vec3 aimBase;
         if (knockbackActive) {
             aimBase = knockbackHoldPos;
         } else {
@@ -234,10 +233,10 @@ public final class UltraShardRotation {
         updateFocus(box, speed, delta, center);
 
         // --- Синусоидальный дрейф ---
-        Vec3d drift = computeDrift(nanos);
+        Vec3 drift = computeDrift(nanos);
 
         // --- Итоговая точка прицеливания ---
-        Vec3d aimPoint = aimBase.add(focusCurrent).add(drift);
+        Vec3 aimPoint = aimBase.add(focusCurrent).add(drift);
         aimPoint = clampLooseToBox(aimPoint, box, 1.2);
 
         // --- Желаемая ротация ---
@@ -250,12 +249,12 @@ public final class UltraShardRotation {
     }
 
     /** Текущее значение focus-point (для отладки / визуализации). */
-    public Vec3d focusPoint() {
+    public Vec3 focusPoint() {
         return focusCurrent;
     }
 
     /** Позиция, на которую бы указывал прицел в буфере задержки. */
-    public Vec3d delayedTargetPoint() {
+    public Vec3 delayedTargetPoint() {
         return history.isEmpty() ? lastTargetCenter : history.peekFirst().pos;
     }
 
@@ -263,12 +262,12 @@ public final class UltraShardRotation {
     //  Внутренняя логика
     // =================================================================
 
-    private void resetForNewTarget(int targetId, Vec3d center, long nanos) {
+    private void resetForNewTarget(int targetId, Vec3 center, long nanos) {
         history.clear();
         java.util.Arrays.fill(residual, 0.0);
         java.util.Arrays.fill(brownian, 0.0);
-        focusTarget = Vec3d.ZERO;
-        focusCurrent = Vec3d.ZERO;
+        focusTarget = Vec3.ZERO;
+        focusCurrent = Vec3.ZERO;
         focusTimer = 20;
 
         lastTargetId = targetId;
@@ -283,7 +282,7 @@ public final class UltraShardRotation {
         history.addLast(new AimSnapshot(center, nanos));
     }
 
-    private void updateFocus(Box box, double speed, Vec3d delta, Vec3d center) {
+    private void updateFocus(AABB box, double speed, Vec3 delta, Vec3 center) {
         if (--focusTimer > 0) {
             focusCurrent = focusCurrent.lerp(focusTarget, 0.08);
             return;
@@ -293,22 +292,22 @@ public final class UltraShardRotation {
 
         // Лид-стратегия: цель движется быстро и не в knockback
         if (!knockbackActive && speed > 0.08 && rng.nextDouble() < leadChance) {
-            focusTarget = delta.multiply(2.0);
+            focusTarget = delta.scale(2.0);
         } else {
             // Случайная точка внутри хитбокса со смещением к краям
             double x = rng.nextDouble() * 2 - 1;
             double y = rng.nextDouble() * 2 - 1;
             double z = rng.nextDouble() * 2 - 1;
-            focusTarget = new Vec3d(
-                    x * box.getLengthX() * 0.35,
-                    y * box.getLengthY() * 0.30,
-                    z * box.getLengthZ() * 0.35);
+            focusTarget = new Vec3(
+                    x * box.getXsize() * 0.35,
+                    y * box.getYsize() * 0.30,
+                    z * box.getZsize() * 0.35);
         }
 
         focusCurrent = focusCurrent.lerp(focusTarget, 0.08);
     }
 
-    private Vec3d computeDrift(long nanos) {
+    private Vec3 computeDrift(long nanos) {
         double gcd = sensitivityGcd();
         double amp = Math.max(driftAmplitude, gcd * driftGcdMin);
         double t = (nanos - sessionStartNanos) * 1e-9;
@@ -317,12 +316,12 @@ public final class UltraShardRotation {
         double dy = Math.cos(t * freqY * TWO_PI + phaseY) * amp * 0.55;
         double dz = Math.sin(t * freqZ * TWO_PI + phaseZ) * amp;
 
-        return new Vec3d(dx, dy, dz);
+        return new Vec3(dx, dy, dz);
     }
 
-    private Vec3d getDelayedPosition(long nowNanos, double delayMs) {
+    private Vec3 getDelayedPosition(long nowNanos, double delayMs) {
         long target = nowNanos - msToNanos(delayMs);
-        Vec3d best = lastTargetCenter;
+        Vec3 best = lastTargetCenter;
         for (AimSnapshot snap : history) {
             if (snap.time <= target) {
                 best = snap.pos;
@@ -423,8 +422,8 @@ public final class UltraShardRotation {
     //  Helpers
     // =================================================================
 
-    private static double msToNanos(double ms) {
-        return ms * 1_000_000.0;
+    private static long msToNanos(double ms) {
+        return (long) (ms * 1_000_000.0);
     }
 
     private static double wrapDegrees(double deg) {
@@ -435,14 +434,14 @@ public final class UltraShardRotation {
         return v < min ? min : Math.min(v, max);
     }
 
-    private static Vec3d clampLooseToBox(Vec3d point, Box box, double factor) {
+    private static Vec3 clampLooseToBox(Vec3 point, AABB box, double factor) {
         double cx = (box.minX + box.maxX) * 0.5;
         double cy = (box.minY + box.maxY) * 0.5;
         double cz = (box.minZ + box.maxZ) * 0.5;
-        double hx = box.getLengthX() * 0.5 * factor;
-        double hy = box.getLengthY() * 0.5 * factor;
-        double hz = box.getLengthZ() * 0.5 * factor;
-        return new Vec3d(
+        double hx = box.getXsize() * 0.5 * factor;
+        double hy = box.getYsize() * 0.5 * factor;
+        double hz = box.getZsize() * 0.5 * factor;
+        return new Vec3(
                 clamp(point.x, cx - hx, cx + hx),
                 clamp(point.y, cy - hy, cy + hy),
                 clamp(point.z, cz - hz, cz + hz));
@@ -462,10 +461,10 @@ public final class UltraShardRotation {
     // =================================================================
 
     private static final class AimSnapshot {
-        final Vec3d pos;
+        final Vec3 pos;
         final long time;
 
-        AimSnapshot(Vec3d pos, long time) {
+        AimSnapshot(Vec3 pos, long time) {
             this.pos = pos;
             this.time = time;
         }
