@@ -225,6 +225,17 @@ public class TitleScreenRenderer {
 
    public void m_9(TitleScreen titleScreen2, GuiGraphicsExtractor guiGraphicsExtractor, int value4, int value5) {
       this.setTitleScreen(titleScreen2);
+      if (DivineMainMenu.ENABLED) {
+         DivineMainMenu.drawBackground(
+            DivineMainMenu.view(DivineMainMenu.BACKGROUND),
+            DivineMainMenu.view(DivineMainMenu.BLACK_BACKGROUND),
+            DivineMainMenu.view(DivineMainMenu.BLUE_BACKGROUND),
+            titleScreen2.width,
+            titleScreen2.height
+         );
+         DivineMainMenu.draw(titleScreen2.width, titleScreen2.height, value4, value5);
+         return;
+      }
       Render2D.setTransform(1.0F, 0.0F, 0.0F);
       this.m_1_void();
       float floatValue4 = this.animation.update(this.flag2 ? 1.0F : 0.0F);
@@ -288,8 +299,43 @@ public class TitleScreenRenderer {
       this.m_0_void();
    }
 
+   private void onDivineButton(TitleScreen titleScreen2, int button) {
+      switch (button) {
+         case DivineMainMenu.BUTTON_SINGLEPLAYER:
+            this.m_1(ServerEntry.ModeKind.WORLDS);
+            break;
+         case DivineMainMenu.BUTTON_MULTIPLAYER:
+            if (getMinecraft().allowsMultiplayer()) {
+               this.m_1(ServerEntry.ModeKind.SERVERS);
+            }
+            break;
+         case DivineMainMenu.BUTTON_ACCOUNTS:
+            this.reset();
+            break;
+         case DivineMainMenu.BUTTON_SETTINGS:
+            getMinecraft().gui.setScreen(new OptionsScreen(titleScreen2, getMinecraft().options, false));
+            break;
+         case DivineMainMenu.BUTTON_QUIT:
+            getMinecraft().stop();
+            break;
+         default:
+            break;
+      }
+   }
+
    public boolean m_8(TitleScreen titleScreen2, MouseButtonEvent event, boolean flag6) {
       this.setTitleScreen(titleScreen2);
+      if (DivineMainMenu.ENABLED) {
+         if (event.button() != 0) {
+            return false;
+         }
+         int button = DivineMainMenu.hitButton(event.x(), event.y(), titleScreen2.width, titleScreen2.height);
+         if (button >= 0) {
+            this.onDivineButton(titleScreen2, button);
+            return true;
+         }
+         return false;
+      }
       float floatValue4 = (float)event.x();
       float floatValue5 = (float)event.y();
       float floatValue6 = this.animation.get();
@@ -895,6 +941,10 @@ public class TitleScreenRenderer {
       float floatValue11 = Draw2D.getCenteredY("\ue900", Fonts.SUPPLIER6, floatValue10, floatValue9, floatValue7);
       float floatValue12 = Draw2D.getCenteredX("\ue900", Fonts.SUPPLIER6, floatValue10, floatValue8, floatValue7);
       Draw2D.drawTextWithShadow("\ue900", Fonts.SUPPLIER6, floatValue12, floatValue11, ColorUtil.rgba(255, 255, 255, (int)(255.0F * floatValue6)), floatValue10);
+      float floatValue13 = floatValue8 + floatValue7 + 8.0F;
+      float floatValue14 = Draw2D.getTextBaseline(Fonts.SUPPLIER18, 16.0F, floatValue5, 32.0F);
+      float floatValue15 = (float)(System.currentTimeMillis() % 4000L) / 4000.0F;
+      Draw2D.m_9("Moonward", Fonts.SUPPLIER18, floatValue13, floatValue14, ColorUtil.withAlpha(ColorUtil.primaryColor(), (int)(255.0F * floatValue6)), ColorUtil.withAlpha(ColorUtil.secondaryColor(), (int)(255.0F * floatValue6)), 16.0F, floatValue15);
    }
 
    private void m_7(float floatValue4, float floatValue5, int value4, float floatValue6, float floatValue7) {
