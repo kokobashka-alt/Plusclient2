@@ -262,6 +262,7 @@ public class ModuleManager {
          new CoordinatesHud(),
          new SpeedHud(),
          new TotemCounterHud(),
+         new NursultanHud(),
          new ClickPearl(),
          new AutoSwap(),
          new AutoTotem(),
