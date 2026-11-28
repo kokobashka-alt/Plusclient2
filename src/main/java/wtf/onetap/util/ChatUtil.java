@@ -23,7 +23,7 @@ public class ChatUtil {
          Runnable runnable = () -> {
             if (mc.gui != null && mc.gui.hud != null && mc.gui.hud.getChat() != null) {
                if (!isUnHooked()) {
-                  mc.gui.hud.getChat().addClientSystemMessage(Component.literal("§fMoonward.log §7» §7" + text));
+                  mc.gui.hud.getChat().addClientSystemMessage(Component.literal("§2PlusClient §7» §7" + text));
                }
             }
          };
@@ -41,7 +41,7 @@ public class ChatUtil {
          Runnable runnable = () -> {
             if (mc.gui != null && mc.gui.hud != null && mc.gui.hud.getChat() != null) {
                if (!isUnHooked()) {
-                  mc.gui.hud.getChat().addClientSystemMessage(Component.literal("§fMoonward.log §7» §7").append(component));
+                  mc.gui.hud.getChat().addClientSystemMessage(Component.literal("§2PlusClient §7» §7").append(component));
                }
             }
          };
@@ -68,7 +68,7 @@ public class ChatUtil {
          ChatComponent chatComponent = mc.gui.hud.getChat();
          ((ChatComponentAccessor)chatComponent)
             .onetap$getAllMessages()
-            .removeIf(guiMessage -> guiMessage.source() == GuiMessageSource.SYSTEM_CLIENT && guiMessage.content().getString().startsWith("§fMoonward.log §7» §7") || m_6(guiMessage));
+            .removeIf(guiMessage -> guiMessage.source() == GuiMessageSource.SYSTEM_CLIENT && guiMessage.content().getString().startsWith("§2PlusClient §7» §7") || m_6(guiMessage));
          chatComponent.rescaleChat();
       }
    }
