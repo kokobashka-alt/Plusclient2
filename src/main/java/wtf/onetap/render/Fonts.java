@@ -56,6 +56,9 @@ public class Fonts {
    public static final Supplier<FontAtlas> SUPPLIER26 = Suppliers.memoize(
       () -> FontAtlas.m_0_C1().withText("Unbounded Bold").withText3("unbounded_bold").withText2("unbounded_bold").build()
    );
+   public static final Supplier<FontAtlas> ICONS_NURIK = Suppliers.memoize(
+      () -> FontAtlas.m_0_C1().withText("icons_nurik").withText3("icons_nurik").withText2("icons_nurik").build()
+   );
    private static String text;
 
    private Fonts() {
