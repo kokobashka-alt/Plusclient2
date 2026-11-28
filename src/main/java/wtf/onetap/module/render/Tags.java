@@ -399,11 +399,11 @@ public class Tags extends Module {
       if (playerInfo != null) {
          Component component = playerInfo.getTabListDisplayName();
          if (component != null) {
-            return m_7(ChatBadges.m_8_Component(component), player.getName().getString());
+            return ChatBadges.m_roles(m_7(ChatBadges.m_8_Component(component), player.getName().getString()));
          }
       }
 
-      return player.getDisplayName();
+      return ChatBadges.m_roles(player.getDisplayName());
    }
 
    private static Component m_7(Component component, String text) {
