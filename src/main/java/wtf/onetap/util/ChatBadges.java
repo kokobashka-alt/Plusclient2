@@ -5,6 +5,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 
 public class ChatBadges {
    private static final String[][] TEXT_ARRAY = new String[][]{
@@ -94,6 +95,38 @@ public class ChatBadges {
       } else {
          return text2;
       }
+   }
+
+   /**
+    * Replaces the RoleBadges glyphs with their coloured labels. Every other part of the component keeps its style.
+    * Used by the name tags only, after the name has been substituted, so the labels cannot be taken for the player's name.
+    */
+   public static Component m_roles(Component component) {
+      MutableComponent mutableComponent = Component.empty();
+      component.visit((style, text2) -> {
+         StringBuilder plain = new StringBuilder();
+         for (int i = 0; i < text2.length(); i++) {
+            RoleBadges.Role role = RoleBadges.of(text2.charAt(i));
+            if (role == null) {
+               plain.append(text2.charAt(i));
+               continue;
+            }
+
+            if (!plain.isEmpty()) {
+               mutableComponent.append(Component.literal(plain.toString()).setStyle(style));
+               plain.setLength(0);
+            }
+
+            mutableComponent.append(Component.literal(role.label()).setStyle(style.withColor(TextColor.fromRgb(role.rgb()))));
+         }
+
+         if (!plain.isEmpty()) {
+            mutableComponent.append(Component.literal(plain.toString()).setStyle(style));
+         }
+
+         return Optional.empty();
+      }, Style.EMPTY);
+      return mutableComponent;
    }
 
    public static Component m_6(Component component) {
